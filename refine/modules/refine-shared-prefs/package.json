@@ -1,0 +1,7 @@
+{
+  "name": "refine-shared-prefs",
+  "version": "1.0.0",
+  "description": "Bridge between React Native and Android SharedPreferences for Refine app",
+  "main": "src/index",
+  "types": "src/index"
+}
