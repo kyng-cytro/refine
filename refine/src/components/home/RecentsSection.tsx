@@ -5,21 +5,19 @@ import { HistoryCard } from './HistoryCard';
 import { useHistoryStore } from '@/store/history-store';
 import { syncHistoryToNative } from '@/services/shared-prefs-bridge';
 
-export function RecentsSection() {
+export const RecentsSection = () => {
   const { items, deleteItem } = useHistoryStore();
 
   const handleDelete = (id: string) => {
     deleteItem(id);
-    const updated = items.filter((i) => i.id !== id);
-    syncHistoryToNative(updated);
+    // Read fresh state after mutation to avoid stale closure
+    syncHistoryToNative(useHistoryStore.getState().items);
   };
 
   if (items.length === 0) {
     return (
       <View style={styles.empty}>
-        <Text variant="bodyMedium" style={styles.emptyText}>
-          No refinements yet
-        </Text>
+        <Text variant="bodyMedium" style={styles.emptyText}>No refinements yet</Text>
       </View>
     );
   }
@@ -28,19 +26,15 @@ export function RecentsSection() {
     <FlatList
       data={items}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <HistoryCard item={item} onDelete={handleDelete} />
-      )}
+      renderItem={({ item }) => <HistoryCard item={item} onDelete={handleDelete} />}
       contentContainerStyle={styles.list}
       showsVerticalScrollIndicator={false}
       ListHeaderComponent={
-        <Text variant="titleSmall" style={styles.header}>
-          Recents
-        </Text>
+        <Text variant="titleSmall" style={styles.header}>Recents</Text>
       }
     />
   );
-}
+};
 
 const styles = StyleSheet.create({
   list: {

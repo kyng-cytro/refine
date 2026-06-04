@@ -15,76 +15,51 @@ import { MD3DarkTheme, MD3LightTheme, PaperProvider, configureFonts } from 'reac
 import AppTabs from '@/components/app-tabs';
 import { useHistoryStore } from '@/store/history-store';
 import { useSettingsStore } from '@/store/settings-store';
-import {
-  loadHistoryFromNative,
-  rehydrateApiKeysFromNative,
-  syncActiveConfig,
-} from '@/services/shared-prefs-bridge';
+import { loadHistoryFromNative, rehydrateApiKeysFromNative, syncActiveConfig } from '@/services/shared-prefs-bridge';
 
 SplashScreen.preventAutoHideAsync();
 
-const fontConfig = {
-  fontFamily: 'NotoSans_400Regular',
-};
+const fontConfig = { fontFamily: 'NotoSans_400Regular' };
 
-const lightTheme = {
-  ...MD3LightTheme,
-  fonts: configureFonts({ config: fontConfig }),
-  roundness: 4,
-};
-
-const darkTheme = {
-  ...MD3DarkTheme,
-  fonts: configureFonts({ config: fontConfig }),
-  roundness: 4,
-};
+const lightTheme = { ...MD3LightTheme, fonts: configureFonts({ config: fontConfig }), roundness: 4 };
+const darkTheme = { ...MD3DarkTheme, fonts: configureFonts({ config: fontConfig }), roundness: 4 };
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const setItems = useHistoryStore((s) => s.setItems);
   const rehydrateApiKeys = useSettingsStore((s) => s.rehydrateApiKeys);
-  const settings = useSettingsStore();
 
-  const [fontsLoaded] = useFonts({
-    NotoSans_400Regular,
-    NotoSans_500Medium,
-    NotoSans_700Bold,
-  });
+  // Selective subscriptions — only re-render when these specific values change
+  const apiKeys = useSettingsStore((s) => s.apiKeys);
+  const defaultModel = useSettingsStore((s) => s.defaultModel);
+  const tones = useSettingsStore((s) => s.tones);
+  const defaultToneSlug = useSettingsStore((s) => s.defaultToneSlug);
+
+  const [fontsLoaded] = useFonts({ NotoSans_400Regular, NotoSans_500Medium, NotoSans_700Bold });
 
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
 
   useEffect(() => {
-    // Rehydrate API keys from EncryptedSharedPreferences (never stored in MMKV)
     const keys = rehydrateApiKeysFromNative();
     if (Object.keys(keys).length > 0) rehydrateApiKeys(keys);
-
-    // Load history from SharedPreferences (canonical store)
     const history = loadHistoryFromNative();
     if (history.length > 0) setItems(history);
   }, []);
 
-  // Keep native config in sync whenever settings change
+  // syncActiveConfig reads from store.getState() internally — no args needed
   useEffect(() => {
-    syncActiveConfig({
-      apiKeys: settings.apiKeys,
-      defaultModel: settings.defaultModel,
-      tones: settings.tones,
-      defaultToneSlug: settings.defaultToneSlug,
-    });
-  }, [settings.apiKeys, settings.defaultModel, settings.tones, settings.defaultToneSlug]);
+    syncActiveConfig();
+  }, [apiKeys, defaultModel, tones, defaultToneSlug]);
 
   if (!fontsLoaded) return null;
 
-  const paperTheme = colorScheme === 'dark' ? darkTheme : lightTheme;
-  const navTheme = colorScheme === 'dark' ? DarkTheme : DefaultTheme;
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <PaperProvider theme={paperTheme}>
+      <PaperProvider theme={colorScheme === 'dark' ? darkTheme : lightTheme}>
         <BottomSheetModalProvider>
-          <ThemeProvider value={navTheme}>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <AppTabs />
           </ThemeProvider>
         </BottomSheetModalProvider>

@@ -1,10 +1,10 @@
-import { generateText } from 'ai';
+import { APICallError, generateText } from 'ai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 
 import { MODEL_MAP } from '@/constants/models';
-import { ApiKeys, ModelId } from '@/types/settings';
+import { ApiKeys, ModelId, ModelProvider } from '@/types/settings';
 
 const SYSTEM_PREAMBLE = `You are a text refinement assistant. Your only job is to rewrite the text the user provides.
 Rules you must always follow:
@@ -18,38 +18,39 @@ const SYSTEM_POSTAMBLE = `[/TONE]
 
 Refine the text according to the tone described above. Return only the refined text, nothing else.`;
 
-export function buildSystemPrompt(toneInstructions: string): string {
-  return `${SYSTEM_PREAMBLE}\n${toneInstructions}\n${SYSTEM_POSTAMBLE}`;
-}
+export const buildSystemPrompt = (toneInstructions: string): string =>
+  `${SYSTEM_PREAMBLE}\n${toneInstructions}\n${SYSTEM_POSTAMBLE}`;
 
-function mapError(e: unknown): string {
+const PROVIDER_FACTORIES: Record<ModelProvider, (apiKey: string) => (modelId: string) => unknown> = {
+  openai: (apiKey) => createOpenAI({ apiKey }),
+  anthropic: (apiKey) => createAnthropic({ apiKey }),
+  google: (apiKey) => createGoogleGenerativeAI({ apiKey }),
+};
+
+const mapError = (e: unknown): string => {
+  if (APICallError.isInstance(e)) {
+    if (e.statusCode === 401) return 'Invalid API key — check Settings';
+    if (e.statusCode === 429) return 'Rate limit reached, try again shortly';
+    if (e.statusCode && e.statusCode >= 500) return 'Provider error, try again';
+  }
   if (e instanceof Error) {
     const msg = e.message.toLowerCase();
-    if (msg.includes('fetch') || msg.includes('network') || msg.includes('econnrefused')) {
+    if (msg.includes('fetch') || msg.includes('network') || msg.includes('econnrefused'))
       return 'No internet connection';
-    }
-    if (msg.includes('401') || msg.includes('unauthorized') || msg.includes('invalid api key')) {
-      return 'Invalid API key — check Settings';
-    }
-    if (msg.includes('429') || msg.includes('rate limit')) {
-      return 'Rate limit reached, try again shortly';
-    }
-    if (msg.includes('5') && msg.includes('00')) {
-      return 'Provider error, try again';
-    }
-    if (msg.includes('timeout') || msg.includes('timed out')) {
+    if (msg.includes('timeout') || msg.includes('timed out'))
       return 'Request timed out';
-    }
+    if (msg.includes('401') || msg.includes('unauthorized'))
+      return 'Invalid API key — check Settings';
   }
   return 'Something went wrong';
-}
+};
 
-export async function refineText(params: {
+export const refineText = async (params: {
   text: string;
   modelId: ModelId;
   toneInstructions: string;
   apiKeys: ApiKeys;
-}): Promise<string> {
+}): Promise<string> => {
   const { text, modelId, toneInstructions, apiKeys } = params;
   const modelConfig = MODEL_MAP[modelId];
 
@@ -58,30 +59,15 @@ export async function refineText(params: {
   const apiKey = apiKeys[modelConfig.provider];
   if (!apiKey) throw new Error('Add an API key in Settings to get started');
 
-  const systemPrompt = buildSystemPrompt(toneInstructions);
-
   try {
-    let model;
-    switch (modelConfig.provider) {
-      case 'openai':
-        model = createOpenAI({ apiKey })(modelId);
-        break;
-      case 'anthropic':
-        model = createAnthropic({ apiKey })(modelId);
-        break;
-      case 'google':
-        model = createGoogleGenerativeAI({ apiKey })(modelId);
-        break;
-    }
-
-    const result = await generateText({
+    const model = PROVIDER_FACTORIES[modelConfig.provider](apiKey)(modelId) as Parameters<typeof generateText>[0]['model'];
+    const { text: refined } = await generateText({
       model,
-      system: systemPrompt,
+      system: buildSystemPrompt(toneInstructions),
       prompt: text,
     });
-
-    return result.text.trim();
+    return refined.trim();
   } catch (e) {
     throw new Error(mapError(e));
   }
-}
+};

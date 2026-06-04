@@ -11,17 +11,13 @@ const PROVIDERS: { key: keyof ApiKeys; label: string; placeholder: string }[] = 
   { key: 'google', label: 'Google AI', placeholder: 'AIza...' },
 ];
 
-export function ApiKeySection() {
-  const { apiKeys, setApiKey, defaultModel, tones, defaultToneSlug } = useSettingsStore();
+export const ApiKeySection = () => {
+  const { apiKeys, setApiKey } = useSettingsStore();
 
   const handleBlur = (provider: keyof ApiKeys, value: string) => {
+    if (value === apiKeys[provider]) return; // skip if unchanged
     setApiKey(provider, value);
-    syncActiveConfig({
-      apiKeys: { ...apiKeys, [provider]: value },
-      defaultModel,
-      tones,
-      defaultToneSlug,
-    });
+    syncActiveConfig();
   };
 
   return (
@@ -44,7 +40,7 @@ export function ApiKeySection() {
       ))}
     </List.Section>
   );
-}
+};
 
 const styles = StyleSheet.create({
   input: {

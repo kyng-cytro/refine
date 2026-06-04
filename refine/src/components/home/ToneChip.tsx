@@ -4,21 +4,16 @@ import { Chip, Menu } from 'react-native-paper';
 import { useSettingsStore } from '@/store/settings-store';
 import { syncActiveConfig } from '@/services/shared-prefs-bridge';
 
-export function ToneChip() {
+export const ToneChip = () => {
   const [visible, setVisible] = useState(false);
-  const { tones, defaultToneSlug, setDefaultTone, apiKeys, defaultModel } = useSettingsStore();
+  const { tones, defaultToneSlug, setDefaultTone } = useSettingsStore();
 
   const current = tones.find((t) => t.slug === defaultToneSlug);
 
   const handleSelect = (slug: string) => {
     setDefaultTone(slug);
     setVisible(false);
-    syncActiveConfig({
-      apiKeys,
-      defaultModel,
-      tones,
-      defaultToneSlug: slug,
-    });
+    syncActiveConfig();
   };
 
   return (
@@ -26,11 +21,7 @@ export function ToneChip() {
       visible={visible}
       onDismiss={() => setVisible(false)}
       anchor={
-        <Chip
-          mode="outlined"
-          onPress={() => setVisible(true)}
-          icon="tune"
-          compact>
+        <Chip mode="outlined" onPress={() => setVisible(true)} icon="tune" compact>
           {current?.name ?? 'Tone'}
         </Chip>
       }>
@@ -44,4 +35,4 @@ export function ToneChip() {
       ))}
     </Menu>
   );
-}
+};

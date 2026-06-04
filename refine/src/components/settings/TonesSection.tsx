@@ -9,12 +9,11 @@ import { useSettingsStore } from '@/store/settings-store';
 import { syncActiveConfig } from '@/services/shared-prefs-bridge';
 import { Tone } from '@/types/settings';
 
-export function TonesSection() {
+export const TonesSection = () => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [editingTone, setEditingTone] = useState<Tone | null>(null);
 
-  const { tones, defaultToneSlug, deleteTone, setDefaultTone, apiKeys, defaultModel } =
-    useSettingsStore();
+  const { tones, defaultToneSlug, deleteTone, setDefaultTone } = useSettingsStore();
 
   const openSheet = (tone?: Tone) => {
     setEditingTone(tone ?? null);
@@ -23,19 +22,14 @@ export function TonesSection() {
 
   const handleDelete = (id: string) => {
     const tone = tones.find((t) => t.id === id);
-    deleteTone(id);
     if (tone && defaultToneSlug === tone.slug) setDefaultTone('refined');
-    syncActiveConfig({
-      apiKeys,
-      defaultModel,
-      tones: tones.filter((t) => t.id !== id),
-      defaultToneSlug: defaultToneSlug === tone?.slug ? 'refined' : defaultToneSlug,
-    });
+    deleteTone(id);
+    syncActiveConfig();
   };
 
   const handleSetDefault = (slug: string) => {
     setDefaultTone(slug);
-    syncActiveConfig({ apiKeys, defaultModel, tones, defaultToneSlug: slug });
+    syncActiveConfig();
   };
 
   return (
@@ -52,11 +46,7 @@ export function TonesSection() {
             onSetDefault={handleSetDefault}
           />
         ))}
-        <Button
-          mode="text"
-          icon="plus"
-          onPress={() => openSheet()}
-          style={styles.addButton}>
+        <Button mode="text" icon="plus" onPress={() => openSheet()} style={styles.addButton}>
           Add Tone
         </Button>
       </List.Section>
@@ -68,7 +58,7 @@ export function TonesSection() {
       />
     </>
   );
-}
+};
 
 const styles = StyleSheet.create({
   addButton: {

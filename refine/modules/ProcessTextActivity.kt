@@ -5,8 +5,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.widget.Toast
 import androidx.security.crypto.EncryptedSharedPreferences
@@ -85,8 +83,6 @@ class ProcessTextActivity : Activity() {
           setResult(RESULT_OK, reply)
           finish()
         }
-      } catch (e: NotConfiguredException) {
-        withContext(Dispatchers.Main) { toast(e.message ?: "Refine: Not configured"); returnOriginal(text) }
       } catch (e: ApiException) {
         withContext(Dispatchers.Main) { toast(e.message ?: "Refine: Something went wrong"); returnOriginal(text) }
       }
@@ -187,4 +183,3 @@ class ProcessTextActivity : Activity() {
 }
 
 private class ApiException(msg: String) : Exception(msg)
-private class NotConfiguredException(msg: String) : Exception(msg)
