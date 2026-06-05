@@ -21,7 +21,7 @@ export const ToneChip = () => {
       visible={visible}
       onDismiss={() => setVisible(false)}
       anchor={
-        <Chip mode="outlined" onPress={() => setVisible(true)} icon="tune" compact>
+        <Chip mode="outlined" onPress={() => setVisible(true)} icon="format-text" compact>
           {current?.name ?? 'Tone'}
         </Chip>
       }>

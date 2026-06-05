@@ -1,16 +1,15 @@
 import { useRef, useState } from 'react';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { StyleSheet } from 'react-native';
 import { Button, List } from 'react-native-paper';
 
 import { ToneItem } from './ToneItem';
-import { ToneBottomSheet } from './ToneBottomSheet';
+import { ToneBottomSheet, ToneBottomSheetHandle } from './ToneBottomSheet';
 import { useSettingsStore } from '@/store/settings-store';
 import { syncActiveConfig } from '@/services/shared-prefs-bridge';
 import { Tone } from '@/types/settings';
 
 export const TonesSection = () => {
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const bottomSheetRef = useRef<ToneBottomSheetHandle>(null);
   const [editingTone, setEditingTone] = useState<Tone | null>(null);
 
   const { tones, defaultToneSlug, deleteTone, setDefaultTone } = useSettingsStore();
@@ -54,7 +53,7 @@ export const TonesSection = () => {
       <ToneBottomSheet
         ref={bottomSheetRef}
         editingTone={editingTone}
-        onDismiss={() => bottomSheetRef.current?.dismiss()}
+        onDismiss={() => setEditingTone(null)}
       />
     </>
   );

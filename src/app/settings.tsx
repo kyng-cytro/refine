@@ -1,20 +1,20 @@
 import { ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text } from 'react-native-paper';
+import { Text, useTheme } from 'react-native-paper';
 
-import { ApiKeySection } from '@/components/settings/ApiKeySection';
-import { ModelsSection } from '@/components/settings/ModelsSection';
+import { ProvidersSection } from '@/components/settings/ProvidersSection';
 import { TonesSection } from '@/components/settings/TonesSection';
 
 export default function SettingsScreen() {
+  const theme = useTheme();
+
   return (
-    <SafeAreaView style={styles.root} edges={['top']}>
+    <SafeAreaView style={[styles.root, { backgroundColor: theme.colors.background }]} edges={['top']}>
       <Text variant="headlineSmall" style={styles.title}>
         Settings
       </Text>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <ApiKeySection />
-        <ModelsSection />
+        <ProvidersSection />
         <TonesSection />
       </ScrollView>
     </SafeAreaView>
@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 12,
     fontFamily: 'NotoSans_700Bold',

@@ -2,7 +2,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
-import { IconButton, Surface, Text, TouchableRipple } from 'react-native-paper';
+import { IconButton, Surface, Text, TouchableRipple, useTheme } from 'react-native-paper';
 
 import { HistoryItem } from '@/types/history';
 
@@ -18,11 +18,12 @@ function DeleteAction({
   onDelete: () => void;
   onClose: () => void;
 }) {
+  const theme = useTheme();
   return (
-    <View style={styles.deleteAction}>
+    <View style={[styles.deleteAction, { backgroundColor: theme.colors.errorContainer }]}>
       <IconButton
-        icon="delete"
-        iconColor="#fff"
+        icon="delete-outline"
+        iconColor={theme.colors.onErrorContainer}
         onPress={() => {
           onClose();
           onDelete();

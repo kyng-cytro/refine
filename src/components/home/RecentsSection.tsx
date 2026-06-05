@@ -17,6 +17,7 @@ export const RecentsSection = () => {
   if (items.length === 0) {
     return (
       <View style={styles.empty}>
+        <Text variant="titleSmall" style={styles.header}>History</Text>
         <Text variant="bodyMedium" style={styles.emptyText}>No refinements yet</Text>
       </View>
     );
@@ -30,7 +31,7 @@ export const RecentsSection = () => {
       contentContainerStyle={styles.list}
       showsVerticalScrollIndicator={false}
       ListHeaderComponent={
-        <Text variant="titleSmall" style={styles.header}>Recents</Text>
+        <Text variant="titleSmall" style={styles.header}>History</Text>
       }
     />
   );
@@ -50,11 +51,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   empty: {
-    flex: 1,
-    alignItems: 'center',
-    paddingTop: 48,
+    paddingTop: 32,
   },
   emptyText: {
     opacity: 0.4,
+    marginTop: 4,
+    paddingHorizontal: 16,
   },
 });

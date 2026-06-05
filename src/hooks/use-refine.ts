@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState } from "react";
 
-import { useHistoryStore } from '@/store/history-store';
-import { useSettingsStore } from '@/store/settings-store';
-import { refineText } from '@/services/ai';
-import { syncHistoryToNative } from '@/services/shared-prefs-bridge';
-import { HistoryItem } from '@/types/history';
+import { useHistoryStore } from "@/store/history-store";
+import { useSettingsStore } from "@/store/settings-store";
+import { refineText } from "@/services/ai";
+import { syncHistoryToNative } from "@/services/shared-prefs-bridge";
+import { HistoryItem } from "@/types/history";
 
 interface UseRefineResult {
   refine: (text: string) => Promise<boolean>;
@@ -27,9 +27,14 @@ export const useRefine = (): UseRefineResult => {
     const tone = tones.find((t) => t.slug === defaultToneSlug);
 
     try {
-      if (!tone) throw new Error('Configure a tone in Settings to get started');
+      if (!tone) throw new Error("Configure a tone in Settings to get started");
 
-      const refined = await refineText({ text, modelId: defaultModel, toneInstructions: tone.instructions, apiKeys });
+      const refined = await refineText({
+        text,
+        modelId: defaultModel,
+        toneInstructions: tone.instructions,
+        apiKeys,
+      });
 
       const item: HistoryItem = {
         id: Date.now().toString(),
@@ -43,7 +48,7 @@ export const useRefine = (): UseRefineResult => {
       syncHistoryToNative(useHistoryStore.getState().items);
       return true;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong');
+      setError(e instanceof Error ? e.message : "Something went wrong");
       return false;
     } finally {
       setIsLoading(false);

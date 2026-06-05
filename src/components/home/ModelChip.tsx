@@ -23,7 +23,7 @@ export const ModelChip = () => {
       visible={visible}
       onDismiss={() => setVisible(false)}
       anchor={
-        <Chip mode="outlined" onPress={() => setVisible(true)} icon="cpu-64-bit" compact>
+        <Chip mode="outlined" onPress={() => setVisible(true)} icon="brain" compact>
           {current?.label ?? 'Model'}
         </Chip>
       }>

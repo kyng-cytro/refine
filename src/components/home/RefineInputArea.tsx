@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
-import { StyleSheet, TextInput as RNTextInput, View } from 'react-native';
-import { Button, Snackbar, Surface, TextInput } from 'react-native-paper';
+import { ActivityIndicator, StyleSheet, TextInput as RNTextInput, View } from 'react-native';
+import { IconButton, Snackbar, Surface, TextInput, useTheme } from 'react-native-paper';
 
 import { ModelChip } from './ModelChip';
 import { ToneChip } from './ToneChip';
@@ -11,6 +11,7 @@ export const RefineInputArea = () => {
   const textRef = useRef('');
   const inputRef = useRef<RNTextInput>(null);
   const { refine, isLoading, error, clearError } = useRefine();
+  const theme = useTheme();
 
   const handleSend = async () => {
     const trimmed = textRef.current.trim();
@@ -45,15 +46,20 @@ export const RefineInputArea = () => {
             <ModelChip />
             <ToneChip />
           </View>
-          <Button
-            mode="contained"
-            onPress={handleSend}
-            loading={isLoading}
-            disabled={isEmpty || isLoading}
-            compact
-            style={styles.sendButton}>
-            Refine
-          </Button>
+          {isLoading ? (
+            <View style={[styles.loadingContainer, { backgroundColor: theme.colors.primary }]}>
+              <ActivityIndicator size="small" color={theme.colors.onPrimary} />
+            </View>
+          ) : (
+            <IconButton
+              icon="send"
+              mode="contained"
+              size={20}
+              onPress={handleSend}
+              disabled={isEmpty}
+              style={styles.sendButton}
+            />
+          )}
         </View>
       </Surface>
 
@@ -98,8 +104,16 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   sendButton: {
+    marginLeft: 8,
+    borderRadius: 50,
+  },
+  loadingContainer: {
+    width: 40,
+    height: 40,
     borderRadius: 20,
     marginLeft: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   snackbar: {
     marginHorizontal: 0,

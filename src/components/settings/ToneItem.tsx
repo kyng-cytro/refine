@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
-import { IconButton, List, RadioButton } from 'react-native-paper';
+import { IconButton, List, RadioButton, useTheme } from 'react-native-paper';
 
 import { Tone } from '@/types/settings';
 
@@ -16,12 +16,13 @@ interface Props {
 export function ToneItem({ tone, isDefault, onPress, onDelete, onSetDefault }: Props) {
   const swipeRef = useRef<Swipeable>(null);
   const isProtected = tone.id === 'default-refined';
+  const theme = useTheme();
 
   const renderRightActions = () => (
-    <View style={styles.deleteAction}>
+    <View style={[styles.deleteAction, { backgroundColor: theme.colors.errorContainer }]}>
       <IconButton
-        icon="delete"
-        iconColor="#fff"
+        icon="delete-outline"
+        iconColor={theme.colors.onErrorContainer}
         onPress={() => {
           swipeRef.current?.close();
           onDelete(tone.id);

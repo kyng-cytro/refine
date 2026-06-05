@@ -1,12 +1,12 @@
-export type ModelProvider = 'openai' | 'anthropic' | 'google';
+export type ModelProvider = "openai" | "anthropic" | "google";
 
 export type ModelId =
-  | 'gpt-4o'
-  | 'gpt-4o-mini'
-  | 'claude-3-5-sonnet-20241022'
-  | 'claude-haiku-3-5'
-  | 'gemini-1.5-pro'
-  | 'gemini-1.5-flash';
+  | "gpt-4o"
+  | "gpt-4o-mini"
+  | "claude-3-5-sonnet-20241022"
+  | "claude-haiku-3-5"
+  | "gemini-2.0-flash"
+  | "gemini-2.0-flash-lite";
 
 export interface ModelConfig {
   id: ModelId;
@@ -40,7 +40,7 @@ export interface ActiveConfig {
 
 export interface UnconfiguredConfig {
   configured: false;
-  reason: 'no_api_key' | 'no_tone' | 'no_model';
+  reason: "no_api_key" | "no_tone" | "no_model";
 }
 
 export type NativeConfig = ActiveConfig | UnconfiguredConfig;
