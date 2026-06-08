@@ -1,16 +1,27 @@
-import { FlatList, StyleSheet, View } from 'react-native';
-import { Text } from 'react-native-paper';
+import { useState } from 'react';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
 
 import { HistoryCard } from './HistoryCard';
 import { useHistoryStore } from '@/store/history-store';
-import { syncHistoryToNative } from '@/services/shared-prefs-bridge';
+import { loadHistoryFromNative, syncHistoryToNative } from '@/services/shared-prefs-bridge';
+import * as Haptics from 'expo-haptics';
+import { withHaptics } from '@/utils/haptics';
 
 export const RecentsSection = () => {
-  const { items, deleteItem } = useHistoryStore();
+  const { items, deleteItem, setItems } = useHistoryStore();
+  const [refreshing, setRefreshing] = useState(false);
+  const theme = useTheme();
+
+  const handleRefresh = withHaptics(() => {
+    setRefreshing(true);
+    const fresh = loadHistoryFromNative();
+    setItems(fresh);
+    setRefreshing(false);
+  }, Haptics.ImpactFeedbackStyle.Medium);
 
   const handleDelete = (id: string) => {
     deleteItem(id);
-    // Read fresh state after mutation to avoid stale closure
     syncHistoryToNative(useHistoryStore.getState().items);
   };
 
@@ -30,6 +41,14 @@ export const RecentsSection = () => {
       renderItem={({ item }) => <HistoryCard item={item} onDelete={handleDelete} />}
       contentContainerStyle={styles.list}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          colors={[theme.colors.primary]}
+          tintColor={theme.colors.primary}
+        />
+      }
       ListHeaderComponent={
         <Text variant="titleSmall" style={styles.header}>History</Text>
       }

@@ -13,28 +13,25 @@ const withProcessTextActivity: ConfigPlugin = (config) => {
   config = withAndroidManifest(config, (cfg) => {
     const mainApp = getMainApplicationOrThrow(cfg.modResults);
 
-    const alreadyAdded = (mainApp.activity ?? []).some(
-      (a) => a.$['android:name'] === '.ProcessTextActivity'
+    mainApp.activity = (mainApp.activity ?? []).filter(
+      (a) => a.$['android:name'] !== '.ProcessTextActivity'
     );
 
-    if (!alreadyAdded) {
-      mainApp.activity = mainApp.activity ?? [];
-      mainApp.activity.push({
-        $: {
-          'android:name': '.ProcessTextActivity',
-          'android:label': 'Refine',
-          'android:exported': 'true',
-          'android:theme': '@android:style/Theme.NoDisplay',
+    mainApp.activity.push({
+      $: {
+        'android:name': '.ProcessTextActivity',
+        'android:label': 'Refine',
+        'android:exported': 'true',
+        'android:theme': '@style/Theme.Transparent',
+      },
+      'intent-filter': [
+        {
+          action: [{ $: { 'android:name': 'android.intent.action.PROCESS_TEXT' } }],
+          category: [{ $: { 'android:name': 'android.intent.category.DEFAULT' } }],
+          data: [{ $: { 'android:mimeType': 'text/plain' } }],
         },
-        'intent-filter': [
-          {
-            action: [{ $: { 'android:name': 'android.intent.action.PROCESS_TEXT' } }],
-            category: [{ $: { 'android:name': 'android.intent.category.DEFAULT' } }],
-            data: [{ $: { 'android:mimeType': 'text/plain' } }],
-          },
-        ],
-      });
-    }
+      ],
+    });
 
     return cfg;
   });

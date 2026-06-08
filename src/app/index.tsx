@@ -39,6 +39,7 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     marginTop: 20,
+    marginBottom: 8,
   },
   recents: {
     flex: 1,

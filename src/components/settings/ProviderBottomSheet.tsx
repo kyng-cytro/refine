@@ -1,5 +1,5 @@
-import { BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
-import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Divider, IconButton, Switch, Text, useTheme } from 'react-native-paper';
 
@@ -29,6 +29,10 @@ export const ProviderBottomSheet = forwardRef<ProviderBottomSheetHandle, Props>(
   const [showKey, setShowKey] = useState(false);
   const theme = useTheme();
   const meta = PROVIDER_META[provider];
+  const renderBackdrop = useCallback(
+    (props: any) => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} pressBehavior="close" />,
+    []
+  );
   const models = MODELS.filter((m) => m.provider === provider);
   const hasKey = !!apiKeys[provider];
 
@@ -44,6 +48,7 @@ export const ProviderBottomSheet = forwardRef<ProviderBottomSheetHandle, Props>(
       ref={sheetRef}
       snapPoints={['55%', '85%']}
       enablePanDownToClose
+      backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: theme.colors.surface }}
       handleIndicatorStyle={{ backgroundColor: theme.colors.onSurfaceVariant }}>
       <BottomSheetScrollView contentContainerStyle={styles.container}>

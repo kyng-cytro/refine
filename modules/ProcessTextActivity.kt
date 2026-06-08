@@ -1,19 +1,21 @@
 package com.refine.app
 
 import android.app.Activity
-import android.content.ClipData
-import android.content.ClipboardManager
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
+import android.view.Gravity
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -22,65 +24,31 @@ import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
 
-private const val TAG = "ProcessTextActivity"
-
 class ProcessTextActivity : Activity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    Log.d(TAG, "onCreate started")
 
     val text = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString()
-    if (text.isNullOrBlank()) {
-      Log.d(TAG, "No text in intent, finishing")
-      finish()
-      return
-    }
-    Log.d(TAG, "Input text length: ${text.length}")
+    if (text.isNullOrBlank()) { finish(); return }
 
-    val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-    try {
-      clipboard.setPrimaryClip(ClipData.newPlainText("original", text))
-      Log.d(TAG, "Original copied to clipboard")
-    } catch (e: Exception) {
-      Log.w(TAG, "Clipboard set failed: ${e::class.simpleName}: ${e.message}")
-    }
-
-    Log.d(TAG, "Reading activeConfig from EncryptedSharedPreferences")
     val configJson = try {
-      val prefs = getEncryptedPrefs()
-      Log.d(TAG, "EncryptedSharedPreferences opened")
-      prefs.getString("activeConfig", null)
-    } catch (e: Exception) {
-      Log.e(TAG, "Failed to read EncryptedSharedPreferences: ${e::class.simpleName}: ${e.message}")
-      null
-    }
+      getEncryptedPrefs().getString("activeConfig", null)
+    } catch (e: Exception) { null }
 
     if (configJson == null) {
-      Log.d(TAG, "activeConfig is null — not configured")
-      toast("Refine: Open the app to configure an API key")
-      returnOriginal(text)
-      return
+      buildErrorSheet("Open the app to configure an API key") { returnOriginal(text) }.show(); return
     }
-    Log.d(TAG, "activeConfig length: ${configJson.length}")
 
     val config = try {
       JSONObject(configJson as String)
     } catch (e: Exception) {
-      Log.e(TAG, "Failed to parse activeConfig JSON: ${e::class.simpleName}: ${e.message}")
-      toast("Refine: Open the app to configure an API key")
-      returnOriginal(text)
-      return
+      buildErrorSheet("Open the app to configure an API key") { returnOriginal(text) }.show(); return
     }
 
-    val configured = config.optBoolean("configured")
-    Log.d(TAG, "configured=$configured")
-    if (!configured) {
+    if (!config.optBoolean("configured")) {
       val reason = config.optString("reason")
-      Log.d(TAG, "Not configured, reason=$reason")
-      toast(if (reason == "no_api_key") "Refine: Open the app to configure an API key" else "Refine: Open the app to configure a tone")
-      returnOriginal(text)
-      return
+      buildErrorSheet(if (reason == "no_api_key") "Open the app to configure an API key" else "Open the app to configure a tone") { returnOriginal(text) }.show(); return
     }
 
     val url = config.optString("url")
@@ -88,73 +56,118 @@ class ProcessTextActivity : Activity() {
     val model = config.optString("model")
     val provider = config.optString("provider")
     val systemPrompt = config.optString("systemPrompt")
-    Log.d(TAG, "Config: provider=$provider model=$model keyPresent=${key.isNotBlank()} systemPromptLength=${systemPrompt.length}")
 
     if (url.isBlank() || key.isBlank()) {
-      Log.d(TAG, "URL or key blank, aborting")
-      toast("Refine: Open the app to configure an API key")
-      returnOriginal(text)
-      return
+      buildErrorSheet("Open the app to configure an API key") { returnOriginal(text) }.show(); return
     }
 
-    toast("Refining…")
-    Log.d(TAG, "Launching IO coroutine")
+    val loadingSheet = buildLoadingSheet()
+    loadingSheet.show()
 
-    CoroutineScope(Dispatchers.IO).launch {
+    Thread {
       try {
-        Log.d(TAG, "Calling API")
         val refined = callApi(url, key, model, provider, systemPrompt, text)
-        Log.d(TAG, "API returned, refined length: ${refined.length}")
-
-        Log.d(TAG, "Saving history")
         saveHistory(text, refined)
-        Log.d(TAG, "History saved")
-
-        withContext(Dispatchers.Main) {
-          Log.d(TAG, "On main thread — copying refined text to clipboard")
-          try {
-            clipboard.setPrimaryClip(ClipData.newPlainText("refined", refined))
-            Log.d(TAG, "Refined text copied to clipboard")
-          } catch (e: Exception) {
-            Log.w(TAG, "Clipboard copy failed: ${e::class.simpleName}: ${e.message}")
-          }
-
-          Log.d(TAG, "Delivering result to caller")
-          var resultDelivered = false
-          try {
-            val reply = Intent().apply { putExtra(Intent.EXTRA_PROCESS_TEXT, refined) }
-            setResult(RESULT_OK, reply)
-            resultDelivered = true
-            Log.d(TAG, "setResult OK")
-          } catch (e: Exception) {
-            Log.e(TAG, "setResult failed: ${e::class.simpleName}: ${e.message}")
-          }
-
-          if (!resultDelivered) {
-            toast("Refined — copied to clipboard")
-          }
-
-          Log.d(TAG, "Calling finish()")
+        runOnUiThread {
+          loadingSheet.dismiss()
+          val reply = Intent().apply { putExtra(Intent.EXTRA_PROCESS_TEXT, refined) }
+          setResult(RESULT_OK, reply)
           finish()
         }
       } catch (e: ApiException) {
-        Log.w(TAG, "ApiException: ${e.message}")
-        withContext(Dispatchers.Main) {
-          toast(e.message ?: "Refine: Something went wrong")
-          returnOriginal(text)
+        runOnUiThread {
+          loadingSheet.dismiss()
+          buildErrorSheet(e.message ?: "Something went wrong") { returnOriginal(text) }.show()
         }
       } catch (e: Exception) {
-        Log.e(TAG, "Unexpected exception: ${e::class.simpleName}: ${e.message}", e)
-        withContext(Dispatchers.Main) {
-          toast("Refine: Something went wrong")
-          try { returnOriginal(text) } catch (_: Exception) { finish() }
+        runOnUiThread {
+          loadingSheet.dismiss()
+          buildErrorSheet("Something went wrong") { returnOriginal(text) }.show()
         }
       }
+    }.start()
+  }
+
+  private fun sheetDialog(): Dialog =
+    Dialog(this, android.R.style.Theme_Translucent_NoTitleBar).apply {
+      setCancelable(false)
+      setCanceledOnTouchOutside(false)
+      window?.apply {
+        setGravity(Gravity.BOTTOM)
+        setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+      }
+    }
+
+  private fun sheetBackground(): GradientDrawable {
+    val dp = resources.displayMetrics.density
+    return GradientDrawable().apply {
+      setColor(Color.WHITE)
+      cornerRadii = floatArrayOf(dp * 20, dp * 20, dp * 20, dp * 20, 0f, 0f, 0f, 0f)
     }
   }
 
+  private fun buildLoadingSheet(): Dialog {
+    val dp = resources.displayMetrics.density
+
+    val row = LinearLayout(this).apply {
+      orientation = LinearLayout.HORIZONTAL
+      gravity = Gravity.CENTER_VERTICAL
+      background = sheetBackground()
+      setPadding((24 * dp).toInt(), (36 * dp).toInt(), (24 * dp).toInt(), (40 * dp).toInt())
+
+      addView(ProgressBar(this@ProcessTextActivity).apply {
+        layoutParams = LinearLayout.LayoutParams((22 * dp).toInt(), (22 * dp).toInt())
+        isIndeterminate = true
+      })
+
+      addView(TextView(this@ProcessTextActivity).apply {
+        text = "Refining…"
+        textSize = 15f
+        setTextColor(Color.parseColor("#1C1B1F"))
+        setPadding((14 * dp).toInt(), 0, 0, 0)
+        layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+      })
+    }
+
+    return sheetDialog().apply { setContentView(row) }
+  }
+
+  private fun buildErrorSheet(message: String, onDismiss: () -> Unit): Dialog {
+    val dp = resources.displayMetrics.density
+
+    val container = LinearLayout(this).apply {
+      orientation = LinearLayout.VERTICAL
+      background = sheetBackground()
+      setPadding((24 * dp).toInt(), (28 * dp).toInt(), (24 * dp).toInt(), (32 * dp).toInt())
+
+      addView(TextView(this@ProcessTextActivity).apply {
+        text = message
+        textSize = 15f
+        setTextColor(Color.parseColor("#1C1B1F"))
+        layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+      })
+
+      addView(TextView(this@ProcessTextActivity).apply {
+        text = "Dismiss"
+        textSize = 14f
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        setTextColor(Color.parseColor("#1B6EF3"))
+        gravity = Gravity.END
+        setPadding(0, (16 * dp).toInt(), 0, 0)
+        layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        setOnClickListener {
+          (parent?.parent as? Dialog)?.dismiss()
+          onDismiss()
+          finish()
+        }
+      })
+    }
+
+    return sheetDialog().apply { setContentView(container) }
+  }
+
   private fun callApi(url: String, key: String, model: String, provider: String, systemPrompt: String, text: String): String {
-    Log.d(TAG, "callApi: building request body")
     val body = if (provider == "anthropic") {
       JSONObject().apply {
         put("model", model)
@@ -173,7 +186,6 @@ class ProcessTextActivity : Activity() {
         })
       }
     }
-    Log.d(TAG, "callApi: body built, size=${body.toString().length}")
 
     val conn = URL(url).openConnection() as HttpURLConnection
     try {
@@ -189,44 +201,27 @@ class ProcessTextActivity : Activity() {
         conn.setRequestProperty("Authorization", "Bearer $key")
       }
 
-      Log.d(TAG, "callApi: sending request")
       OutputStreamWriter(conn.outputStream).use { it.write(body.toString()) }
 
-      val code = conn.responseCode
-      Log.d(TAG, "callApi: response code=$code")
-
-      when (code) {
+      when (val code = conn.responseCode) {
         200 -> {
           val response = BufferedReader(InputStreamReader(conn.inputStream)).use { it.readText() }
-          Log.d(TAG, "callApi: response length=${response.length}")
           val json = JSONObject(response)
-          val result = if (provider == "anthropic") {
+          return if (provider == "anthropic") {
             json.getJSONArray("content").getJSONObject(0).getString("text")
           } else {
             json.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content")
           }
-          Log.d(TAG, "callApi: parsed result length=${result.length}")
-          return result
         }
-        401 -> throw ApiException("Refine: Invalid API key")
-        429 -> throw ApiException("Refine: Rate limit reached, try again shortly")
-        in 500..599 -> {
-          val errBody = try { BufferedReader(InputStreamReader(conn.errorStream)).use { it.readText() } } catch (_: Exception) { "" }
-          Log.e(TAG, "callApi: server error $code: $errBody")
-          throw ApiException("Refine: Provider error, try again")
-        }
-        else -> {
-          val errBody = try { BufferedReader(InputStreamReader(conn.errorStream)).use { it.readText() } } catch (_: Exception) { "" }
-          Log.e(TAG, "callApi: unexpected code $code: $errBody")
-          throw ApiException("Refine: Something went wrong (code $code)")
-        }
+        401 -> throw ApiException("Invalid API key — check your settings")
+        429 -> throw ApiException("Rate limit reached, try again shortly")
+        in 500..599 -> throw ApiException("Provider error, try again")
+        else -> throw ApiException("Something went wrong (code $code)")
       }
     } catch (e: SocketTimeoutException) {
-      Log.e(TAG, "callApi: timeout: ${e.message}")
-      throw ApiException("Refine: Request timed out")
+      throw ApiException("Request timed out")
     } catch (e: java.io.IOException) {
-      Log.e(TAG, "callApi: IO error: ${e::class.simpleName}: ${e.message}")
-      throw ApiException("Refine: No internet connection")
+      throw ApiException("No internet connection")
     } finally {
       conn.disconnect()
     }
@@ -236,12 +231,7 @@ class ProcessTextActivity : Activity() {
     try {
       val prefs = getSharedPreferences("RefineAppPrefs", Context.MODE_PRIVATE)
       val existing = prefs.getString("history", "[]")
-      val arr = try {
-        org.json.JSONArray(existing)
-      } catch (e: Exception) {
-        Log.w(TAG, "saveHistory: failed to parse existing history, starting fresh")
-        org.json.JSONArray()
-      }
+      val arr = try { org.json.JSONArray(existing) } catch (e: Exception) { org.json.JSONArray() }
       val item = JSONObject().apply {
         put("id", System.currentTimeMillis().toString())
         put("source", source)
@@ -252,26 +242,16 @@ class ProcessTextActivity : Activity() {
       newArr.put(item)
       for (i in 0 until minOf(arr.length(), 49)) newArr.put(arr.getJSONObject(i))
       prefs.edit().putString("history", newArr.toString()).apply()
-      Log.d(TAG, "saveHistory: written ${newArr.length()} entries")
-    } catch (e: Exception) {
-      Log.e(TAG, "saveHistory: failed: ${e::class.simpleName}: ${e.message}")
-    }
+    } catch (e: Exception) { }
   }
 
   private fun returnOriginal(text: String) {
-    Log.d(TAG, "returnOriginal")
     val reply = Intent().apply { putExtra(Intent.EXTRA_PROCESS_TEXT, text) }
     setResult(RESULT_OK, reply)
-    finish()
-  }
-
-  private fun toast(msg: String) {
-    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
   }
 
   private fun getEncryptedPrefs() = EncryptedSharedPreferences.create(
-    this,
-    "RefineSecurePrefs",
+    this, "RefineSecurePrefs",
     MasterKey.Builder(this).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
     EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM

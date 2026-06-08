@@ -5,6 +5,7 @@ import { IconButton, Snackbar, Surface, TextInput, useTheme } from 'react-native
 import { ModelChip } from './ModelChip';
 import { ToneChip } from './ToneChip';
 import { useRefine } from '@/hooks/use-refine';
+import { withHaptics } from '@/utils/haptics';
 
 export const RefineInputArea = () => {
   const [isEmpty, setIsEmpty] = useState(true);
@@ -55,7 +56,7 @@ export const RefineInputArea = () => {
               icon="send"
               mode="contained"
               size={20}
-              onPress={handleSend}
+              onPress={withHaptics(handleSend)}
               disabled={isEmpty}
               style={styles.sendButton}
             />

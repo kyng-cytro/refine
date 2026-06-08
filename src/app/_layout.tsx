@@ -1,110 +1,94 @@
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import {
   NotoSans_400Regular,
   NotoSans_500Medium,
   NotoSans_700Bold,
   useFonts,
-} from '@expo-google-fonts/noto-sans';
-import { ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { MD3DarkTheme, MD3LightTheme, PaperProvider, configureFonts } from 'react-native-paper';
+} from "@expo-google-fonts/noto-sans";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { useMaterial3Theme } from "@pchmn/expo-material3-theme";
+import { ThemeProvider } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect, useMemo } from "react";
+import { useColorScheme } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import {
+  MD3DarkTheme,
+  MD3LightTheme,
+  PaperProvider,
+  configureFonts,
+} from "react-native-paper";
 
-import AppTabs from '@/components/app-tabs';
-import { useHistoryStore } from '@/store/history-store';
-import { useSettingsStore } from '@/store/settings-store';
-import { loadHistoryFromNative, rehydrateApiKeysFromNative, syncActiveConfig } from '@/services/shared-prefs-bridge';
+import AppTabs from "@/components/app-tabs";
+import {
+  loadHistoryFromNative,
+  rehydrateApiKeysFromNative,
+  syncActiveConfig,
+} from "@/services/shared-prefs-bridge";
+import { useHistoryStore } from "@/store/history-store";
+import { useSettingsStore } from "@/store/settings-store";
 
 SplashScreen.preventAutoHideAsync();
 
-const fontConfig = { fontFamily: 'NotoSans_400Regular' };
-
-const lightTheme = {
-  ...MD3LightTheme,
-  fonts: configureFonts({ config: fontConfig }),
-  roundness: 4,
-  colors: {
-    ...MD3LightTheme.colors,
-    primary: '#1B6EF3',
-    onPrimary: '#FFFFFF',
-    primaryContainer: '#D7E3FF',
-    onPrimaryContainer: '#001B3E',
-    secondary: '#575E71',
-    onSecondary: '#FFFFFF',
-    secondaryContainer: '#DBE2F9',
-    onSecondaryContainer: '#111B2C',
-    surface: '#F7F9FF',
-    onSurface: '#1A1B21',
-    surfaceVariant: '#E1E2EC',
-    onSurfaceVariant: '#44464F',
-    background: '#F7F9FF',
-    outline: '#74767F',
-  },
-};
-
-const darkTheme = {
-  ...MD3DarkTheme,
-  fonts: configureFonts({ config: fontConfig }),
-  roundness: 4,
-  colors: {
-    ...MD3DarkTheme.colors,
-    primary: '#ADC6FF',
-    onPrimary: '#002E6A',
-    primaryContainer: '#004494',
-    onPrimaryContainer: '#D7E3FF',
-    secondary: '#BFC6DC',
-    onSecondary: '#293041',
-    secondaryContainer: '#3F4759',
-    onSecondaryContainer: '#DBE2F9',
-    surface: '#121318',
-    onSurface: '#E3E2E9',
-    surfaceVariant: '#44464F',
-    onSurfaceVariant: '#C5C6D0',
-    background: '#121318',
-    outline: '#8E909A',
-  },
-};
-
-const navLightTheme: ReactNavigation.Theme = {
-  dark: false,
-  colors: {
-    primary: '#1B6EF3',
-    background: '#F7F9FF',
-    card: '#F7F9FF',
-    text: '#1A1B21',
-    border: '#E1E2EC',
-    notification: '#1B6EF3',
-  },
-  fonts: { regular: { fontFamily: 'NotoSans_400Regular', fontWeight: '400' }, medium: { fontFamily: 'NotoSans_500Medium', fontWeight: '500' }, bold: { fontFamily: 'NotoSans_700Bold', fontWeight: '700' }, heavy: { fontFamily: 'NotoSans_700Bold', fontWeight: '700' } },
-};
-
-const navDarkTheme: ReactNavigation.Theme = {
-  dark: true,
-  colors: {
-    primary: '#ADC6FF',
-    background: '#121318',
-    card: '#121318',
-    text: '#E3E2E9',
-    border: '#2A2B33',
-    notification: '#ADC6FF',
-  },
-  fonts: { regular: { fontFamily: 'NotoSans_400Regular', fontWeight: '400' }, medium: { fontFamily: 'NotoSans_500Medium', fontWeight: '500' }, bold: { fontFamily: 'NotoSans_700Bold', fontWeight: '700' }, heavy: { fontFamily: 'NotoSans_700Bold', fontWeight: '700' } },
+const fontConfig = { fontFamily: "NotoSans_400Regular" };
+const navFonts = {
+  regular: { fontFamily: "NotoSans_400Regular", fontWeight: "400" as const },
+  medium: { fontFamily: "NotoSans_500Medium", fontWeight: "500" as const },
+  bold: { fontFamily: "NotoSans_700Bold", fontWeight: "700" as const },
+  heavy: { fontFamily: "NotoSans_700Bold", fontWeight: "700" as const },
 };
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const { theme: m3Theme } = useMaterial3Theme({
+    fallbackSourceColor: "#1B6EF3",
+  });
+
+  const theme = useMemo(
+    () =>
+      colorScheme === "dark"
+        ? {
+            ...MD3DarkTheme,
+            fonts: configureFonts({ config: fontConfig }),
+            roundness: 4,
+            colors: { ...m3Theme.dark },
+          }
+        : {
+            ...MD3LightTheme,
+            fonts: configureFonts({ config: fontConfig }),
+            roundness: 4,
+            colors: { ...m3Theme.light },
+          },
+    [colorScheme, m3Theme],
+  );
+
+  const navTheme = useMemo(
+    () => ({
+      dark: colorScheme === "dark",
+      fonts: navFonts,
+      colors: {
+        primary: theme.colors.primary,
+        background: theme.colors.background,
+        card: theme.colors.surface,
+        text: theme.colors.onSurface,
+        border: theme.colors.outline,
+        notification: theme.colors.error,
+      },
+    }),
+    [colorScheme, theme],
+  );
+
   const setItems = useHistoryStore((s) => s.setItems);
   const rehydrateApiKeys = useSettingsStore((s) => s.rehydrateApiKeys);
-
-  // Selective subscriptions — only re-render when these specific values change
   const apiKeys = useSettingsStore((s) => s.apiKeys);
   const defaultModel = useSettingsStore((s) => s.defaultModel);
   const tones = useSettingsStore((s) => s.tones);
   const defaultToneSlug = useSettingsStore((s) => s.defaultToneSlug);
 
-  const [fontsLoaded] = useFonts({ NotoSans_400Regular, NotoSans_500Medium, NotoSans_700Bold });
+  const [fontsLoaded] = useFonts({
+    NotoSans_400Regular,
+    NotoSans_500Medium,
+    NotoSans_700Bold,
+  });
 
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
@@ -117,7 +101,6 @@ export default function RootLayout() {
     if (history.length > 0) setItems(history);
   }, []);
 
-  // syncActiveConfig reads from store.getState() internally — no args needed
   useEffect(() => {
     syncActiveConfig();
   }, [apiKeys, defaultModel, tones, defaultToneSlug]);
@@ -126,9 +109,9 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <PaperProvider theme={colorScheme === 'dark' ? darkTheme : lightTheme}>
+      <PaperProvider theme={theme}>
         <BottomSheetModalProvider>
-          <ThemeProvider value={colorScheme === 'dark' ? navDarkTheme : navLightTheme}>
+          <ThemeProvider value={navTheme}>
             <AppTabs />
           </ThemeProvider>
         </BottomSheetModalProvider>

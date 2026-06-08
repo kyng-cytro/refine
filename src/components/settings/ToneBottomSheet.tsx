@@ -1,5 +1,5 @@
-import { BottomSheetModal, BottomSheetView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, HelperText, Text, useTheme } from 'react-native-paper';
 
@@ -31,6 +31,10 @@ export const ToneBottomSheet = forwardRef<ToneBottomSheetHandle, Props>(
     }));
 
     const close = () => sheetRef.current?.dismiss();
+    const renderBackdrop = useCallback(
+      (props: any) => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} pressBehavior="close" />,
+      []
+    );
 
     const { addOrUpdateTone, deleteTone, setDefaultTone, defaultToneSlug } = useSettingsStore();
 
@@ -78,6 +82,7 @@ export const ToneBottomSheet = forwardRef<ToneBottomSheetHandle, Props>(
         ref={sheetRef}
         snapPoints={['60%', '85%']}
         enablePanDownToClose
+        backdropComponent={renderBackdrop}
         onDismiss={onDismiss}
         backgroundStyle={{ backgroundColor: theme.colors.surface }}
         handleIndicatorStyle={{ backgroundColor: theme.colors.onSurfaceVariant }}>
