@@ -52,7 +52,7 @@ export function HistoryCard({ item, onDelete }: Props) {
       onSwipeableWillOpen={withHaptics(() => {})}>
       <Card
         style={[styles.card, { backgroundColor: theme.colors.surface }]}
-        elevation={1}>
+        elevation={0}>
         <Pressable
           onPress={() => Clipboard.setStringAsync(item.refined)}
           onLongPress={() => Clipboard.setStringAsync(item.source)}

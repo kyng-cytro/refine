@@ -41,3 +41,8 @@ example
 # generated native folders
 /ios
 /android
+
+# build outputs (if android/ ever becomes unignored)
+*.apk
+*.aab
+local.properties

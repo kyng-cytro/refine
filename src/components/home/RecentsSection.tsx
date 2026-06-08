@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { FlatList, RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 
 import { HistoryCard } from './HistoryCard';
@@ -25,12 +25,24 @@ export const RecentsSection = () => {
     syncHistoryToNative(useHistoryStore.getState().items);
   };
 
+  const refreshControl = (
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
+      colors={[theme.colors.primary]}
+      tintColor={theme.colors.primary}
+    />
+  );
+
   if (items.length === 0) {
     return (
-      <View style={styles.empty}>
+      <ScrollView
+        contentContainerStyle={styles.empty}
+        refreshControl={refreshControl}
+        showsVerticalScrollIndicator={false}>
         <Text variant="titleSmall" style={styles.header}>History</Text>
         <Text variant="bodyMedium" style={styles.emptyText}>No refinements yet</Text>
-      </View>
+      </ScrollView>
     );
   }
 
@@ -41,14 +53,7 @@ export const RecentsSection = () => {
       renderItem={({ item }) => <HistoryCard item={item} onDelete={handleDelete} />}
       contentContainerStyle={styles.list}
       showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          colors={[theme.colors.primary]}
-          tintColor={theme.colors.primary}
-        />
-      }
+      refreshControl={refreshControl}
       ListHeaderComponent={
         <Text variant="titleSmall" style={styles.header}>History</Text>
       }
