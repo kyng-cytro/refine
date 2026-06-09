@@ -46,3 +46,14 @@ example
 *.apk
 *.aab
 local.properties
+
+# native module build artifacts
+apps/mobile/modules/*/android/build/
+
+# SQLite databases
+*.db
+*.db-shm
+*.db-wal
+
+# turbo cache
+.turbo/
