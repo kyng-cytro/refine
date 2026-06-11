@@ -1,11 +1,11 @@
 import type { AppRouteHandler } from "@/lib/context"
+import * as dal from "@/routes/admin/tones/tones.dal"
 import type {
   Create,
   List,
   Remove,
   Update,
 } from "@/routes/admin/tones/tones.routes"
-import * as dal from "@/routes/admin/tones/tones.dal"
 import { HTTPException } from "hono/http-exception"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 

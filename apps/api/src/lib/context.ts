@@ -1,5 +1,5 @@
-import type { schema } from "@refine/db"
 import type { OpenAPIHono, RouteConfig, RouteHandler } from "@hono/zod-openapi"
+import type { schema } from "@refine/db"
 import type { Env, Schema } from "hono"
 import type { PinoLogger } from "hono-pino"
 

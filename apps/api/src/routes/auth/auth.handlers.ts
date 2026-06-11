@@ -1,6 +1,6 @@
 import type { AppRouteHandler, AuthenticatedContext } from "@/lib/context"
-import type { Me, Pair } from "@/routes/auth/auth.routes"
 import * as dal from "@/routes/auth/auth.dal"
+import type { Me, Pair } from "@/routes/auth/auth.routes"
 import { HTTPException } from "hono/http-exception"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 

@@ -1,6 +1,6 @@
-import { getClient, schema, orm, paginate } from "@refine/db"
+import { getClient, orm, paginate, schema } from "@refine/db"
 import { env } from "bun"
 
-const { db, client } = getClient(env.DATABASE_URL ?? "./refine.db")
+const { db, client } = getClient(env.DATABASE_URL)
 
-export { db, client, schema, orm, paginate }
+export { client, db, orm, paginate, schema }

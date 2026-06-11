@@ -1,4 +1,4 @@
-import { db, schema, orm } from "@/lib/db"
+import { db, schema } from "@/lib/db"
 import type { ModelProvider } from "@refine/schemas"
 
 export const upsert = async (

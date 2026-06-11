@@ -1,4 +1,4 @@
-import { db, schema, orm } from "@/lib/db"
+import { db, orm, schema } from "@/lib/db"
 import type { ModelProvider } from "@refine/schemas"
 
 export const getProvider = async (provider: ModelProvider) => {
@@ -17,12 +17,10 @@ export const isModelEnabled = async (modelId: string) => {
       orm.eq(schema.userModelPrefs.modelId, modelId),
     ),
   })
-  // No pref row means admin hasn't restricted it — default enabled
   return pref ? pref.enabled : true
 }
 
 export const resolveTone = async (sessionId: string, toneSlug: string) => {
-  // User's own tone takes precedence over global
   const userTone = await db.query.tones.findFirst({
     where: orm.and(
       orm.eq(schema.tones.sessionId, sessionId),
@@ -30,7 +28,6 @@ export const resolveTone = async (sessionId: string, toneSlug: string) => {
     ),
   })
   if (userTone) return userTone
-
   return db.query.tones.findFirst({
     where: orm.and(
       orm.eq(schema.tones.isGlobal, true),

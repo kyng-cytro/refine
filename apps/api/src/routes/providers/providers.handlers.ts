@@ -1,7 +1,7 @@
 import type { AppRouteHandler, AuthenticatedContext } from "@/lib/context"
-import type { List } from "@/routes/providers/providers.routes"
+import { MODELS } from "@/lib/models"
 import * as dal from "@/routes/providers/providers.dal"
-import { MODELS } from "@/constants/models"
+import type { List } from "@/routes/providers/providers.routes"
 import type { ModelProvider } from "@refine/schemas"
 import { HTTPException } from "hono/http-exception"
 import * as HttpStatusCodes from "stoker/http-status-codes"
@@ -12,11 +12,9 @@ export const list: AppRouteHandler<List, AuthenticatedContext> = async (c) => {
       dal.list(),
       dal.listPrefs(),
     ])
-
     const disabledModels = new Set(
       modelPrefs.filter((p) => !p.enabled).map((p) => p.modelId),
     )
-
     const providers = enabledProviders.map((p) => {
       const providerModels = MODELS.filter((m) => m.provider === p.provider)
       return {
@@ -32,7 +30,6 @@ export const list: AppRouteHandler<List, AuthenticatedContext> = async (c) => {
           })),
       }
     })
-
     return c.json({ providers }, HttpStatusCodes.OK)
   } catch (error) {
     c.var.logger.error(`[PROVIDERS:LIST] ${error}`)

@@ -1,4 +1,4 @@
-import { db, schema, orm } from "@/lib/db"
+import { db, orm, schema } from "@/lib/db"
 
 const TOKEN_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789"
 

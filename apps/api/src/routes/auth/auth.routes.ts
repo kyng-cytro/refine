@@ -1,12 +1,12 @@
+import { security } from "@/lib/helpers"
 import * as responses from "@/lib/helpers/responses"
-import { createRoute, z } from "@hono/zod-openapi"
+import { authenticate } from "@/middlewares/auth"
+import { createRoute } from "@hono/zod-openapi"
 import {
   PairRequestSchema,
   PairResponseSchema,
   SessionInfoSchema,
 } from "@refine/schemas"
-import { security } from "@/lib/helpers"
-import { authenticate } from "@/middlewares/auth"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 import { helpers } from "stoker/openapi"
 import { createErrorSchema } from "stoker/openapi/schemas"

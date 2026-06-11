@@ -1,4 +1,4 @@
-import { db, schema, orm } from "@/lib/db"
+import { db, orm, schema } from "@/lib/db"
 
 export const list = async () => {
   return db.query.providers.findMany({
@@ -6,7 +6,6 @@ export const list = async () => {
   })
 }
 
-// Admin-controlled global model enable/disable (sessionId = null)
 export const listPrefs = async () => {
   return db.query.userModelPrefs.findMany({
     where: orm.isNull(schema.userModelPrefs.sessionId),

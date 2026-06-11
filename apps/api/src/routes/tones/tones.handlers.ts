@@ -1,6 +1,6 @@
 import type { AppRouteHandler, AuthenticatedContext } from "@/lib/context"
-import type { Create, List, Remove, Update } from "@/routes/tones/tones.routes"
 import * as dal from "@/routes/tones/tones.dal"
+import type { Create, List, Remove, Update } from "@/routes/tones/tones.routes"
 import { HTTPException } from "hono/http-exception"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 

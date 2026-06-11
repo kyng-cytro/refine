@@ -1,9 +1,8 @@
 import { security } from "@/lib/helpers"
 import * as responses from "@/lib/helpers/responses"
 import { authenticate } from "@/middlewares/auth"
-import { createRoute, z } from "@hono/zod-openapi"
+import { createRoute } from "@hono/zod-openapi"
 import {
-  HistoryItemSchema,
   HistoryQuerySchema,
   HistoryResponseSchema,
   IdParamSchema,

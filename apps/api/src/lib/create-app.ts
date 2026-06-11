@@ -32,6 +32,5 @@ export const createApp = () => {
       origin: env.APP_ENV === "production" ? [] : "*",
     }),
   )
-
   return app.basePath(BASE_PATH)
 }

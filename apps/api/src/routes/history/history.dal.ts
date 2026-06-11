@@ -1,4 +1,4 @@
-import { db, schema, orm, paginate } from "@/lib/db"
+import { db, orm, paginate, schema } from "@/lib/db"
 import type { HistoryQuery } from "@refine/schemas"
 
 export const list = async (sessionId: string, query: HistoryQuery) => {

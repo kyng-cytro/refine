@@ -1,4 +1,3 @@
-import { $fetch } from "ofetch"
 import type {
   CreateTone,
   HistoryQuery,
@@ -12,6 +11,7 @@ import type {
   Tone,
   UpdateTone,
 } from "@refine/schemas"
+import { $fetch } from "ofetch"
 
 export type ClientOptions = {
   baseURL: string

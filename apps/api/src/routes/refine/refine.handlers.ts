@@ -1,12 +1,12 @@
 import type { AppRouteHandler, AuthenticatedContext } from "@/lib/context"
-import type { Refine } from "@/routes/refine/refine.routes"
+import { MODEL_MAP } from "@/lib/models"
 import * as dal from "@/routes/refine/refine.dal"
-import { MODEL_MAP } from "@/constants/models"
-import { generateText } from "ai"
+import type { Refine } from "@/routes/refine/refine.routes"
 import { createAnthropic } from "@ai-sdk/anthropic"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { createOpenAI } from "@ai-sdk/openai"
 import type { ModelProvider } from "@refine/schemas"
+import { generateText } from "ai"
 import { HTTPException } from "hono/http-exception"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 
@@ -40,12 +40,10 @@ export const refine: AppRouteHandler<Refine, AuthenticatedContext> = async (
   try {
     const { text, modelId, toneSlug } = c.req.valid("json")
     const { session } = c.var
-
     const modelConfig = MODEL_MAP[modelId]
     if (!modelConfig) {
       return c.json({ message: "Unknown model" }, HttpStatusCodes.BAD_REQUEST)
     }
-
     const isEnabled = await dal.isModelEnabled(modelId)
     if (!isEnabled) {
       return c.json(
@@ -53,7 +51,6 @@ export const refine: AppRouteHandler<Refine, AuthenticatedContext> = async (
         HttpStatusCodes.BAD_REQUEST,
       )
     }
-
     const provider = await dal.getProvider(modelConfig.provider)
     if (!provider) {
       return c.json(
@@ -61,23 +58,19 @@ export const refine: AppRouteHandler<Refine, AuthenticatedContext> = async (
         HttpStatusCodes.BAD_REQUEST,
       )
     }
-
     const tone = await dal.resolveTone(session.id, toneSlug)
     if (!tone) {
       return c.json({ message: "Tone not found" }, HttpStatusCodes.BAD_REQUEST)
     }
-
     const providerFn = PROVIDER_FACTORIES[modelConfig.provider](provider.apiKey)
     const model = providerFn(modelId) as Parameters<
       typeof generateText
     >[0]["model"]
-
     const { text: refined } = await generateText({
       model,
       system: buildSystemPrompt(tone.instructions),
       prompt: text,
     })
-
     await dal.saveHistory({
       sessionId: session.id,
       source: text,
@@ -85,7 +78,6 @@ export const refine: AppRouteHandler<Refine, AuthenticatedContext> = async (
       modelId,
       toneSlug,
     })
-
     return c.json({ refined: refined.trim() }, HttpStatusCodes.OK)
   } catch (error) {
     c.var.logger.error(`[REFINE] ${error}`)
