@@ -10,6 +10,7 @@ export const schema = z.object({
     .enum(["trace", "debug", "info", "warn", "error", "fatal"])
     .default("info"),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+  TURSO_AUTH_TOKEN: z.string().optional(),
   ADMIN_TOKEN: z.string().min(1, "ADMIN_TOKEN is required"),
   ENCRYPTION_KEY: z.string().min(1, "ENCRYPTION_KEY is required"),
 })

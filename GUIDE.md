@@ -154,7 +154,8 @@ Migrations run automatically on startup — the container always applies any pen
 | `PORT` | No | `3000` | Port the server listens on |
 | `APP_ENV` | No | `production` (in image) | `development` / `production` / `test` |
 | `LOG_LEVEL` | No | `info` | `trace` / `debug` / `info` / `warn` / `error` / `fatal` |
-| `DATABASE_URL` | No | `file:/data/refine.db` (in image) | Path to the SQLite database file |
+| `DATABASE_URL` | No | `file:/data/refine.db` (in image) | Local file (`file:/path/to/db`) or remote libsql (`libsql://...`) |
+| `TURSO_AUTH_TOKEN` | No | — | Auth token for remote libsql / Turso — omit for local SQLite |
 | `ADMIN_TOKEN` | Yes | — | Bearer token for all admin endpoints |
 | `ENCRYPTION_KEY` | Yes | — | Key for encrypting provider API keys at rest |
 
