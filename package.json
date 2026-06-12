@@ -15,6 +15,7 @@
     "mobile:prebuild": "turbo prebuild --filter=@refine/mobile",
     "mobile:eas:preview": "turbo eas:preview --filter=@refine/mobile",
     "mobile:eas:production": "turbo eas:production --filter=@refine/mobile",
+    "mobile:eas:production-apk": "turbo eas:production-apk --filter=@refine/mobile",
     "dev": "turbo dev --filter=@refine/api --filter=@refine/admin"
   },
   "workspaces": [

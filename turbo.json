@@ -27,6 +27,9 @@
     "eas:production": {
       "cache": false
     },
+    "eas:production-apk": {
+      "cache": false
+    },
     "db:generate": {
       "cache": true,
       "outputs": ["drizzle/**"]

@@ -60,7 +60,8 @@
     "prebuild": "expo prebuild --platform android --clean",
     "type-check": "tsc --noEmit",
     "eas:preview": "eas build --platform android --profile preview",
-    "eas:production": "eas build --platform android --profile production"
+    "eas:production": "eas build --platform android --profile production",
+    "eas:production-apk": "eas build --platform android --profile production-apk"
   },
   "private": true
 }
