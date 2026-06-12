@@ -45,6 +45,8 @@ export const createRoot = (app: ReturnType<typeof createApp>) => {
   root.use("/admin/*", serveStatic({ root: "./public" }))
   root.get("/admin/*", serveStatic({ path: "./public/admin/index.html" }))
   root.get("/admin", (c) => c.redirect("/admin/"))
+  root.get("/health", (c) => c.json({ status: "ok" }))
+  root.get("/", (c) => c.redirect("/admin/"))
   root.route("/", app)
   return root
 }
