@@ -1,24 +1,17 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "lib": ["ESNext"],
+    "target": "ESNext",
+    "module": "esnext",
+    "moduleDetection": "force",
+    "noEmit": true,
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
     "strict": true,
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@/assets/*": [
-        "./assets/*"
-      ]
-    }
-  },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-  ],
-  "exclude": [
-    "plugins",
-    "node_modules"
-  ]
+    "skipLibCheck": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true
+  }
 }

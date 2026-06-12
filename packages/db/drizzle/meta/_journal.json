@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1781042706612,
+      "tag": "0000_wide_donald_blake",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1781267241812,
+      "tag": "0001_handy_war_machine",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1781275174212,
+      "tag": "0002_smiling_nightcrawler",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1781275521063,
+      "tag": "0003_complex_pandemic",
+      "breakpoints": true
+    }
+  ]
+}

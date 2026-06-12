@@ -1,0 +1,41 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["public/admin/**"]
+    },
+    "type-check": {
+      "dependsOn": ["^type-check"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "android": {
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": ["ANDROID_HOME", "ANDROID_SDK_ROOT", "JAVA_HOME"]
+    },
+    "prebuild": {
+      "cache": false,
+      "passThroughEnv": ["ANDROID_HOME", "ANDROID_SDK_ROOT", "JAVA_HOME"]
+    },
+    "eas:preview": {
+      "cache": false
+    },
+    "eas:production": {
+      "cache": false
+    },
+    "db:generate": {
+      "cache": true,
+      "outputs": ["drizzle/**"]
+    },
+    "db:migrate": {
+      "cache": false
+    },
+    "db:seed": {
+      "cache": false
+    }
+  }
+}

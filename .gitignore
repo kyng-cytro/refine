@@ -32,17 +32,32 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
 
 # typescript
 *.tsbuildinfo
 
 example
 
-# generated native folders
-/ios
-/android
+# generated native folders (expo prebuild output)
+apps/mobile/android/
+apps/mobile/ios/
 
-# build outputs (if android/ ever becomes unignored)
+# build outputs
 *.apk
 *.aab
 local.properties
+
+# native module build artifacts
+apps/mobile/modules/*/android/build/
+
+# SQLite databases
+*.db
+*.db-shm
+*.db-wal
+
+# turbo cache
+.turbo/
+
+# admin build output
+apps/api/public/
