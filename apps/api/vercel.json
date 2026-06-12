@@ -1,9 +1,9 @@
 {
-  "buildCommand": "cd ../.. && bun run admin:build",
+  "buildCommand": "cd ../.. && bun run admin:build && bun run api:build",
   "functions": {
-    "src/index.ts": { "maxDuration": 30 }
+    "dist/index.js": { "maxDuration": 30 }
   },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/src/index" }
+    { "source": "/(.*)", "destination": "/dist/index" }
   ]
 }

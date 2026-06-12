@@ -3,7 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["public/admin/**"],
+      "outputs": ["public/admin/**", "dist/**"],
       "env": ["HOST", "ADMIN_TOKEN", "ENCRYPTION_KEY", "TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN"]
     },
     "type-check": {
