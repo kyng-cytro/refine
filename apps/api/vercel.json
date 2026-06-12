@@ -2,7 +2,7 @@
   "buildCommand": "cd ../.. && bun run admin:build",
   "outputDirectory": "public",
   "functions": {
-    "src/index.ts": {}
+    "src/index.ts": { "maxDuration": 30 }
   },
   "rewrites": [
     { "source": "/v1/:path*", "destination": "/src/index" },
