@@ -11,6 +11,7 @@ export const schema = z.object({
     .default("info"),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   ADMIN_TOKEN: z.string().min(1, "ADMIN_TOKEN is required"),
+  ENCRYPTION_KEY: z.string().min(1, "ENCRYPTION_KEY is required"),
 })
 
 export const check = () => {

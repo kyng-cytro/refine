@@ -1,13 +1,16 @@
+import { decrypt } from "@/lib/crypto"
 import { db, orm, schema } from "@/lib/db"
 import type { ModelProvider } from "@refine/schemas"
 
 export const getProvider = async (provider: ModelProvider) => {
-  return db.query.providers.findFirst({
+  const row = await db.query.providers.findFirst({
     where: orm.and(
       orm.eq(schema.providers.provider, provider),
       orm.eq(schema.providers.enabled, true),
     ),
   })
+  if (!row) return undefined
+  return { ...row, apiKey: await decrypt(row.apiKey) }
 }
 
 export const isModelEnabled = async (modelId: string) => {

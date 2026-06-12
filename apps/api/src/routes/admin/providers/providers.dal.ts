@@ -1,3 +1,4 @@
+import { encrypt } from "@/lib/crypto"
 import { db, schema } from "@/lib/db"
 import type { ModelProvider } from "@refine/schemas"
 
@@ -6,12 +7,13 @@ export const upsert = async (
   apiKey: string,
   enabled: boolean,
 ) => {
+  const encryptedKey = await encrypt(apiKey)
   const [row] = await db
     .insert(schema.providers)
-    .values({ provider, apiKey, enabled })
+    .values({ provider, apiKey: encryptedKey, enabled })
     .onConflictDoUpdate({
       target: schema.providers.provider,
-      set: { apiKey, enabled, updatedAt: new Date() },
+      set: { apiKey: encryptedKey, enabled, updatedAt: new Date() },
     })
     .returning()
   return row!
