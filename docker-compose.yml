@@ -1,0 +1,17 @@
+services:
+  refine:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - refine-data:/data
+    environment:
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      DATABASE_URL: /data/refine.db
+      HOST: ${HOST:-http://localhost:3000}
+      APP_ENV: production
+    restart: unless-stopped
+
+volumes:
+  refine-data:

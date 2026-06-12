@@ -58,3 +58,6 @@ apps/mobile/modules/*/android/build/
 
 # turbo cache
 .turbo/
+
+# admin build output
+apps/api/public/

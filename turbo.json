@@ -3,7 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": []
+      "outputs": ["public/admin/**"]
     },
     "type-check": {
       "dependsOn": ["^type-check"]

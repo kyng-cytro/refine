@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "turbo dev --filter=@refine/api",
+    "admin:dev": "turbo dev --filter=@refine/admin",
+    "admin:build": "turbo build --filter=@refine/admin",
     "build": "turbo build",
     "type-check": "turbo type-check",
     "db:generate": "turbo db:generate --filter=@refine/db",
