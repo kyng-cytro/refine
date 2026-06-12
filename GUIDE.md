@@ -90,43 +90,6 @@ server {
 
 ---
 
-## Deploying to Vercel
-
-The database uses `@libsql/client`, which supports both local SQLite files and remote libsql (Turso). For Vercel you need a hosted database since Vercel's filesystem is ephemeral.
-
-### 1. Create a Turso database
-
-```bash
-turso db create refine
-turso db show refine      # copy the URL
-turso db tokens create refine  # copy the token
-```
-
-### 2. Import your project to Vercel
-
-In the Vercel dashboard, set **Root Directory** to `apps/api`. Vercel will pick up `apps/api/vercel.json` automatically.
-
-### 3. Set environment variables in Vercel
-
-```env
-HOST="https://your-project.vercel.app"
-ADMIN_TOKEN="a-strong-random-secret"
-ENCRYPTION_KEY="a-32-character-random-string-here"
-DATABASE_URL="libsql://your-db.turso.io"
-TURSO_AUTH_TOKEN="your-turso-auth-token"
-```
-
-### 4. Run migrations against Turso
-
-```bash
-DATABASE_URL="libsql://your-db.turso.io" TURSO_AUTH_TOKEN="..." bun run db:migrate
-DATABASE_URL="libsql://your-db.turso.io" TURSO_AUTH_TOKEN="..." bun run db:seed
-```
-
-Deploy — Vercel builds the admin SPA and serves it as static files at `/admin/`, with the API running as a serverless function.
-
----
-
 ## Initial setup
 
 ### 1. Open the admin panel
@@ -191,8 +154,7 @@ Migrations run automatically on startup — the container always applies any pen
 | `PORT` | No | `3000` | Port the server listens on |
 | `APP_ENV` | No | `production` (in image) | `development` / `production` / `test` |
 | `LOG_LEVEL` | No | `info` | `trace` / `debug` / `info` / `warn` / `error` / `fatal` |
-| `DATABASE_URL` | No | `file:/data/refine.db` (in image) | Local file (`file:/path/to/db`) or Turso URL (`libsql://...`) |
-| `TURSO_AUTH_TOKEN` | No | — | Auth token for Turso / remote libsql (omit for local file) |
+| `DATABASE_URL` | No | `file:/data/refine.db` (in image) | Path to the SQLite database file |
 | `ADMIN_TOKEN` | Yes | — | Bearer token for all admin endpoints |
 | `ENCRYPTION_KEY` | Yes | — | Key for encrypting provider API keys at rest |
 
