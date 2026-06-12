@@ -3,7 +3,8 @@ CREATE TABLE `pairing_tokens` (
 	`token` text NOT NULL,
 	`label` text NOT NULL,
 	`used` integer DEFAULT false NOT NULL,
-	`created_at` integer NOT NULL
+	`created_at` integer NOT NULL,
+	`expires_at` integer
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `pairing_tokens_token_unique` ON `pairing_tokens` (`token`);--> statement-breakpoint
@@ -13,6 +14,7 @@ CREATE TABLE `sessions` (
 	`device_name` text NOT NULL,
 	`session_token` text NOT NULL,
 	`created_at` integer NOT NULL,
+	`expires_at` integer,
 	FOREIGN KEY (`pairing_token_id`) REFERENCES `pairing_tokens`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -59,4 +61,5 @@ CREATE TABLE `user_model_prefs` (
 	FOREIGN KEY (`session_id`) REFERENCES `sessions`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `user_model_prefs_session_model_unique` ON `user_model_prefs` (`session_id`,`model_id`);
+CREATE UNIQUE INDEX `user_model_prefs_session_model_unique` ON `user_model_prefs` (`session_id`,`model_id`) WHERE "user_model_prefs"."session_id" IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX `user_model_prefs_global_model_unique` ON `user_model_prefs` (`model_id`) WHERE "user_model_prefs"."session_id" IS NULL;

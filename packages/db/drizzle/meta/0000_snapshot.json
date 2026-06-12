@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "bd559b0e-5026-403f-b5c2-c8cf39bd5750",
+  "id": "ebd3765a-1f4a-4da8-b0e2-6e27bc6582c0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "pairing_tokens": {
@@ -41,6 +41,13 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         }
       },
@@ -94,6 +101,13 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         }
       },
@@ -389,7 +403,16 @@
             "session_id",
             "model_id"
           ],
-          "isUnique": true
+          "isUnique": true,
+          "where": "\"user_model_prefs\".\"session_id\" IS NOT NULL"
+        },
+        "user_model_prefs_global_model_unique": {
+          "name": "user_model_prefs_global_model_unique",
+          "columns": [
+            "model_id"
+          ],
+          "isUnique": true,
+          "where": "\"user_model_prefs\".\"session_id\" IS NULL"
         }
       },
       "foreignKeys": {
