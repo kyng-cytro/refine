@@ -4,7 +4,7 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
 import { useMaterial3Theme } from "@pchmn/expo-material3-theme"
 import { router, ThemeProvider, useSegments } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useColorScheme } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper"
@@ -65,14 +65,13 @@ export default function RootLayout() {
   const modelId = useSettingsStore((s) => s.modelId)
   const toneSlug = useSettingsStore((s) => s.toneSlug)
   const setHistoryItems = useHistoryStore((s) => s.setItems)
-
-  useEffect(() => {
-    SplashScreen.hideAsync()
-  }, [])
+  const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
     const token = loadSessionTokenFromNative()
     if (token) setSessionToken(token)
+    setInitialized(true)
+    SplashScreen.hideAsync()
   }, [])
 
   useEffect(() => {
@@ -108,6 +107,7 @@ export default function RootLayout() {
   }, [serverUrl, sessionToken, modelId, toneSlug])
 
   useEffect(() => {
+    if (!initialized) return
     if (
       (segments as string[]).includes("pair") ||
       (segments as string[]).includes("setup")
@@ -116,7 +116,7 @@ export default function RootLayout() {
     if (!serverUrl || !sessionToken) {
       router.replace("/setup")
     }
-  }, [serverUrl, sessionToken, segments])
+  }, [initialized, serverUrl, sessionToken, segments])
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

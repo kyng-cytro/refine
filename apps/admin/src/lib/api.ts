@@ -32,7 +32,7 @@ async function request<T>(
     method,
     headers: {
       "Content-Type": "application/json",
-      "X-Admin-Token": getToken() || getPendingToken(),
+      "X-Admin-Token": getPendingToken() || getToken(),
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
