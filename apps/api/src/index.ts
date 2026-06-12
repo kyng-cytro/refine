@@ -1,8 +1,7 @@
 import { configureOpenAPI } from "@/lib/configure-openapi"
-import { createApp, createRouter } from "@/lib/create-app"
+import { createApp, createRoot } from "@/lib/create-app"
 import routes from "@/routes"
 import consola from "consola"
-import { serveStatic } from "hono/bun"
 import { notFound, onError } from "stoker/middlewares"
 
 const app = createApp()
@@ -18,11 +17,7 @@ app.openAPIRegistry.registerComponent("securitySchemes", "Bearer Auth", {
 configureOpenAPI(app)
 app.route("/", routes)
 
-// Root wrapper: serves admin UI outside the /v1 basePath
-const root = createRouter()
-root.use("/admin/*", serveStatic({ root: "./public" }))
-root.get("/admin", (c) => c.redirect("/admin/"))
-root.route("/", app)
+const root = createRoot(app)
 
 process.on("unhandledRejection", (reason) => {
   consola.error("Unhandled Rejection:", reason)

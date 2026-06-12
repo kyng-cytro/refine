@@ -89,14 +89,14 @@ export default function PairConfirmDialog({ params, onDismiss }: Props) {
             onChangeText={setDeviceName}
             mode="outlined"
             style={styles.input}
-            autoCorrect={false}
+            {...({ autoCorrect: false } as any)}
           />
 
           {!!error && <HelperText type="error" visible>{error}</HelperText>}
         </Dialog.Content>
         <Dialog.Actions>
           <Button onPress={onDismiss} disabled={loading}>Cancel</Button>
-          <Button mode="contained" onPress={connect} loading={loading} disabled={loading}>
+          <Button onPress={connect} loading={loading} disabled={loading}>
             Connect
           </Button>
         </Dialog.Actions>

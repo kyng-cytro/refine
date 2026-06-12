@@ -104,7 +104,6 @@ export const ToneBottomSheet = forwardRef<ToneBottomSheetHandle, Props>(
         borderColor: theme.colors.outline,
         backgroundColor: theme.colors.surfaceVariant,
         color: theme.colors.onSurface,
-        fontFamily: "NotoSans_400Regular",
       },
     ]
 
@@ -170,7 +169,7 @@ ToneBottomSheet.displayName = "ToneBottomSheet"
 
 const styles = StyleSheet.create({
   container: { padding: 20, gap: 12 },
-  title: { fontFamily: "NotoSans_700Bold", marginBottom: 4 },
+  title: { marginBottom: 4 },
   input: {
     borderWidth: 1,
     borderRadius: 12,

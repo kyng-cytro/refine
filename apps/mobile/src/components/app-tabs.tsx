@@ -17,10 +17,7 @@ export default function AppTabs() {
         },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
-        tabBarLabelStyle: {
-          fontFamily: "NotoSans_500Medium",
-          fontSize: 12,
-        },
+        tabBarLabelStyle: { fontSize: 12 },
       }}
     >
       <Tabs.Screen
@@ -52,7 +49,15 @@ export default function AppTabs() {
       <Tabs.Screen
         name="setup"
         options={{
-          href: null, // Hidden from tab bar — navigated to programmatically
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <Tabs.Screen
+        name="pair"
+        options={{
+          href: null,
+          tabBarStyle: { display: "none" },
         }}
       />
     </Tabs>

@@ -74,7 +74,7 @@ export const TonesSection = () => {
       <ToneBottomSheet
         ref={bottomSheetRef}
         editingTone={editingTone}
-        onSaved={refreshTones}
+        onSaved={async () => { await refreshTones() }}
         onDismiss={() => setEditingTone(null)}
       />
     </>

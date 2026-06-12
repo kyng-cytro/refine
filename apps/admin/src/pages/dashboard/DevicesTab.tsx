@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import QRCode from "react-qr-code"
-import { api, type AdminSession as Session, type SessionModelPref, type AdminToken as Token } from "@/lib/api"
+import { api, type Session, type SessionModelPref, type Token } from "@/lib/api"
 import { MODELS } from "@/lib/models"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

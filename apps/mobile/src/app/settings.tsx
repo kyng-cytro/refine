@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { ScrollView, StyleSheet } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Text, List, Button, useTheme } from "react-native-paper"
@@ -9,7 +10,11 @@ import { useSettingsStore } from "@/store/settings-store"
 
 export default function SettingsScreen() {
   const theme = useTheme()
-  const { serverUrl, clearServerConfig } = useSettingsStore()
+  const { serverUrl, sessionToken, clearServerConfig } = useSettingsStore()
+
+  useEffect(() => {
+    if (!serverUrl || !sessionToken) router.replace("/setup")
+  }, [serverUrl, sessionToken])
 
   const handleDisconnect = () => {
     clearServerConfig()
@@ -61,7 +66,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 12,
-    fontFamily: "NotoSans_700Bold",
   },
   scroll: {
     paddingBottom: 40,

@@ -1,21 +1,27 @@
+import { CameraView, useCameraPermissions } from "expo-camera"
+import { router } from "expo-router"
 import { useState } from "react"
 import {
+  KeyboardAvoidingView,
   Modal,
   Platform,
-  Pressable,
+  ScrollView,
   StyleSheet,
   View,
-  KeyboardAvoidingView,
-  ScrollView,
 } from "react-native"
+import {
+  Button,
+  HelperText,
+  IconButton,
+  Text,
+  TextInput,
+  useTheme,
+} from "react-native-paper"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { Text, TextInput, Button, HelperText, useTheme, IconButton } from "react-native-paper"
-import { router } from "expo-router"
-import { CameraView, useCameraPermissions } from "expo-camera"
 
-import { createClient } from "@refine/sdk"
-import { useSettingsStore } from "@/store/settings-store"
 import { syncActiveConfig } from "@/services/shared-prefs-bridge"
+import { useSettingsStore } from "@/store/settings-store"
+import { createClient } from "@refine/sdk"
 
 interface PairValues {
   serverUrl: string
@@ -23,24 +29,53 @@ interface PairValues {
   deviceName: string
 }
 
+function parsePairQR(data: string): PairValues | null {
+  try {
+    const url = new URL(data)
+    const token = url.searchParams.get("token")
+    const name = decodeURIComponent(url.searchParams.get("name") ?? "My Phone")
+    if (!token) return null
+    const serverUrl = url.protocol === "refine:"
+      ? decodeURIComponent(url.searchParams.get("url") ?? "")
+      : url.origin
+    if (!serverUrl) return null
+    return { serverUrl, pairingToken: token, deviceName: name }
+  } catch {
+    return null
+  }
+}
+
 function usePair() {
   const { setServerConfig } = useSettingsStore()
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const connect = async ({ serverUrl, pairingToken, deviceName }: PairValues) => {
+  const connect = async ({
+    serverUrl,
+    pairingToken,
+    deviceName,
+  }: PairValues) => {
     const url = serverUrl.trim().replace(/\/$/, "")
     const token = pairingToken.trim()
     const name = deviceName.trim() || "My Phone"
 
-    if (!url) { setError("Server URL is required"); return false }
-    if (!token) { setError("Pairing token is required"); return false }
+    if (!url) {
+      setError("Server URL is required")
+      return false
+    }
+    if (!token) {
+      setError("Pairing token is required")
+      return false
+    }
 
     setError("")
     setLoading(true)
     try {
       const client = createClient({ baseURL: url })
-      const { sessionToken } = await client.auth.pair({ pairingToken: token, deviceName: name })
+      const { sessionToken } = await client.auth.pair({
+        pairingToken: token,
+        deviceName: name,
+      })
 
       setServerConfig(url, sessionToken)
       syncActiveConfig()
@@ -80,8 +115,7 @@ export default function SetupScreen() {
   const { connect, error, loading } = usePair()
   const [permission, requestPermission] = useCameraPermissions()
 
-  const handleConnect = () =>
-    connect({ serverUrl, pairingToken, deviceName })
+  const handleConnect = () => connect({ serverUrl, pairingToken, deviceName })
 
   const openScanner = async () => {
     if (!permission?.granted) {
@@ -96,32 +130,28 @@ export default function SetupScreen() {
     if (scanned) return
     setScanned(true)
     setScanning(false)
-
-    try {
-      const parsed = new URL(data)
-      if (parsed.protocol !== "refine:") return
-      const token = parsed.searchParams.get("token") ?? ""
-      const url = decodeURIComponent(parsed.searchParams.get("url") ?? "")
-      const name = decodeURIComponent(parsed.searchParams.get("name") ?? "My Phone")
-      if (!token || !url) return
-      await connect({ serverUrl: url, pairingToken: token, deviceName: name })
-    } catch {
-      // not a valid refine link — ignore
-    }
+    const values = parsePairQR(data)
+    if (values) await connect(values)
   }
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView
+      style={[styles.root, { backgroundColor: theme.colors.background }]}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.flex}
       >
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <Text variant="headlineMedium" style={[styles.title, { fontFamily: "NotoSans_700Bold" }]}>
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text variant="headlineMedium" style={styles.title}>
             Connect to server
           </Text>
           <Text variant="bodyMedium" style={styles.subtitle}>
-            Enter your self-hosted Refine server details, or scan the QR code from your admin panel.
+            Enter your self-hosted Refine server details, or scan the QR code
+            from your admin panel.
           </Text>
 
           <Button
@@ -138,9 +168,11 @@ export default function SetupScreen() {
             value={serverUrl}
             onChangeText={setServerUrl}
             placeholder="https://refine.example.com"
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="url"
+            {...({
+              autoCapitalize: "none",
+              autoCorrect: false,
+              keyboardType: "url",
+            } as any)}
             style={styles.input}
             mode="outlined"
           />
@@ -149,9 +181,11 @@ export default function SetupScreen() {
             label="Pairing token"
             value={pairingToken}
             onChangeText={setPairingToken}
-            autoCapitalize="none"
-            autoCorrect={false}
-            secureTextEntry
+            {...({
+              autoCapitalize: "none",
+              autoCorrect: false,
+              secureTextEntry: true,
+            } as any)}
             style={styles.input}
             mode="outlined"
           />
@@ -164,7 +198,11 @@ export default function SetupScreen() {
             mode="outlined"
           />
 
-          {!!error && <HelperText type="error" visible>{error}</HelperText>}
+          {!!error && (
+            <HelperText type="error" visible>
+              {error}
+            </HelperText>
+          )}
 
           <Button
             mode="contained"
@@ -179,7 +217,11 @@ export default function SetupScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <Modal visible={scanning} animationType="slide" onRequestClose={() => setScanning(false)}>
+      <Modal
+        visible={scanning}
+        animationType="slide"
+        onRequestClose={() => setScanning(false)}
+      >
         <View style={[styles.camera, { backgroundColor: "#000" }]}>
           <CameraView
             style={StyleSheet.absoluteFill}
@@ -196,7 +238,9 @@ export default function SetupScreen() {
               onPress={() => setScanning(false)}
             />
             <View style={styles.scanFrame} />
-            <Text style={styles.scanHint}>Point at the QR code from your admin panel</Text>
+            <Text style={styles.scanHint}>
+              Point at the QR code from your admin panel
+            </Text>
           </SafeAreaView>
         </View>
       </Modal>

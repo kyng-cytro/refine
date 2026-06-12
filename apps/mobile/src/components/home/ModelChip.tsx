@@ -1,12 +1,14 @@
 import { useState } from "react"
-import { Chip, Menu } from "react-native-paper"
+import { Chip, Menu, useTheme } from "react-native-paper"
 
 import { useSettingsStore } from "@/store/settings-store"
 import { syncActiveConfig } from "@/services/shared-prefs-bridge"
+import ProviderIcon from "@/components/ProviderIcon"
 
 export const ModelChip = () => {
   const [visible, setVisible] = useState(false)
   const { models, modelId, setModel } = useSettingsStore()
+  const theme = useTheme()
 
   const current = models.find((m) => m.id === modelId)
 
@@ -24,7 +26,10 @@ export const ModelChip = () => {
         <Chip
           mode="outlined"
           onPress={() => setVisible(true)}
-          icon="brain"
+          icon={current?.provider
+            ? () => <ProviderIcon provider={current.provider} size={16} color={theme.colors.primary} />
+            : "brain"
+          }
           compact
         >
           {current?.label ?? "Model"}

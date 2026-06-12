@@ -38,7 +38,6 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   title: {
-    fontFamily: "NotoSans_700Bold",
   },
   inputWrapper: {
     marginTop: 20,

@@ -1,90 +1,48 @@
-import {
-  NotoSans_400Regular,
-  NotoSans_500Medium,
-  NotoSans_700Bold,
-  useFonts,
-} from "@expo-google-fonts/noto-sans"
+import PairConfirmDialog from "@/components/PairConfirmDialog"
+import { usePairStore } from "@/store/pair-store"
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
 import { useMaterial3Theme } from "@pchmn/expo-material3-theme"
-import * as Linking from "expo-linking"
-import { router, ThemeProvider } from "expo-router"
+import { router, ThemeProvider, useSegments } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo } from "react"
 import { useColorScheme } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
-import {
-  MD3DarkTheme,
-  MD3LightTheme,
-  PaperProvider,
-  configureFonts,
-} from "react-native-paper"
-import PairConfirmDialog, { type PairParams } from "@/components/PairConfirmDialog"
+import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper"
 
 import AppTabs from "@/components/app-tabs"
+import { getApiClient } from "@/services/api"
 import {
   loadSessionTokenFromNative,
   syncActiveConfig,
 } from "@/services/shared-prefs-bridge"
-import { getApiClient } from "@/services/api"
 import { useHistoryStore } from "@/store/history-store"
 import { useSettingsStore } from "@/store/settings-store"
 
 SplashScreen.preventAutoHideAsync()
-
-const fontConfig = { fontFamily: "NotoSans_400Regular" }
-const navFonts = {
-  regular: { fontFamily: "NotoSans_400Regular", fontWeight: "400" as const },
-  medium: { fontFamily: "NotoSans_500Medium", fontWeight: "500" as const },
-  bold: { fontFamily: "NotoSans_700Bold", fontWeight: "700" as const },
-  heavy: { fontFamily: "NotoSans_700Bold", fontWeight: "700" as const },
-}
-
-function parsePairUrl(url: string | null): PairParams | null {
-  if (!url) return null
-  try {
-    const parsed = Linking.parse(url)
-    if (parsed.scheme !== "refine" || parsed.path !== "pair") return null
-    const { token, url: serverUrl, name } = parsed.queryParams ?? {}
-    if (!token || !serverUrl) return null
-    return {
-      token: String(token),
-      url: decodeURIComponent(String(serverUrl)),
-      name: name ? decodeURIComponent(String(name)) : "My Phone",
-    }
-  } catch {
-    return null
-  }
-}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme()
   const { theme: m3Theme } = useMaterial3Theme({
     fallbackSourceColor: "#1B6EF3",
   })
-  const [pairParams, setPairParams] = useState<PairParams | null>(null)
 
   const theme = useMemo(
     () =>
       colorScheme === "dark"
-        ? {
-            ...MD3DarkTheme,
-            fonts: configureFonts({ config: fontConfig }),
-            roundness: 4,
-            colors: { ...m3Theme.dark },
-          }
-        : {
-            ...MD3LightTheme,
-            fonts: configureFonts({ config: fontConfig }),
-            roundness: 4,
-            colors: { ...m3Theme.light },
-          },
+        ? { ...MD3DarkTheme, roundness: 4, colors: { ...m3Theme.dark } }
+        : { ...MD3LightTheme, roundness: 4, colors: { ...m3Theme.light } },
     [colorScheme, m3Theme],
   )
 
   const navTheme = useMemo(
     () => ({
       dark: colorScheme === "dark",
-      fonts: navFonts,
+      fonts: {
+        regular: { fontFamily: "System", fontWeight: "400" as const },
+        medium: { fontFamily: "System", fontWeight: "500" as const },
+        bold: { fontFamily: "System", fontWeight: "700" as const },
+        heavy: { fontFamily: "System", fontWeight: "900" as const },
+      },
       colors: {
         primary: theme.colors.primary,
         background: theme.colors.background,
@@ -97,6 +55,8 @@ export default function RootLayout() {
     [colorScheme, theme],
   )
 
+  const segments = useSegments()
+  const pairParams = usePairStore((s) => s.params)
   const serverUrl = useSettingsStore((s) => s.serverUrl)
   const sessionToken = useSettingsStore((s) => s.sessionToken)
   const setSessionToken = useSettingsStore((s) => s.setSessionToken)
@@ -106,15 +66,9 @@ export default function RootLayout() {
   const toneSlug = useSettingsStore((s) => s.toneSlug)
   const setHistoryItems = useHistoryStore((s) => s.setItems)
 
-  const [fontsLoaded] = useFonts({
-    NotoSans_400Regular,
-    NotoSans_500Medium,
-    NotoSans_700Bold,
-  })
-
   useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync()
-  }, [fontsLoaded])
+    SplashScreen.hideAsync()
+  }, [])
 
   useEffect(() => {
     const token = loadSessionTokenFromNative()
@@ -122,28 +76,22 @@ export default function RootLayout() {
   }, [])
 
   useEffect(() => {
-    Linking.getInitialURL().then((url) => {
-      const params = parsePairUrl(url)
-      if (params) setPairParams(params)
-    })
-    const sub = Linking.addEventListener("url", ({ url }) => {
-      const params = parsePairUrl(url)
-      if (params) setPairParams(params)
-    })
-    return () => sub.remove()
-  }, [])
-
-  useEffect(() => {
     if (!serverUrl || !sessionToken) return
     const client = getApiClient()
     const onUnauth = (e: unknown) => {
-      if ((e as any)?.status === 401 || String((e as any)?.message).includes("401")) {
+      if (
+        (e as any)?.status === 401 ||
+        String((e as any)?.message).includes("401")
+      ) {
         useSettingsStore.getState().clearServerConfig()
       }
     }
     client.auth.me().catch(onUnauth)
     client.tones.list().then(setTones).catch(onUnauth)
-    client.history.list({ limit: 50 }).then((r) => setHistoryItems(r.data)).catch(onUnauth)
+    client.history
+      .list({ limit: 50 })
+      .then((r) => setHistoryItems(r.data))
+      .catch(onUnauth)
     client.providers
       .list()
       .then((r) => {
@@ -160,13 +108,15 @@ export default function RootLayout() {
   }, [serverUrl, sessionToken, modelId, toneSlug])
 
   useEffect(() => {
-    if (!fontsLoaded) return
+    if (
+      (segments as string[]).includes("pair") ||
+      (segments as string[]).includes("setup")
+    )
+      return
     if (!serverUrl || !sessionToken) {
       router.replace("/setup")
     }
-  }, [fontsLoaded, serverUrl, sessionToken])
-
-  if (!fontsLoaded) return null
+  }, [serverUrl, sessionToken, segments])
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -176,7 +126,7 @@ export default function RootLayout() {
             <AppTabs />
             <PairConfirmDialog
               params={pairParams}
-              onDismiss={() => setPairParams(null)}
+              onDismiss={() => usePairStore.getState().set(null)}
             />
           </ThemeProvider>
         </BottomSheetModalProvider>

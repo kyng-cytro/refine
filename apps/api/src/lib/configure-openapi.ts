@@ -23,6 +23,7 @@ export const configureOpenAPI = (app: AppOpenAPI) => {
       url: `${BASE_PATH}/doc`,
       theme: "default",
       layout: "classic",
+      favicon: "/favicon.png",
       defaultHttpClient: {
         targetKey: "js",
         clientKey: "fetch",

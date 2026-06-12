@@ -1,10 +1,9 @@
 import { withHaptics } from "@/utils/haptics"
 import * as Clipboard from "expo-clipboard"
 import { useRef } from "react"
-import { Pressable, StyleSheet, View } from "react-native"
+import { Pressable, StyleSheet, Text as RNText, View } from "react-native"
 import { Swipeable } from "react-native-gesture-handler"
 import { Card, IconButton, Text, useTheme } from "react-native-paper"
-
 import { HistoryItem } from "@/types/history"
 
 function relativeTime(ts: number): string {
@@ -78,21 +77,19 @@ export function HistoryCard({ item, onDelete }: Props) {
           }}
           style={styles.pressable}
         >
-          <Text
-            variant="bodyMedium"
+          <RNText
             numberOfLines={3}
             style={[styles.refined, { color: theme.colors.onSurface }]}
           >
             {item.refined}
-          </Text>
+          </RNText>
           <View style={styles.footer}>
-            <Text
-              variant="bodySmall"
+            <RNText
               numberOfLines={1}
               style={[styles.source, { color: theme.colors.onSurfaceVariant }]}
             >
               {item.source}
-            </Text>
+            </RNText>
             <Text
               variant="labelSmall"
               style={{ color: theme.colors.onSurfaceVariant, opacity: 0.6 }}

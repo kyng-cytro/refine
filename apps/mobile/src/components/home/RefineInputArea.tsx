@@ -44,14 +44,14 @@ export const RefineInputArea = () => {
           mode="flat"
           multiline
           placeholder="Enter text to refine…"
-          onChangeText={(t) => {
+          onChangeText={(t: string) => {
             textRef.current = t
             setIsEmpty(t.trim().length === 0)
           }}
           style={styles.input}
           contentStyle={styles.inputContent}
           underlineStyle={{ display: "none" }}
-          maxLength={4000}
+          {...({ maxLength: 4000 } as any)}
         />
         <View style={styles.toolbar}>
           <View style={styles.chipRow}>

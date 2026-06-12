@@ -36,6 +36,7 @@
     "react-native-reanimated": "4.3.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.2",
+    "react-native-svg": "^15.15.5",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.8.3",
     "refine-shared-prefs": "file:./modules/refine-shared-prefs",
@@ -57,6 +58,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "prebuild": "expo prebuild --platform android --clean",
+    "type-check": "tsc --noEmit",
     "eas:preview": "eas build --platform android --profile preview",
     "eas:production": "eas build --platform android --profile production"
   },

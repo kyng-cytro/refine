@@ -19,7 +19,7 @@ export const expiry: AppRouteHandler<SetExpiry> = async (c) => {
   try {
     const { id } = c.req.valid("param")
     const { expiresAt } = c.req.valid("json")
-    const updated = await dal.expiry(id, expiresAt !== null ? new Date(expiresAt) : null)
+    const updated = await dal.setExpiry(id, expiresAt !== null ? new Date(expiresAt) : null)
     if (!updated) return c.json({ message: "Not found" }, HttpStatusCodes.NOT_FOUND)
     return c.json({
       id: updated.id,
