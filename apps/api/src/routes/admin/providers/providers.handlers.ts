@@ -15,7 +15,7 @@ import * as HttpStatusCodes from "stoker/http-status-codes"
 
 export const setupStatus: AppRouteHandler<SetupStatus> = async (c) => {
   try {
-    return c.json({ configured: await dal.isConfigured() }, HttpStatusCodes.OK)
+    return c.json({ configured: await dal.isConfigured(), url: Bun.env.HOST }, HttpStatusCodes.OK)
   } catch (error) {
     c.var.logger.error(`[ADMIN:SETUP:STATUS] ${error}`)
     throw new HTTPException(HttpStatusCodes.INTERNAL_SERVER_ERROR, {

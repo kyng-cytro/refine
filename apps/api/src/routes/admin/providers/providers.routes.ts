@@ -32,7 +32,7 @@ export const setupStatus = createRoute({
   tags,
   responses: {
     [HttpStatusCodes.OK]: helpers.jsonContent(
-      z.object({ configured: z.boolean() }),
+      z.object({ configured: z.boolean(), url: z.string() }),
       "Setup status",
     ),
     ...responses.serverError,

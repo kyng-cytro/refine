@@ -6,9 +6,10 @@ import {
 } from "@expo-google-fonts/noto-sans"
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
 import { useMaterial3Theme } from "@pchmn/expo-material3-theme"
+import * as Linking from "expo-linking"
 import { router, ThemeProvider } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useColorScheme } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import {
@@ -17,6 +18,7 @@ import {
   PaperProvider,
   configureFonts,
 } from "react-native-paper"
+import PairConfirmDialog, { type PairParams } from "@/components/PairConfirmDialog"
 
 import AppTabs from "@/components/app-tabs"
 import {
@@ -37,11 +39,29 @@ const navFonts = {
   heavy: { fontFamily: "NotoSans_700Bold", fontWeight: "700" as const },
 }
 
+function parsePairUrl(url: string | null): PairParams | null {
+  if (!url) return null
+  try {
+    const parsed = Linking.parse(url)
+    if (parsed.scheme !== "refine" || parsed.path !== "pair") return null
+    const { token, url: serverUrl, name } = parsed.queryParams ?? {}
+    if (!token || !serverUrl) return null
+    return {
+      token: String(token),
+      url: decodeURIComponent(String(serverUrl)),
+      name: name ? decodeURIComponent(String(name)) : "My Phone",
+    }
+  } catch {
+    return null
+  }
+}
+
 export default function RootLayout() {
   const colorScheme = useColorScheme()
   const { theme: m3Theme } = useMaterial3Theme({
     fallbackSourceColor: "#1B6EF3",
   })
+  const [pairParams, setPairParams] = useState<PairParams | null>(null)
 
   const theme = useMemo(
     () =>
@@ -101,7 +121,18 @@ export default function RootLayout() {
     if (token) setSessionToken(token)
   }, [])
 
-  // Load initial data from server once connected
+  useEffect(() => {
+    Linking.getInitialURL().then((url) => {
+      const params = parsePairUrl(url)
+      if (params) setPairParams(params)
+    })
+    const sub = Linking.addEventListener("url", ({ url }) => {
+      const params = parsePairUrl(url)
+      if (params) setPairParams(params)
+    })
+    return () => sub.remove()
+  }, [])
+
   useEffect(() => {
     if (!serverUrl || !sessionToken) return
     const client = getApiClient()
@@ -143,6 +174,10 @@ export default function RootLayout() {
         <BottomSheetModalProvider>
           <ThemeProvider value={navTheme}>
             <AppTabs />
+            <PairConfirmDialog
+              params={pairParams}
+              onDismiss={() => setPairParams(null)}
+            />
           </ThemeProvider>
         </BottomSheetModalProvider>
       </PaperProvider>

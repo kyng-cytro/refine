@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import QRCode from "react-qr-code"
 import { api, type Session, type SessionModelPref, type Token } from "@/lib/api"
 import { MODELS } from "@/lib/models"
 import { Button } from "@/components/ui/button"
@@ -6,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { Check, ChevronDown, Copy, Settings2, Smartphone, Trash2 } from "lucide-react"
+import { Check, ChevronDown, ChevronRight, Copy, Settings2, Smartphone, Trash2 } from "lucide-react"
 
 interface DeviceRowProps {
   session: Session
@@ -73,12 +74,8 @@ function DeviceRow({ session, onRevoke }: DeviceRowProps) {
 
       {expanded && (
         <div className="border-t px-4 py-3 bg-muted/30">
-          <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
-            Model overrides
-          </p>
-          <p className="text-xs text-muted-foreground mb-3">
-            Override global model availability for this device only.
-          </p>
+          <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Model overrides</p>
+          <p className="text-xs text-muted-foreground mb-3">Override global model availability for this device only.</p>
           <div className="space-y-1">
             {MODELS.map((m) => {
               const active = prefs[m.id] ?? true
@@ -105,21 +102,35 @@ function DeviceRow({ session, onRevoke }: DeviceRowProps) {
   )
 }
 
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+  const copy = () => {
+    navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+  return (
+    <Button variant="ghost" size="icon" className="shrink-0 h-7 w-7" onClick={copy}>
+      {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
+    </Button>
+  )
+}
+
 export default function DevicesTab() {
   const [sessions, setSessions] = useState<Session[]>([])
+  const [serverUrl, setServerUrl] = useState("")
   const [loading, setLoading] = useState(true)
   const [label, setLabel] = useState("")
   const [newToken, setNewToken] = useState<Token | null>(null)
   const [creating, setCreating] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [showManual, setShowManual] = useState(false)
   const [error, setError] = useState("")
 
   const load = () => {
     setLoading(true)
-    api.sessions
-      .list()
-      .then(setSessions)
-      .catch(() => setError("Failed to load devices."))
+    Promise.all([api.sessions.list(), api.setup.status()])
+      .then(([s, setup]) => { setSessions(s); setServerUrl(setup.url) })
+      .catch(() => setError("Failed to load."))
       .finally(() => setLoading(false))
   }
 
@@ -131,6 +142,7 @@ export default function DevicesTab() {
     setCreating(true)
     setError("")
     setNewToken(null)
+    setShowManual(false)
     try {
       setNewToken(await api.tokens.create(label.trim()))
       setLabel("")
@@ -150,23 +162,24 @@ export default function DevicesTab() {
     }
   }
 
-  const copy = () => {
-    if (!newToken) return
-    navigator.clipboard.writeText(newToken.token)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="text-base">New Pairing Token</CardTitle>
           <CardDescription>
-            Generate a one-time token and enter it in the Refine app to link a device.
+            Generate a token and share the QR code or link with the user to pair their device.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {serverUrl && (
+            <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
+              <span className="text-xs text-muted-foreground shrink-0">Server URL</span>
+              <code className="text-xs font-mono flex-1 truncate">{serverUrl}</code>
+              <CopyButton text={serverUrl} />
+            </div>
+          )}
+
           <form onSubmit={generate} className="flex gap-2">
             <div className="flex-1 space-y-1.5">
               <Label htmlFor="device-label">Device label</Label>
@@ -185,16 +198,39 @@ export default function DevicesTab() {
           </form>
 
           {newToken && (
-            <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
-              <p className="text-xs text-muted-foreground">
-                Enter this in the app under <strong>Settings → Connect to Server</strong>. One-time use only.
-              </p>
-              <div className="flex items-center gap-2">
-                <code className="text-sm font-mono flex-1 break-all">{newToken.token}</code>
-                <Button variant="ghost" size="icon" onClick={copy} className="shrink-0">
-                  {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
-                </Button>
+            <div className="rounded-lg border space-y-4 p-4">
+              <div className="flex justify-center">
+                <div className="rounded-lg bg-white p-3">
+                  <QRCode value={newToken.link} size={160} />
+                </div>
               </div>
+
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground font-medium">Deep link</p>
+                <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
+                  <code className="text-xs font-mono flex-1 break-all">{newToken.link}</code>
+                  <CopyButton text={newToken.link} />
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setShowManual((v) => !v)}
+              >
+                {showManual ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                Or enter manually
+              </button>
+
+              {showManual && (
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground font-medium">Token</p>
+                  <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
+                    <code className="text-xs font-mono flex-1 break-all">{newToken.token}</code>
+                    <CopyButton text={newToken.token} />
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -205,9 +241,7 @@ export default function DevicesTab() {
       <Separator />
 
       <div className="space-y-3">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-          Connected Devices
-        </h2>
+        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Connected Devices</h2>
         {loading ? (
           <p className="text-sm text-muted-foreground">Loading…</p>
         ) : sessions.length === 0 ? (

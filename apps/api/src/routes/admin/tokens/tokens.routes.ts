@@ -17,6 +17,7 @@ const TokenSchema = z.object({
   label: z.string(),
   used: z.boolean(),
   createdAt: z.number(),
+  link: z.string(),
 })
 
 export const list = createRoute({

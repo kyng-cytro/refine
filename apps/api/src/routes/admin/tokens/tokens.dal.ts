@@ -1,3 +1,4 @@
+import { HOST } from "@/lib/constants"
 import { db, orm, schema } from "@/lib/db"
 import { randomUUIDv7 } from "bun"
 
@@ -7,6 +8,7 @@ const map = (row: typeof schema.pairingTokens.$inferSelect) => ({
   label: row.label,
   used: row.used,
   createdAt: row.createdAt.getTime(),
+  link: `refine://pair?token=${row.token}&url=${encodeURIComponent(HOST)}&name=${encodeURIComponent(row.label)}`,
 })
 
 export const getAll = async () => {

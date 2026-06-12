@@ -15,3 +15,5 @@ export const paginationResponse = <T extends z.ZodTypeAny>(item: T) =>
     hasMore: z.boolean(),
     nextCursor: z.string().nullable(),
   })
+
+export type Paginated<T> = { data: T[]; hasMore: boolean; nextCursor: string | null }
