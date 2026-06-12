@@ -1,8 +1,13 @@
 # Refine
 
-A self-hostable text refinement tool. Write text anywhere on Android, share it to Refine, and get it rewritten by an LLM using your own API keys.
+An unintrusive, self-hosted text refinement tool. Input text anywhere and hit **Refine** — your text gets rewritten by an LLM of your choice, in a tone of your choice, using your own API keys on your own server.
 
-The system is three pieces: a **Hono API** that holds provider credentials and processes refinements, a **React admin panel** for managing providers/devices/tokens, and an **Android app** that integrates with the system share sheet.
+No subscriptions. No shared infrastructure. You control the models, the tones, and the keys.
+
+**Three pieces:**
+- **API** — Hono server (Bun) that holds your provider credentials and handles refinements
+- **Admin panel** — React SPA for managing providers, devices, and pairing tokens
+- **Mobile app** — a dedicated input surface plus a system context menu action for refining selected text in-place
 
 ---
 
