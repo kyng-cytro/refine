@@ -9,7 +9,6 @@ export const tones = sqliteTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => uuid()),
-    // null = global tone visible to all users
     sessionId: text("session_id").references(() => sessions.id, {
       onDelete: "cascade",
     }),

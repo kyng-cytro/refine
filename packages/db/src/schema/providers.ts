@@ -5,7 +5,7 @@ export const providers = sqliteTable("providers", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => uuid()),
-  provider: text("provider", {
+  slug: text("provider", {
     enum: ["openai", "anthropic", "google"],
   })
     .notNull()

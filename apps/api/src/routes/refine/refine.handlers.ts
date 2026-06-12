@@ -44,7 +44,7 @@ export const refine: AppRouteHandler<Refine, AuthenticatedContext> = async (
     if (!modelConfig) {
       return c.json({ message: "Unknown model" }, HttpStatusCodes.BAD_REQUEST)
     }
-    const isEnabled = await dal.isModelEnabled(modelId)
+    const isEnabled = await dal.isModelEnabled(modelId, session.id)
     if (!isEnabled) {
       return c.json(
         { message: "Model not available on this server" },

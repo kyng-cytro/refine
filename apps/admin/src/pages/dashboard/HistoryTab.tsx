@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { api, type HistoryItem } from "@/lib/api"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { ArrowRight } from "lucide-react"
 
 export default function HistoryTab() {
   const [items, setItems] = useState<HistoryItem[]>([])
@@ -38,59 +39,35 @@ export default function HistoryTab() {
     }
   }
 
-  if (loading) {
-    return <p className="text-sm text-muted-foreground">Loading…</p>
-  }
-
-  if (error) {
-    return <p className="text-destructive text-sm">{error}</p>
-  }
-
-  if (items.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">No history yet.</p>
-    )
-  }
+  if (loading) return <p className="text-sm text-muted-foreground">Loading…</p>
+  if (error) return <p className="text-destructive text-sm">{error}</p>
+  if (items.length === 0) return (
+    <div className="rounded-lg border border-dashed p-8 text-center">
+      <p className="text-sm text-muted-foreground">No refinements yet.</p>
+    </div>
+  )
 
   return (
     <div className="space-y-3">
       {items.map((item) => (
         <div key={item.id} className="rounded-lg border p-4 space-y-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="outline" className="text-xs">
-              {item.modelId}
-            </Badge>
-            <Badge variant="secondary" className="text-xs">
-              {item.toneSlug}
-            </Badge>
-            <span className="text-xs text-muted-foreground ml-auto">
+            <Badge variant="secondary" className="text-xs font-mono">{item.modelId}</Badge>
+            <Badge variant="outline" className="text-xs">{item.toneSlug}</Badge>
+            <span className="ml-auto text-xs text-muted-foreground">
               {item.deviceName} · {new Date(item.createdAt).toLocaleString()}
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">
-                Original
-              </p>
-              <p className="text-sm line-clamp-4">{item.source}</p>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">
-                Refined
-              </p>
-              <p className="text-sm line-clamp-4">{item.refined}</p>
-            </div>
+          <div className="flex gap-3 items-start">
+            <p className="text-sm text-muted-foreground flex-1 line-clamp-3">{item.source}</p>
+            <ArrowRight className="h-4 w-4 text-muted-foreground/40 shrink-0 mt-0.5" />
+            <p className="text-sm flex-1 line-clamp-3">{item.refined}</p>
           </div>
         </div>
       ))}
 
       {hasMore && (
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={loadMore}
-          disabled={loadingMore}
-        >
+        <Button variant="outline" className="w-full" onClick={loadMore} disabled={loadingMore}>
           {loadingMore ? "Loading…" : "Load More"}
         </Button>
       )}

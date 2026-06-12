@@ -1,17 +1,13 @@
-import { getToken } from "@/lib/storage"
+import { getPendingToken, getToken } from "@/lib/storage"
 
 const BASE = "/v1"
 
-async function request<T>(
-  method: string,
-  path: string,
-  body?: unknown,
-): Promise<T> {
+async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method,
     headers: {
       "Content-Type": "application/json",
-      "X-Admin-Token": getToken(),
+      "X-Admin-Token": getToken() || getPendingToken(),
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
@@ -22,8 +18,6 @@ async function request<T>(
   if (res.status === 204) return undefined as T
   return res.json()
 }
-
-// ---- Types ----
 
 export interface Token {
   id: string
@@ -66,34 +60,53 @@ export interface Paginated<T> {
   nextCursor: string | null
 }
 
-// ---- API client ----
+export interface ModelState {
+  id: string
+  label: string
+  enabled: boolean
+}
+
+export interface ProviderState {
+  provider: string
+  enabled: boolean
+  hasKey: boolean
+  models: ModelState[]
+}
+
+export interface SessionModelPref {
+  modelId: string
+  enabled: boolean
+}
 
 export const api = {
+  setup: {
+    status: () => request<{ configured: boolean }>("GET", "/admin/setup"),
+  },
   tokens: {
     list: () => request<Token[]>("GET", "/admin/tokens"),
-    create: (label: string) =>
-      request<Token>("POST", "/admin/tokens", { label }),
+    create: (label: string) => request<Token>("POST", "/admin/tokens", { label }),
   },
   providers: {
-    upsert: (provider: string, apiKey: string, enabled: boolean) =>
+    list: () => request<ProviderState[]>("GET", "/admin/providers"),
+    upsert: (provider: string, apiKey: string | undefined, enabled: boolean) =>
       request<void>("PUT", `/admin/providers/${provider}`, { apiKey, enabled }),
     toggleModel: (provider: string, modelId: string, enabled: boolean) =>
-      request<void>("PATCH", `/admin/providers/${provider}/models/${modelId}`, {
-        enabled,
-      }),
+      request<void>("PATCH", `/admin/providers/${provider}/models/${modelId}`, { enabled }),
   },
   sessions: {
     list: () => request<Session[]>("GET", "/admin/sessions"),
     remove: (id: string) => request<void>("DELETE", `/admin/sessions/${id}`),
+    listModels: (sessionId: string) =>
+      request<SessionModelPref[]>("GET", `/admin/sessions/${sessionId}/models`),
+    toggleModel: (sessionId: string, modelId: string, enabled: boolean) =>
+      request<void>("PATCH", `/admin/sessions/${sessionId}/models/${modelId}`, { enabled }),
   },
   tones: {
     list: () => request<Tone[]>("GET", "/admin/tones"),
     create: (data: { name: string; slug: string; instructions: string }) =>
       request<Tone>("POST", "/admin/tones", data),
-    update: (
-      id: string,
-      data: Partial<{ name: string; slug: string; instructions: string }>,
-    ) => request<Tone>("PUT", `/admin/tones/${id}`, data),
+    update: (id: string, data: Partial<{ name: string; slug: string; instructions: string }>) =>
+      request<Tone>("PUT", `/admin/tones/${id}`, data),
     remove: (id: string) => request<void>("DELETE", `/admin/tones/${id}`),
   },
   history: {
@@ -102,12 +115,5 @@ export const api = {
         "GET",
         `/admin/history${cursor ? `?cursor=${cursor}&limit=20` : "?limit=20"}`,
       ),
-  },
-  // Used for first-run detection and model state
-  modelPrefs: {
-    list: () =>
-      request<{
-        providers: { provider: string; enabled: boolean; models: { id: string; label: string; provider: string; enabledByUser: boolean }[] }[]
-      }>("GET", "/providers"),
   },
 }

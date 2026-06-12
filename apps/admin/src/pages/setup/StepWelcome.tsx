@@ -1,8 +1,7 @@
 import { useState } from "react"
 import { api } from "@/lib/api"
-import { setToken } from "@/lib/storage"
+import { setPendingToken } from "@/lib/storage"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -20,49 +19,49 @@ export default function StepWelcome({ onNext }: Props) {
     if (!token.trim()) return
     setLoading(true)
     setError("")
-    setToken(token.trim())
+    setPendingToken(token.trim())
     try {
       await api.tokens.list()
       onNext()
     } catch {
-      setToken("")
-      setError("Invalid admin token — check your ADMIN_TOKEN env variable.")
+      setPendingToken("")
+      setError("Invalid admin token — check your ADMIN_TOKEN environment variable.")
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-2xl">Welcome to Refine</CardTitle>
-        <CardDescription>
-          Enter your admin token to get started. This is the{" "}
-          <code className="bg-muted rounded px-1 py-0.5 text-xs">
-            ADMIN_TOKEN
-          </code>{" "}
-          value from your environment.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="token">Admin Token</Label>
-            <Input
-              id="token"
-              type="password"
-              placeholder="Enter your admin token"
-              value={token}
-              onChange={(e) => setTokenValue(e.target.value)}
-              autoFocus
-            />
-            {error && <p className="text-destructive text-sm">{error}</p>}
-          </div>
-          <Button type="submit" className="w-full" disabled={!token.trim() || loading}>
-            {loading ? "Verifying…" : "Continue"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Welcome to Refine</h1>
+        <p className="text-muted-foreground mt-1.5">
+          Let's get your server set up. Enter your admin token to continue.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="token">Admin Token</Label>
+          <Input
+            id="token"
+            type="password"
+            placeholder="Enter your ADMIN_TOKEN"
+            value={token}
+            onChange={(e) => setTokenValue(e.target.value)}
+            autoFocus
+          />
+          {error && <p className="text-destructive text-sm">{error}</p>}
+          <p className="text-xs text-muted-foreground">
+            This is the{" "}
+            <code className="bg-muted rounded px-1 py-0.5">ADMIN_TOKEN</code>{" "}
+            value from your server environment.
+          </p>
+        </div>
+        <Button type="submit" className="w-full" disabled={!token.trim() || loading}>
+          {loading ? "Verifying…" : "Continue"}
+        </Button>
+      </form>
+    </div>
   )
 }

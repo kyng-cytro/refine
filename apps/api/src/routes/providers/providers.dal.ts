@@ -6,20 +6,8 @@ export const list = async () => {
   })
 }
 
-export const listPrefs = async () => {
+export const listGlobalPrefs = async () => {
   return db.query.userModelPrefs.findMany({
     where: orm.isNull(schema.userModelPrefs.sessionId),
   })
-}
-
-export const upsertPref = async (modelId: string, enabled: boolean) => {
-  const [row] = await db
-    .insert(schema.userModelPrefs)
-    .values({ sessionId: null as unknown as string, modelId, enabled })
-    .onConflictDoUpdate({
-      target: [schema.userModelPrefs.sessionId, schema.userModelPrefs.modelId],
-      set: { enabled },
-    })
-    .returning()
-  return row!
 }

@@ -1,26 +1,26 @@
 import { db, orm, schema } from "@/lib/db"
+import { randomUUIDv7 } from "bun"
 
-const TOKEN_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789"
-
-const generateToken = (length = 32) => {
-  let result = ""
-  for (let i = 0; i < length; i++) {
-    result += TOKEN_CHARS[Math.floor(Math.random() * TOKEN_CHARS.length)]
-  }
-  return result
-}
+const map = (row: typeof schema.pairingTokens.$inferSelect) => ({
+  id: row.id,
+  token: row.token,
+  label: row.label,
+  used: row.used,
+  createdAt: row.createdAt.getTime(),
+})
 
 export const getAll = async () => {
-  return db.query.pairingTokens.findMany({
+  const rows = await db.query.pairingTokens.findMany({
     orderBy: (t) => [orm.desc(t.createdAt)],
   })
+  return rows.map(map)
 }
 
 export const create = async (label: string) => {
-  const token = generateToken()
+  const token = randomUUIDv7()
   const [row] = await db
     .insert(schema.pairingTokens)
     .values({ token, label })
     .returning()
-  return row!
+  return map(row!)
 }

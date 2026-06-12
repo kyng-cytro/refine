@@ -3,11 +3,13 @@
   "name": "refine",
   "version": "0.0.0",
   "scripts": {
-    "dev": "turbo dev --filter=@refine/api",
+    "dev": "turbo dev --filter=@refine/api --filter=@refine/admin",
+    "api:dev": "turbo dev --filter=@refine/api",
     "admin:dev": "turbo dev --filter=@refine/admin",
     "admin:build": "turbo build --filter=@refine/admin",
     "build": "turbo build",
     "type-check": "turbo type-check",
+    "db:seed": "turbo db:seed --filter=@refine/db",
     "db:generate": "turbo db:generate --filter=@refine/db",
     "db:migrate": "turbo db:migrate --filter=@refine/db"
   },

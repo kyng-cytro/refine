@@ -32,7 +32,7 @@ export const pairingTokensRelations = relations(pairingTokens, ({ many }) => ({
   sessions: many(sessions),
 }))
 
-export const sessionsRelations = relations(sessions, ({ one, many }) => ({
+export const sessionsRelations = relations(sessions, ({ one }) => ({
   pairingToken: one(pairingTokens, {
     fields: [sessions.pairingTokenId],
     references: [pairingTokens.id],

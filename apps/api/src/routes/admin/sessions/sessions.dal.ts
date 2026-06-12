@@ -1,10 +1,22 @@
 import { db, orm, schema } from "@/lib/db"
 
+type SessionRow = typeof schema.sessions.$inferSelect & {
+  pairingToken: typeof schema.pairingTokens.$inferSelect
+}
+
+const map = (row: SessionRow) => ({
+  id: row.id,
+  deviceName: row.deviceName,
+  createdAt: row.createdAt.getTime(),
+  pairingTokenLabel: row.pairingToken.label,
+})
+
 export const getAll = async () => {
-  return db.query.sessions.findMany({
+  const rows = await db.query.sessions.findMany({
     with: { pairingToken: true },
     orderBy: (s) => [orm.desc(s.createdAt)],
   })
+  return rows.map(map)
 }
 
 export const remove = async (id: string) => {

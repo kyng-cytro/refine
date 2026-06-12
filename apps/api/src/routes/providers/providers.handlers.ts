@@ -10,15 +10,15 @@ export const list: AppRouteHandler<List, AuthenticatedContext> = async (c) => {
   try {
     const [enabledProviders, modelPrefs] = await Promise.all([
       dal.list(),
-      dal.listPrefs(),
+      dal.listGlobalPrefs(),
     ])
     const disabledModels = new Set(
       modelPrefs.filter((p) => !p.enabled).map((p) => p.modelId),
     )
     const providers = enabledProviders.map((p) => {
-      const providerModels = MODELS.filter((m) => m.provider === p.provider)
+      const providerModels = MODELS.filter((m) => m.provider === p.slug)
       return {
-        provider: p.provider as ModelProvider,
+        provider: p.slug as ModelProvider,
         enabled: p.enabled,
         models: providerModels
           .filter((m) => !disabledModels.has(m.id))

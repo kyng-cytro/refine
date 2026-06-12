@@ -10,13 +10,6 @@ export const unauthorized = {
   ),
 }
 
-export const forbidden = {
-  [HttpStatusCodes.FORBIDDEN]: helpers.jsonContent(
-    createMessageObjectSchema(HttpStatusPhrases.FORBIDDEN),
-    HttpStatusPhrases.FORBIDDEN,
-  ),
-}
-
 export const notFound = {
   [HttpStatusCodes.NOT_FOUND]: helpers.jsonContent(
     createMessageObjectSchema(HttpStatusPhrases.NOT_FOUND),
@@ -42,12 +35,5 @@ export const serverError = {
   [HttpStatusCodes.INTERNAL_SERVER_ERROR]: helpers.jsonContent(
     createMessageObjectSchema(HttpStatusPhrases.INTERNAL_SERVER_ERROR),
     HttpStatusPhrases.INTERNAL_SERVER_ERROR,
-  ),
-}
-
-export const unprocessable = {
-  [HttpStatusCodes.UNPROCESSABLE_ENTITY]: helpers.jsonContent(
-    createMessageObjectSchema(HttpStatusPhrases.UNPROCESSABLE_ENTITY),
-    HttpStatusPhrases.UNPROCESSABLE_ENTITY,
   ),
 }
