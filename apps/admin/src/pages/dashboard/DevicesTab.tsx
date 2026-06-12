@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react"
-import QRCode from "react-qr-code"
 import { api, type Session, type SessionModelPref, type Token } from "@/lib/api"
 import { MODELS } from "@/lib/models"
+import { CopyButton } from "@/components/copy-button"
+import { PairingTokenDisplay } from "@/components/pairing-token-display"
+import { ToggleSwitch } from "@/components/ui/toggle-switch"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { Check, ChevronDown, ChevronRight, Clock, Copy, Settings2, Smartphone, Trash2 } from "lucide-react"
+import { ChevronDown, Clock, Settings2, Smartphone, Trash2 } from "lucide-react"
 
 function formatExpiry(expiresAt: number | null): string {
   if (!expiresAt) return "Never"
@@ -146,9 +148,7 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
                       <span className="text-sm">{m.label}</span>
                       <span className="text-xs text-muted-foreground ml-2">{m.provider}</span>
                     </div>
-                    <div className={`relative h-5 w-9 rounded-full transition-colors ${active ? "bg-primary" : "bg-input"}`}>
-                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${active ? "translate-x-4" : "translate-x-0.5"}`} />
-                    </div>
+                    <ToggleSwitch active={active} />
                   </div>
                 )
               })}
@@ -160,20 +160,6 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
   )
 }
 
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false)
-  const copy = () => {
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-  return (
-    <Button variant="ghost" size="icon" className="shrink-0 h-7 w-7" onClick={copy}>
-      {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
-    </Button>
-  )
-}
-
 export default function DevicesTab() {
   const [sessions, setSessions] = useState<Session[]>([])
   const [serverUrl, setServerUrl] = useState("")
@@ -181,7 +167,6 @@ export default function DevicesTab() {
   const [label, setLabel] = useState("")
   const [newToken, setNewToken] = useState<Token | null>(null)
   const [creating, setCreating] = useState(false)
-  const [showManual, setShowManual] = useState(false)
   const [error, setError] = useState("")
 
   const load = () => {
@@ -200,7 +185,6 @@ export default function DevicesTab() {
     setCreating(true)
     setError("")
     setNewToken(null)
-    setShowManual(false)
     try {
       setNewToken(await api.tokens.create(label.trim()))
       setLabel("")
@@ -259,46 +243,7 @@ export default function DevicesTab() {
             </div>
           </form>
 
-          {newToken && (
-            <div className="rounded-lg border space-y-4 p-4">
-              <p className="text-xs text-muted-foreground">
-                This token expires in 30 minutes.
-              </p>
-              <div className="flex justify-center">
-                <div className="rounded-lg bg-white p-3">
-                  <QRCode value={newToken.link} size={160} />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground font-medium">Deep link</p>
-                <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
-                  <code className="text-xs font-mono flex-1 break-all">{newToken.link}</code>
-                  <CopyButton text={newToken.link} />
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => setShowManual((v) => !v)}
-              >
-                {showManual ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                Or enter manually
-              </button>
-
-              {showManual && (
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground font-medium">Token</p>
-                  <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
-                    <code className="text-xs font-mono flex-1 break-all">{newToken.token}</code>
-                    <CopyButton text={newToken.token} />
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
+          {newToken && <PairingTokenDisplay token={newToken} />}
           {error && <p className="text-destructive text-sm">{error}</p>}
         </CardContent>
       </Card>

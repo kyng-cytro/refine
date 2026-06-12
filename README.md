@@ -146,49 +146,11 @@ Provider API keys are encrypted with AES-256-GCM before storage (`ENCRYPTION_KEY
 
 ## Adding a new provider
 
-Adding a provider touches six files. Walk through them in order.
+Adding a provider touches nine files. Walk through them in order.
 
-### 1. Register the models — `apps/mobile/src/constants/models.ts`
+### 1. Shared schemas — `packages/schemas/src/index.ts`
 
-Add entries to the `MODELS` array:
-
-```ts
-{
-  id: "your-model-id",
-  label: "Display Name",
-  provider: "yourprovider",   // slug used everywhere
-  apiUrl: "https://api.yourprovider.com/v1/...",
-},
-```
-
-The `provider` slug is the linking key — it must match what you use in every other step.
-
-### 2. Wire the AI SDK — `apps/api/src/routes/refine/refine.dal.ts`
-
-Install the Vercel AI SDK package for your provider:
-
-```bash
-bun add @ai-sdk/yourprovider --cwd apps/api
-```
-
-Then add a case in the provider factory inside the DAL:
-
-```ts
-import { createYourProvider } from "@ai-sdk/yourprovider"
-
-case "yourprovider": {
-  const provider = createYourProvider({ apiKey })
-  return provider(modelId)
-}
-```
-
-### 3. Database — no changes needed
-
-The `providers` table stores slugs as plain strings. Inserting via `PUT /admin/providers/yourprovider` in the admin panel is sufficient.
-
-### 4. Shared schemas — `packages/schemas/src/index.ts`
-
-If `ModelProviderSchema` is a Zod enum, add `"yourprovider"` to it:
+Add `"yourprovider"` to `ModelProviderSchema`:
 
 ```ts
 export const ModelProviderSchema = z.enum([
@@ -199,9 +161,84 @@ export const ModelProviderSchema = z.enum([
 ])
 ```
 
-### 5. SVG icon — `apps/mobile/src/components/ProviderIcon.tsx`
+### 2. API model list — `apps/api/src/lib/models.ts`
 
-Add an icon component and a case in the switch:
+Add entries to `MODELS`:
+
+```ts
+{ id: "yourmodel-v1", label: "Your Model v1", provider: "yourprovider" },
+```
+
+### 3. Wire the AI SDK — `apps/api/src/routes/refine/refine.dal.ts`
+
+Install the Vercel AI SDK package:
+
+```bash
+bun add @ai-sdk/yourprovider --cwd apps/api
+```
+
+Add a case in the provider factory:
+
+```ts
+import { createYourProvider } from "@ai-sdk/yourprovider"
+
+case "yourprovider": {
+  const provider = createYourProvider({ apiKey })
+  return provider(modelId)
+}
+```
+
+### 4. Database — no changes needed
+
+The `providers` table stores slugs as plain strings.
+
+### 5. Admin model list — `apps/admin/src/lib/models.ts`
+
+Add to `MODELS` and `PROVIDERS`:
+
+```ts
+export const MODELS: ModelConfig[] = [
+  // ...existing
+  { id: "yourmodel-v1", label: "Your Model v1", provider: "yourprovider" },
+]
+
+export const PROVIDERS: ModelProvider[] = ["openai", "anthropic", "google", "yourprovider"]
+```
+
+### 6. Admin provider metadata — `apps/admin/src/lib/provider-meta.tsx`
+
+Add a `Logo` component and an entry in `PROVIDER_META`. The logo SVG uses `className` for sizing so it adapts to context:
+
+```tsx
+const YourProviderLogo: React.FC<{ className?: string }> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="YOUR_SVG_PATH_DATA" />
+  </svg>
+)
+
+export const PROVIDER_META: Record<ModelProvider, ProviderMetaItem> = {
+  // ...existing
+  yourprovider: {
+    label: "Your Provider",
+    description: "Model names shown in the accordion",
+    placeholder: "key-prefix…",
+    Logo: YourProviderLogo,
+  },
+}
+```
+
+### 7. Mobile model list — `apps/mobile/src/constants/models.ts`
+
+```ts
+{
+  id: "yourmodel-v1",
+  label: "Your Model v1",
+  provider: "yourprovider",
+  apiUrl: "https://api.yourprovider.com/v1/...",
+},
+```
+
+### 8. Mobile SVG icon — `apps/mobile/src/components/ProviderIcon.tsx`
 
 ```tsx
 function YourProviderIcon({ size, color }: { size: number; color: string }) {
@@ -217,16 +254,14 @@ case "yourprovider":
   return <YourProviderIcon size={size} color={color} />
 ```
 
-Use the official brand SVG path data. The icon is tinted with the theme's `primary` color via `fill={color}` — don't hardcode a brand color.
+Use the official brand SVG path. The icon is tinted with the theme's `primary` color via `fill={color}` — don't hardcode a brand color.
 
-### 6. Display label — `apps/mobile/src/components/settings/ProvidersSection.tsx`
+### 9. Mobile display label — `apps/mobile/src/components/settings/ProvidersSection.tsx`
 
 ```ts
 const PROVIDER_LABELS: Record<string, string> = {
-  google: "Google",
-  anthropic: "Anthropic",
-  openai: "OpenAI",
-  yourprovider: "Your Provider", // add this
+  // ...existing
+  yourprovider: "Your Provider",
 }
 ```
 
