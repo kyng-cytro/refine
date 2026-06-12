@@ -12,6 +12,10 @@
       "cache": false,
       "persistent": true
     },
+    "android": {
+      "cache": false,
+      "persistent": true
+    },
     "db:generate": {
       "cache": true,
       "outputs": ["drizzle/**"]
