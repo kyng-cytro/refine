@@ -136,14 +136,14 @@ export default function RootLayout() {
   useEffect(() => {
     if (!serverUrl || !sessionToken) return
     const client = getApiClient()
-    client.tones
-      .list()
-      .then(setTones)
-      .catch(() => {})
-    client.history
-      .list({ limit: 50 })
-      .then((r) => setHistoryItems(r.data))
-      .catch(() => {})
+    const onUnauth = (e: unknown) => {
+      if ((e as any)?.status === 401 || String((e as any)?.message).includes("401")) {
+        useSettingsStore.getState().clearServerConfig()
+      }
+    }
+    client.auth.me().catch(onUnauth)
+    client.tones.list().then(setTones).catch(onUnauth)
+    client.history.list({ limit: 50 }).then((r) => setHistoryItems(r.data)).catch(onUnauth)
     client.providers
       .list()
       .then((r) => {
@@ -152,7 +152,7 @@ export default function RootLayout() {
           .filter((m) => m.enabledByUser !== false)
         setModels(models)
       })
-      .catch(() => {})
+      .catch(onUnauth)
   }, [serverUrl, sessionToken])
 
   useEffect(() => {

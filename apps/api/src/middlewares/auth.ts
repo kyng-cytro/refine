@@ -17,7 +17,7 @@ export const authenticate = createMiddleware<CustomContext>(async (c, next) => {
   const session = await db.query.sessions.findFirst({
     where: orm.eq(schema.sessions.sessionToken, token),
   })
-  if (!session) {
+  if (!session || (session.expiresAt && session.expiresAt < new Date())) {
     return c.json(
       { message: HttpStatusPhrases.UNAUTHORIZED },
       HttpStatusCodes.UNAUTHORIZED,

@@ -6,6 +6,10 @@ export const findUnusedToken = async (token: string) => {
     where: orm.and(
       orm.eq(schema.pairingTokens.token, token),
       orm.eq(schema.pairingTokens.used, false),
+      orm.or(
+        orm.isNull(schema.pairingTokens.expiresAt),
+        orm.gt(schema.pairingTokens.expiresAt, new Date()),
+      ),
     ),
   })
 }

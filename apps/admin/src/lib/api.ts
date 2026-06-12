@@ -69,6 +69,8 @@ export const api = {
   },
   sessions: {
     list: () => request<AdminSession[]>("GET", "/admin/sessions"),
+    expiry: (id: string, expiresAt: number | null) =>
+      request<AdminSession>("PATCH", `/admin/sessions/${id}`, { expiresAt }),
     remove: (id: string) => request<void>("DELETE", `/admin/sessions/${id}`),
     listModels: (sessionId: string) =>
       request<SessionModelPref[]>("GET", `/admin/sessions/${sessionId}/models`),
@@ -93,5 +95,7 @@ export const api = {
         "GET",
         `/admin/history${cursor ? `?cursor=${cursor}&limit=20` : "?limit=20"}`,
       ),
+    remove: (id: string) => request<void>("DELETE", `/admin/history/${id}`),
+    removeAll: () => request<void>("DELETE", "/admin/history"),
   },
 }

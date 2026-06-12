@@ -13,6 +13,7 @@ export const AdminSessionSchema = z.object({
   id: z.string(),
   deviceName: z.string(),
   createdAt: z.number(),
+  expiresAt: z.number().nullable(),
   pairingTokenLabel: z.string(),
 })
 

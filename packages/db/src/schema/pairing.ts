@@ -12,6 +12,8 @@ export const pairingTokens = sqliteTable("pairing_tokens", {
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" })
+    .$defaultFn(() => new Date(Date.now() + 30 * 60 * 1000)),
 })
 
 export const sessions = sqliteTable("sessions", {
@@ -26,6 +28,7 @@ export const sessions = sqliteTable("sessions", {
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }),
 })
 
 export const pairingTokensRelations = relations(pairingTokens, ({ many }) => ({

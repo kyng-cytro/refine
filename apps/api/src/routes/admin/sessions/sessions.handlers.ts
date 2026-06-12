@@ -1,6 +1,6 @@
 import type { AppRouteHandler } from "@/lib/context"
 import * as dal from "@/routes/admin/sessions/sessions.dal"
-import type { List, Remove } from "@/routes/admin/sessions/sessions.routes"
+import type { List, Remove, SetExpiry } from "@/routes/admin/sessions/sessions.routes"
 import { HTTPException } from "hono/http-exception"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 
@@ -11,6 +11,27 @@ export const list: AppRouteHandler<List> = async (c) => {
     c.var.logger.error(`[ADMIN:SESSIONS:LIST] ${error}`)
     throw new HTTPException(HttpStatusCodes.INTERNAL_SERVER_ERROR, {
       message: "Failed to fetch sessions",
+    })
+  }
+}
+
+export const expiry: AppRouteHandler<SetExpiry> = async (c) => {
+  try {
+    const { id } = c.req.valid("param")
+    const { expiresAt } = c.req.valid("json")
+    const updated = await dal.expiry(id, expiresAt !== null ? new Date(expiresAt) : null)
+    if (!updated) return c.json({ message: "Not found" }, HttpStatusCodes.NOT_FOUND)
+    return c.json({
+      id: updated.id,
+      deviceName: updated.deviceName,
+      createdAt: updated.createdAt.getTime(),
+      expiresAt: updated.expiresAt?.getTime() ?? null,
+      pairingTokenLabel: "",
+    }, HttpStatusCodes.OK)
+  } catch (error) {
+    c.var.logger.error(`[ADMIN:SESSIONS:EXPIRY] ${error}`)
+    throw new HTTPException(HttpStatusCodes.INTERNAL_SERVER_ERROR, {
+      message: "Failed to update session expiry",
     })
   }
 }

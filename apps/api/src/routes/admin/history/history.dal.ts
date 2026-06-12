@@ -28,3 +28,15 @@ export const list = async (query: HistoryQuery) => {
     }),
   })
 }
+
+export const remove = async (id: string) => {
+  const [deleted] = await db
+    .delete(schema.history)
+    .where(orm.eq(schema.history.id, id))
+    .returning()
+  return deleted ?? null
+}
+
+export const removeAll = async () => {
+  await db.delete(schema.history)
+}

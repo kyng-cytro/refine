@@ -15,6 +15,20 @@
       "when": 1781267241812,
       "tag": "0001_handy_war_machine",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1781275174212,
+      "tag": "0002_smiling_nightcrawler",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1781275521063,
+      "tag": "0003_complex_pandemic",
+      "breakpoints": true
     }
   ]
 }

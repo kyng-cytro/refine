@@ -1,23 +1,37 @@
 import { useEffect, useState } from "react"
 import QRCode from "react-qr-code"
-import { api, type Session, type SessionModelPref, type Token } from "@/lib/api"
+import { api, type AdminSession as Session, type SessionModelPref, type AdminToken as Token } from "@/lib/api"
 import { MODELS } from "@/lib/models"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { Check, ChevronDown, ChevronRight, Copy, Settings2, Smartphone, Trash2 } from "lucide-react"
+import { Check, ChevronDown, ChevronRight, Clock, Copy, Settings2, Smartphone, Trash2 } from "lucide-react"
+
+function formatExpiry(expiresAt: number | null): string {
+  if (!expiresAt) return "Never"
+  const d = new Date(expiresAt)
+  if (d < new Date()) return "Expired"
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+}
 
 interface DeviceRowProps {
   session: Session
   onRevoke: (id: string) => void
+  onExpiryChange: (id: string, expiresAt: number | null) => void
 }
 
-function DeviceRow({ session, onRevoke }: DeviceRowProps) {
+function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
   const [expanded, setExpanded] = useState(false)
   const [prefs, setPrefs] = useState<Record<string, boolean>>({})
   const [loaded, setLoaded] = useState(false)
+  const [expiryInput, setExpiryInput] = useState(
+    session.expiresAt ? new Date(session.expiresAt).toISOString().slice(0, 10) : ""
+  )
+  const [savingExpiry, setSavingExpiry] = useState(false)
+
+  const isExpired = session.expiresAt !== null && session.expiresAt < Date.now()
 
   const loadPrefs = async () => {
     if (loaded) return
@@ -37,8 +51,19 @@ function DeviceRow({ session, onRevoke }: DeviceRowProps) {
     }
   }
 
+  const saveExpiry = async () => {
+    setSavingExpiry(true)
+    try {
+      const ts = expiryInput ? new Date(expiryInput).getTime() : null
+      const updated = await api.sessions.expiry(session.id, ts)
+      onExpiryChange(session.id, updated.expiresAt)
+    } finally {
+      setSavingExpiry(false)
+    }
+  }
+
   return (
-    <div className="rounded-lg border overflow-hidden">
+    <div className={`rounded-lg border overflow-hidden ${isExpired ? "opacity-60" : ""}`}>
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
@@ -48,6 +73,11 @@ function DeviceRow({ session, onRevoke }: DeviceRowProps) {
             <p className="text-sm font-medium">{session.deviceName}</p>
             <p className="text-xs text-muted-foreground">
               via {session.pairingTokenLabel} · {new Date(session.createdAt).toLocaleDateString()}
+              {session.expiresAt !== null && (
+                <span className={isExpired ? " text-destructive" : ""}>
+                  {" "}· expires {formatExpiry(session.expiresAt)}
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -73,28 +103,56 @@ function DeviceRow({ session, onRevoke }: DeviceRowProps) {
       </div>
 
       {expanded && (
-        <div className="border-t px-4 py-3 bg-muted/30">
-          <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Model overrides</p>
-          <p className="text-xs text-muted-foreground mb-3">Override global model availability for this device only.</p>
-          <div className="space-y-1">
-            {MODELS.map((m) => {
-              const active = prefs[m.id] ?? true
-              return (
-                <div
-                  key={m.id}
-                  className="flex items-center justify-between rounded-md px-3 py-2 cursor-pointer hover:bg-muted transition-colors"
-                  onClick={() => toggle(m.id, !active)}
+        <div className="border-t px-4 py-3 bg-muted/30 space-y-4">
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Session expiry</p>
+            <div className="flex items-center gap-2">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <Input
+                type="date"
+                value={expiryInput}
+                onChange={(e) => setExpiryInput(e.target.value)}
+                className="h-8 text-sm"
+              />
+              <Button size="sm" variant="outline" onClick={saveExpiry} disabled={savingExpiry}>
+                {savingExpiry ? "Saving…" : "Set"}
+              </Button>
+              {expiryInput && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-muted-foreground"
+                  onClick={() => { setExpiryInput(""); onExpiryChange(session.id, null); api.sessions.expiry(session.id, null) }}
                 >
-                  <div>
-                    <span className="text-sm">{m.label}</span>
-                    <span className="text-xs text-muted-foreground ml-2">{m.provider}</span>
+                  Clear
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Model overrides</p>
+            <p className="text-xs text-muted-foreground mb-3">Override global model availability for this device only.</p>
+            <div className="space-y-1">
+              {MODELS.map((m) => {
+                const active = prefs[m.id] ?? true
+                return (
+                  <div
+                    key={m.id}
+                    className="flex items-center justify-between rounded-md px-3 py-2 cursor-pointer hover:bg-muted transition-colors"
+                    onClick={() => toggle(m.id, !active)}
+                  >
+                    <div>
+                      <span className="text-sm">{m.label}</span>
+                      <span className="text-xs text-muted-foreground ml-2">{m.provider}</span>
+                    </div>
+                    <div className={`relative h-5 w-9 rounded-full transition-colors ${active ? "bg-primary" : "bg-input"}`}>
+                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${active ? "translate-x-4" : "translate-x-0.5"}`} />
+                    </div>
                   </div>
-                  <div className={`relative h-5 w-9 rounded-full transition-colors ${active ? "bg-primary" : "bg-input"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${active ? "translate-x-4" : "translate-x-0.5"}`} />
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
         </div>
       )}
@@ -162,6 +220,10 @@ export default function DevicesTab() {
     }
   }
 
+  const updateExpiry = (id: string, expiresAt: number | null) => {
+    setSessions((prev) => prev.map((s) => s.id === id ? { ...s, expiresAt } : s))
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -199,6 +261,9 @@ export default function DevicesTab() {
 
           {newToken && (
             <div className="rounded-lg border space-y-4 p-4">
+              <p className="text-xs text-muted-foreground">
+                This token expires in 30 minutes.
+              </p>
               <div className="flex justify-center">
                 <div className="rounded-lg bg-white p-3">
                   <QRCode value={newToken.link} size={160} />
@@ -250,7 +315,9 @@ export default function DevicesTab() {
             <p className="text-sm text-muted-foreground">No devices connected yet.</p>
           </div>
         ) : (
-          sessions.map((s) => <DeviceRow key={s.id} session={s} onRevoke={revoke} />)
+          sessions.map((s) => (
+            <DeviceRow key={s.id} session={s} onRevoke={revoke} onExpiryChange={updateExpiry} />
+          ))
         )}
       </div>
     </div>
