@@ -9,6 +9,6 @@ const client = createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN })
 const db = drizzle({ client })
 
 console.log(`Running migrations on ${url}...`)
-await migrate(db, { migrationsFolder: "./drizzle" })
+await migrate(db, { migrationsFolder: `${import.meta.dir}/drizzle` })
 console.log("Migrations complete.")
 client.close()
