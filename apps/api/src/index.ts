@@ -1,4 +1,3 @@
-import type { Hono } from "hono"
 import { configureOpenAPI } from "@/lib/configure-openapi"
 import { createApp, createRoot } from "@/lib/create-app"
 import routes from "@/routes"
@@ -29,4 +28,4 @@ process.on("uncaughtException", (err) => {
 })
 
 export type AppType = typeof root
-export default root as Hono
+export default { fetch: root.fetch }
