@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { api, type Tone } from "@/lib/api"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -13,8 +12,16 @@ export default function TonesTab() {
   const [tones, setTones] = useState<Tone[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState({ name: "", slug: "", instructions: "" })
-  const [newForm, setNewForm] = useState({ name: "", slug: "", instructions: "" })
+  const [editForm, setEditForm] = useState({
+    name: "",
+    slug: "",
+    instructions: "",
+  })
+  const [newForm, setNewForm] = useState({
+    name: "",
+    slug: "",
+    instructions: "",
+  })
   const [showNew, setShowNew] = useState(false)
   const [error, setError] = useState("")
 
@@ -28,7 +35,11 @@ export default function TonesTab() {
 
   const startEdit = (tone: Tone) => {
     setEditingId(tone.id)
-    setEditForm({ name: tone.name, slug: tone.slug, instructions: tone.instructions })
+    setEditForm({
+      name: tone.name,
+      slug: tone.slug,
+      instructions: tone.instructions,
+    })
   }
 
   const saveEdit = async (id: string) => {
@@ -64,7 +75,10 @@ export default function TonesTab() {
   }
 
   const toSlug = (name: string) =>
-    name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
 
   if (loading) return <p className="text-sm text-muted-foreground">Loading…</p>
 
@@ -73,7 +87,7 @@ export default function TonesTab() {
       {error && <p className="text-destructive text-sm">{error}</p>}
 
       {tones.map((tone) => (
-        <Card key={tone.id} className="overflow-hidden">
+        <Card key={tone.id} className="overflow-hidden py-2">
           {editingId === tone.id ? (
             <CardContent className="pt-4 space-y-3">
               <div className="grid grid-cols-2 gap-3">
@@ -81,14 +95,18 @@ export default function TonesTab() {
                   <Label>Name</Label>
                   <Input
                     value={editForm.name}
-                    onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((f) => ({ ...f, name: e.target.value }))
+                    }
                   />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Slug</Label>
                   <Input
                     value={editForm.slug}
-                    onChange={(e) => setEditForm((f) => ({ ...f, slug: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((f) => ({ ...f, slug: e.target.value }))
+                    }
                   />
                 </div>
               </div>
@@ -97,11 +115,17 @@ export default function TonesTab() {
                 <Textarea
                   rows={3}
                   value={editForm.instructions}
-                  onChange={(e) => setEditForm((f) => ({ ...f, instructions: e.target.value }))}
+                  onChange={(e) =>
+                    setEditForm((f) => ({ ...f, instructions: e.target.value }))
+                  }
                 />
               </div>
               <div className="flex gap-2 justify-end">
-                <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditingId(null)}
+                >
                   <X className="h-4 w-4 mr-1.5" /> Cancel
                 </Button>
                 <Button size="sm" onClick={() => saveEdit(tone.id)}>
@@ -110,20 +134,20 @@ export default function TonesTab() {
               </div>
             </CardContent>
           ) : (
-            <CardContent className="flex items-start justify-between gap-4 py-4">
+            <CardContent className="flex items-start justify-between gap-4 py-2 px-4">
               <div className="space-y-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium">{tone.name}</p>
-                  <Badge variant="outline" className="text-xs font-mono shrink-0">
-                    {tone.slug}
-                  </Badge>
-                </div>
+                <p className="text-sm font-medium">{tone.name}</p>
                 <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                   {tone.instructions}
                 </p>
               </div>
               <div className="flex gap-1 shrink-0">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => startEdit(tone)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => startEdit(tone)}
+                >
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
                 <Button
@@ -154,7 +178,11 @@ export default function TonesTab() {
                     value={newForm.name}
                     onChange={(e) => {
                       const name = e.target.value
-                      setNewForm((f) => ({ ...f, name, slug: f.slug || toSlug(name) }))
+                      setNewForm((f) => ({
+                        ...f,
+                        name,
+                        slug: f.slug || toSlug(name),
+                      }))
                     }}
                     autoFocus
                   />
@@ -164,7 +192,9 @@ export default function TonesTab() {
                   <Input
                     placeholder="formal"
                     value={newForm.slug}
-                    onChange={(e) => setNewForm((f) => ({ ...f, slug: e.target.value }))}
+                    onChange={(e) =>
+                      setNewForm((f) => ({ ...f, slug: e.target.value }))
+                    }
                   />
                 </div>
               </div>
@@ -174,17 +204,26 @@ export default function TonesTab() {
                   rows={3}
                   placeholder="Rewrite the text in a formal, professional tone…"
                   value={newForm.instructions}
-                  onChange={(e) => setNewForm((f) => ({ ...f, instructions: e.target.value }))}
+                  onChange={(e) =>
+                    setNewForm((f) => ({ ...f, instructions: e.target.value }))
+                  }
                 />
               </div>
               <div className="flex gap-2 justify-end">
-                <Button type="button" variant="ghost" size="sm" onClick={() => setShowNew(false)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowNew(false)}
+                >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={!newForm.name || !newForm.slug || !newForm.instructions}
+                  disabled={
+                    !newForm.name || !newForm.slug || !newForm.instructions
+                  }
                 >
                   Add Tone
                 </Button>
@@ -193,7 +232,11 @@ export default function TonesTab() {
           </CardContent>
         </Card>
       ) : (
-        <Button variant="outline" className="w-full" onClick={() => setShowNew(true)}>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => setShowNew(true)}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Add Tone
         </Button>

@@ -1,5 +1,5 @@
-import * as Clipboard from "expo-clipboard"
 import { withHaptics } from "@/utils/haptics"
+import * as Clipboard from "expo-clipboard"
 import { useRef } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { Swipeable } from "react-native-gesture-handler"
@@ -114,30 +114,30 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   pressable: {
-    paddingHorizontal: 14,
+    gap: 4,
     paddingVertical: 12,
-    gap: 8,
+    paddingHorizontal: 14,
   },
   refined: {
     lineHeight: 22,
   },
   footer: {
+    gap: 8,
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
   },
   source: {
     flex: 1,
     opacity: 0.6,
   },
   deleteAction: {
-    justifyContent: "center",
-    alignItems: "center",
     width: 64,
-    borderRadius: 12,
-    marginBottom: 8,
-    marginRight: 16,
     marginLeft: 0,
+    marginRight: 16,
+    marginBottom: 8,
+    borderRadius: 12,
+    alignItems: "center",
     alignSelf: "stretch",
+    justifyContent: "center",
   },
 })

@@ -41,6 +41,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@expo/config-plugins": "^56.0.8",
     "@types/node": "^25.9.1",
     "@types/react": "~19.2.2",
     "eslint": "^9.0.0",
@@ -53,7 +54,10 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "prebuild": "expo prebuild --platform android --clean",
+    "eas:preview": "eas build --platform android --profile preview",
+    "eas:production": "eas build --platform android --profile production"
   },
   "private": true
 }

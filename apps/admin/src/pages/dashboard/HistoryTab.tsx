@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { api, type HistoryItem } from "@/lib/api"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 
@@ -51,11 +50,10 @@ export default function HistoryTab() {
     <div className="space-y-3">
       {items.map((item) => (
         <div key={item.id} className="rounded-lg border p-4 space-y-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="secondary" className="text-xs font-mono">{item.modelId}</Badge>
-            <Badge variant="outline" className="text-xs">{item.toneSlug}</Badge>
-            <span className="ml-auto text-xs text-muted-foreground">
-              {item.deviceName} · {new Date(item.createdAt).toLocaleString()}
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-medium">{item.modelId} · {item.toneSlug}</span>
+            <span className="text-xs text-muted-foreground shrink-0">
+              {item.deviceName ?? <span className="italic">deleted device</span>} · {new Date(item.createdAt).toLocaleString()}
             </span>
           </div>
           <div className="flex gap-3 items-start">

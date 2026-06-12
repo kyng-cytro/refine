@@ -164,7 +164,7 @@ class ProcessTextActivity : Activity() {
       orientation = LinearLayout.HORIZONTAL
       gravity = Gravity.CENTER_VERTICAL
       background = sheetBackground()
-      setPadding((24 * dp).toInt(), (36 * dp).toInt(), (24 * dp).toInt(), (40 * dp).toInt())
+      setPadding((24 * dp).toInt(), (36 * dp).toInt(), (24 * dp).toInt(), (56 * dp).toInt())
 
       addView(ProgressBar(this@ProcessTextActivity).apply {
         layoutParams = LinearLayout.LayoutParams((22 * dp).toInt(), (22 * dp).toInt())
@@ -189,7 +189,7 @@ class ProcessTextActivity : Activity() {
     val container = LinearLayout(this).apply {
       orientation = LinearLayout.VERTICAL
       background = sheetBackground()
-      setPadding((24 * dp).toInt(), (28 * dp).toInt(), (24 * dp).toInt(), (32 * dp).toInt())
+      setPadding((24 * dp).toInt(), (28 * dp).toInt(), (24 * dp).toInt(), (48 * dp).toInt())
 
       addView(TextView(this@ProcessTextActivity).apply {
         text = message

@@ -39,11 +39,11 @@ yarn-error.*
 
 example
 
-# generated native folders
-/ios
-/android
+# generated native folders (expo prebuild output)
+apps/mobile/android/
+apps/mobile/ios/
 
-# build outputs (if android/ ever becomes unignored)
+# build outputs
 *.apk
 *.aab
 local.properties

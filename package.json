@@ -12,6 +12,9 @@
     "db:migrate": "turbo db:migrate --filter=@refine/db",
     "db:generate": "turbo db:generate --filter=@refine/db",
     "mobile:android": "turbo android --filter=@refine/mobile",
+    "mobile:prebuild": "turbo prebuild --filter=@refine/mobile",
+    "mobile:eas:preview": "turbo eas:preview --filter=@refine/mobile",
+    "mobile:eas:production": "turbo eas:production --filter=@refine/mobile",
     "dev": "turbo dev --filter=@refine/api --filter=@refine/admin"
   },
   "workspaces": [

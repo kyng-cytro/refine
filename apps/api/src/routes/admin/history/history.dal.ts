@@ -11,7 +11,7 @@ export const list = async (query: HistoryQuery) => {
     with: { session: true },
   })
   type Row = typeof schema.history.$inferSelect & {
-    session: typeof schema.sessions.$inferSelect
+    session: typeof schema.sessions.$inferSelect | null
   }
   return paginate.format(rows as Row[], {
     limit: query.limit,
@@ -23,7 +23,7 @@ export const list = async (query: HistoryQuery) => {
       modelId: item.modelId,
       toneSlug: item.toneSlug,
       createdAt: item.createdAt.getTime(),
-      deviceName: item.session.deviceName,
+      deviceName: item.session?.deviceName ?? null,
       sessionId: item.sessionId,
     }),
   })
