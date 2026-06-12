@@ -1,11 +1,10 @@
-import { env } from "bun"
-import { Database } from "bun:sqlite"
-import { drizzle } from "drizzle-orm/bun-sqlite"
+import { createClient } from "@libsql/client"
+import { drizzle } from "drizzle-orm/libsql"
 import * as schema from "./src/schema"
 
-const url = env.DATABASE_URL
+const url = process.env.DATABASE_URL
 if (!url) throw new Error("DATABASE_URL is required")
-const client = new Database(url)
+const client = createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN })
 const db = drizzle({ client, schema })
 
 console.log("Seeding database...")

@@ -14,6 +14,7 @@
     "db:studio": "bunx drizzle-kit studio"
   },
   "dependencies": {
+    "@libsql/client": "^0.17.3",
     "drizzle-orm": "^0.45.1"
   },
   "devDependencies": {

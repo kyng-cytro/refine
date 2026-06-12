@@ -51,7 +51,7 @@ Copy `apps/api/.env.example` to `apps/api/.env`:
 ```env
 ADMIN_TOKEN="your-secret-admin-token"
 HOST="http://192.168.1.x:3000"       # must be reachable from the mobile device
-DATABASE_URL="../../refine.db"
+DATABASE_URL="file:../../refine.db"
 ENCRYPTION_KEY="32-char-random-string"
 ```
 

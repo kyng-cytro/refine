@@ -8,7 +8,7 @@ CREATE TABLE `__new_pairing_tokens` (
 	`expires_at` integer
 );
 --> statement-breakpoint
-INSERT INTO `__new_pairing_tokens`("id", "token", "label", "used", "created_at", "expires_at") SELECT "id", "token", "label", "used", "created_at", "expires_at" FROM `pairing_tokens`;--> statement-breakpoint
+INSERT INTO `__new_pairing_tokens`("id", "token", "label", "used", "created_at", "expires_at") SELECT "id", "token", "label", "used", "created_at", NULL FROM `pairing_tokens`;--> statement-breakpoint
 DROP TABLE `pairing_tokens`;--> statement-breakpoint
 ALTER TABLE `__new_pairing_tokens` RENAME TO `pairing_tokens`;--> statement-breakpoint
 PRAGMA foreign_keys=ON;--> statement-breakpoint

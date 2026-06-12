@@ -39,7 +39,7 @@ COPY packages/schemas/src ./packages/schemas/src
 COPY --from=admin-builder /app/apps/api/public/admin ./apps/api/public/admin
 
 VOLUME /data
-ENV DATABASE_URL=/data/refine.db
+ENV DATABASE_URL=file:/data/refine.db
 ENV PORT=3000
 ENV APP_ENV=production
 
