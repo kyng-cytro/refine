@@ -27,7 +27,7 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
   const [prefs, setPrefs] = useState<Record<string, boolean>>({})
   const [loaded, setLoaded] = useState(false)
   const [expiryInput, setExpiryInput] = useState(
-    session.expiresAt ? new Date(session.expiresAt).toISOString().slice(0, 10) : ""
+    session.expiresAt ? new Date(session.expiresAt).toISOString().slice(0, 16) : ""
   )
   const [savingExpiry, setSavingExpiry] = useState(false)
 
@@ -109,7 +109,7 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
             <div className="flex items-center gap-2">
               <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <Input
-                type="date"
+                type="datetime-local"
                 value={expiryInput}
                 onChange={(e) => setExpiryInput(e.target.value)}
                 className="h-8 text-sm"
