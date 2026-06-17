@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { api, type Session, type SessionModelPref, type Token } from "@/lib/api"
-import { MODELS } from "@/lib/models"
+import { getModels } from "@/lib/models"
 import { CopyButton } from "@/components/copy-button"
 import { PairingTokenDisplay } from "@/components/pairing-token-display"
 import { ToggleSwitch } from "@/components/ui/toggle-switch"
@@ -136,7 +136,7 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
             <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Model overrides</p>
             <p className="text-xs text-muted-foreground mb-3">Override global model availability for this device only.</p>
             <div className="space-y-1">
-              {MODELS.map((m) => {
+              {getModels().map((m) => {
                 const active = prefs[m.id] ?? true
                 return (
                   <div

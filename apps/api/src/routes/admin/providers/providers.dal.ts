@@ -1,6 +1,6 @@
 import { encrypt } from "@/lib/crypto"
 import { db, orm, schema } from "@/lib/db"
-import { MODELS } from "@/lib/models"
+import { getProvider } from "@/lib/models"
 import type { ModelProvider } from "@refine/schemas"
 
 export const listAll = async () => {
@@ -15,7 +15,7 @@ export const listAll = async () => {
     provider: p.slug as ModelProvider,
     enabled: p.enabled,
     hasKey: true,
-    models: MODELS.filter((m) => m.provider === (p.slug as ModelProvider)).map((m) => ({
+    models: (getProvider(p.slug)?.models ?? []).map((m) => ({
       id: m.id,
       label: m.label,
       enabled: !disabledModels.has(m.id),

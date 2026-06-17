@@ -1,5 +1,5 @@
 import type { AppRouteHandler, AuthenticatedContext } from "@/lib/context"
-import { MODELS } from "@/lib/models"
+import { getProvider } from "@/lib/models"
 import * as dal from "@/routes/providers/providers.dal"
 import type { List } from "@/routes/providers/providers.routes"
 import type { ModelProvider } from "@refine/schemas"
@@ -16,17 +16,21 @@ export const list: AppRouteHandler<List, AuthenticatedContext> = async (c) => {
       modelPrefs.filter((p) => !p.enabled).map((p) => p.modelId),
     )
     const providers = enabledProviders.map((p) => {
-      const providerModels = MODELS.filter((m) => m.provider === p.slug)
+      const provider = getProvider(p.slug)
       return {
         provider: p.slug as ModelProvider,
         enabled: p.enabled,
-        models: providerModels
+        icon: provider?.icon,
+        docs: provider?.docs,
+        models: (provider?.models ?? [])
           .filter((m) => !disabledModels.has(m.id))
           .map((m) => ({
             id: m.id,
             label: m.label,
-            provider: m.provider,
+            provider: p.slug as ModelProvider,
             enabledByUser: true,
+            free: m.free,
+            icon: m.icon ?? provider?.icon,
           })),
       }
     })

@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { api } from "@/lib/api"
-import { MODELS, PROVIDER_LABELS, PROVIDERS, type ModelProvider } from "@/lib/models"
+import { PROVIDERS, getModels } from "@/lib/models"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -10,7 +10,7 @@ interface Props {
 
 export default function StepModels({ onNext }: Props) {
   const [enabled, setEnabled] = useState<Record<string, boolean>>(
-    Object.fromEntries(MODELS.map((m) => [m.id, true])),
+    Object.fromEntries(getModels().map((m) => [m.id, true])),
   )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -24,7 +24,7 @@ export default function StepModels({ onNext }: Props) {
     setError("")
     try {
       await Promise.all(
-        MODELS.map((m) =>
+        getModels().map((m) =>
           api.providers.toggleModel(m.provider, m.id, enabled[m.id]),
         ),
       )
@@ -47,10 +47,10 @@ export default function StepModels({ onNext }: Props) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           {PROVIDERS.map((provider) => (
-            <div key={provider}>
-              <p className="text-sm font-medium mb-3">{PROVIDER_LABELS[provider as ModelProvider]}</p>
+            <div key={provider.id}>
+              <p className="text-sm font-medium mb-3">{provider.label}</p>
               <div className="space-y-2">
-                {MODELS.filter((m) => m.provider === provider).map((m) => (
+                {provider.models.map((m) => (
                   <label
                     key={m.id}
                     className="flex items-center gap-3 cursor-pointer"
@@ -62,6 +62,9 @@ export default function StepModels({ onNext }: Props) {
                       onChange={() => toggle(m.id)}
                     />
                     <span className="text-sm">{m.label}</span>
+                    {m.free && (
+                      <span className="text-xs font-medium text-emerald-600">Free</span>
+                    )}
                   </label>
                 ))}
               </div>

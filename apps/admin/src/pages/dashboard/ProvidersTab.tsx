@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { api, type ProviderState } from "@/lib/api"
-import { MODELS, PROVIDERS, type ModelProvider } from "@/lib/models"
+import { PROVIDERS, getModels, type ModelProvider } from "@/lib/models"
 import { ProviderAccordion, type ProviderEntry } from "@/components/provider-accordion"
 
 interface FormState {
@@ -13,13 +13,13 @@ interface FormState {
 
 const defaultForms = () =>
   Object.fromEntries(
-    PROVIDERS.map((p) => [p, { apiKey: "", showKey: false, saving: false, saved: false, enabled: true }]),
+    PROVIDERS.map((p) => [p.id, { apiKey: "", showKey: false, saving: false, saved: false, enabled: true }]),
   ) as Record<ModelProvider, FormState>
 
 export default function ProvidersTab() {
   const [forms, setForms] = useState<Record<ModelProvider, FormState>>(defaultForms)
   const [models, setModels] = useState<Record<string, boolean>>(
-    Object.fromEntries(MODELS.map((m) => [m.id, true])),
+    Object.fromEntries(getModels().map((m) => [m.id, true])),
   )
   const [error, setError] = useState("")
 
@@ -33,7 +33,7 @@ export default function ProvidersTab() {
       })
       setForms((prev) =>
         Object.fromEntries(
-          PROVIDERS.map((p) => [p, { ...prev[p], enabled: enabledMap[p] ?? true }]),
+          PROVIDERS.map((p) => [p.id, { ...prev[p.id], enabled: enabledMap[p.id] ?? true }]),
         ) as Record<ModelProvider, FormState>,
       )
       setModels((prev) => ({ ...prev, ...modelMap }))
@@ -74,16 +74,16 @@ export default function ProvidersTab() {
   }
 
   const entries: ProviderEntry[] = PROVIDERS.map((p) => ({
-    provider: p,
-    apiKey: forms[p].apiKey,
-    showKey: forms[p].showKey,
-    saving: forms[p].saving,
-    saved: forms[p].saved,
-    enabled: forms[p].enabled,
-    onKeyChange: (v) => setForms((prev) => ({ ...prev, [p]: { ...prev[p], apiKey: v } })),
-    onToggleShow: () => setForms((prev) => ({ ...prev, [p]: { ...prev[p], showKey: !prev[p].showKey } })),
-    onSave: () => save(p),
-    onToggleEnabled: (enabled) => toggleProvider(p, enabled),
+    provider: p.id,
+    apiKey: forms[p.id].apiKey,
+    showKey: forms[p.id].showKey,
+    saving: forms[p.id].saving,
+    saved: forms[p.id].saved,
+    enabled: forms[p.id].enabled,
+    onKeyChange: (v) => setForms((prev) => ({ ...prev, [p.id]: { ...prev[p.id], apiKey: v } })),
+    onToggleShow: () => setForms((prev) => ({ ...prev, [p.id]: { ...prev[p.id], showKey: !prev[p.id].showKey } })),
+    onSave: () => save(p.id),
+    onToggleEnabled: (enabled) => toggleProvider(p.id, enabled),
   }))
 
   return (

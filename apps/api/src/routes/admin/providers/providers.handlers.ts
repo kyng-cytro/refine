@@ -1,5 +1,5 @@
 import type { AppRouteHandler } from "@/lib/context"
-import { MODEL_MAP } from "@/lib/models"
+import { getModel } from "@/lib/models"
 import * as dal from "@/routes/admin/providers/providers.dal"
 import type {
   ListProviders,
@@ -53,7 +53,7 @@ export const toggleModel: AppRouteHandler<ToggleModel> = async (c) => {
   try {
     const { provider, modelId } = c.req.valid("param")
     const { enabled } = c.req.valid("json")
-    const modelConfig = MODEL_MAP[modelId]
+    const modelConfig = getModel(modelId)
     if (!modelConfig || modelConfig.provider !== provider) {
       return c.json({ message: "Model not found for this provider" }, HttpStatusCodes.BAD_REQUEST)
     }
@@ -71,7 +71,7 @@ export const toggleSessionModel: AppRouteHandler<ToggleSessionModel> = async (c)
   try {
     const { sessionId, modelId } = c.req.valid("param")
     const { enabled } = c.req.valid("json")
-    if (!MODEL_MAP[modelId]) {
+    if (!getModel(modelId)) {
       return c.json({ message: "Unknown model" }, HttpStatusCodes.BAD_REQUEST)
     }
     const pref = await dal.toggleModel(modelId, enabled, sessionId)

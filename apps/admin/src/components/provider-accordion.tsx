@@ -1,5 +1,4 @@
-import { MODELS, PROVIDERS, type ModelProvider } from "@/lib/models"
-import { PROVIDER_META } from "@/lib/provider-meta"
+import { PROVIDERS, type ModelProvider, type Provider } from "@/lib/models"
 import {
   Accordion,
   AccordionContent,
@@ -10,7 +9,7 @@ import { ToggleSwitch } from "@/components/ui/toggle-switch"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Eye, EyeOff, Power, Save } from "lucide-react"
+import { ExternalLink, Eye, EyeOff, Power, Save } from "lucide-react"
 
 export interface ProviderEntry {
   provider: ModelProvider
@@ -34,30 +33,35 @@ interface Props {
 export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
   return (
     <Accordion type="single" collapsible className="space-y-2">
-      {PROVIDERS.map((p) => {
-        const entry = entries.find((e) => e.provider === p)!
-        const meta = PROVIDER_META[p]
-        const { Logo } = meta
+      {PROVIDERS.map((p: Provider) => {
+        const entry = entries.find((e) => e.provider === p.id)!
         const hasKey = !!entry.apiKey.trim()
         const isDashboard = entry.onSave !== undefined
+        const hasFreeModels = p.models.some((m) => m.free)
 
         return (
-          <AccordionItem key={p} value={p} className="border rounded-lg px-4 overflow-hidden">
+          <AccordionItem key={p.id} value={p.id} className="border rounded-lg px-4 overflow-hidden">
             <AccordionTrigger className="hover:no-underline py-4 [&>svg]:hidden">
               <div className="flex items-center gap-4 flex-1 min-w-0">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-foreground shrink-0">
-                  <Logo className="h-6 w-6" />
-                </div>
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-foreground shrink-0 [&_svg]:h-6 [&_svg]:w-6"
+                  dangerouslySetInnerHTML={{ __html: p.icon }}
+                />
                 <div className="text-left min-w-0 flex-1">
                   <p className="text-sm font-medium leading-none flex items-center gap-2">
-                    {meta.label}
+                    {p.label}
                     {isDashboard
                       ? entry.saved && <span className="text-xs font-normal text-primary">Key saved ✓</span>
                       : hasKey && <span className="text-xs font-normal text-primary">✓ configured</span>
                     }
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">{meta.description}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{p.description}</p>
                 </div>
+                {hasFreeModels && (
+                  <span className="text-xs font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0">
+                    Free models
+                  </span>
+                )}
                 {entry.onToggleEnabled && (
                   <button
                     type="button"
@@ -77,12 +81,22 @@ export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
 
             <AccordionContent className="pb-4 space-y-4">
               <div className="space-y-1.5">
-                <Label>API Key</Label>
+                <div className="flex items-center justify-between">
+                  <Label>API Key</Label>
+                  <a
+                    href={p.docs}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    Get API key <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Input
                       type={entry.showKey ? "text" : "password"}
-                      placeholder={meta.placeholder}
+                      placeholder={p.placeholder}
                       value={entry.apiKey}
                       onChange={(e) => entry.onKeyChange(e.target.value)}
                       className="pr-9"
@@ -110,7 +124,7 @@ export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
 
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Models</Label>
-                {MODELS.filter((m) => m.provider === p).map((m) => {
+                {p.models.map((m) => {
                   const active = isDashboard ? (models[m.id] ?? true) : (hasKey && models[m.id])
                   return (
                     <div
@@ -120,10 +134,12 @@ export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
                           ? "cursor-pointer hover:bg-muted"
                           : "opacity-40 cursor-not-allowed"
                       }`}
-                      onClick={() => (isDashboard || hasKey) && onToggleModel(p, m.id, !active)}
+                      onClick={() => (isDashboard || hasKey) && onToggleModel(p.id, m.id, !active)}
                     >
                       <span className="text-sm">{m.label}</span>
-                      {!isDashboard && <span className="text-xs text-muted-foreground ml-2">{m.provider}</span>}
+                      {m.free && (
+                        <span className="text-xs font-medium text-emerald-600 ml-2 mr-auto">Free</span>
+                      )}
                       <ToggleSwitch active={!!active} />
                     </div>
                   )

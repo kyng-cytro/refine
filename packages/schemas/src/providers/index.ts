@@ -1,17 +1,21 @@
 import { z } from "zod"
 
-export const ModelProviderSchema = z.enum(["openai", "anthropic", "google"])
+export const ModelProviderSchema = z.enum(["openrouter", "openai", "anthropic", "google"])
 
 export const ModelSchema = z.object({
   id: z.string(),
   label: z.string(),
   provider: ModelProviderSchema,
   enabledByUser: z.boolean(),
+  free: z.boolean().optional(),
+  icon: z.string().optional(),
 })
 
 export const ProviderSchema = z.object({
   provider: ModelProviderSchema,
   enabled: z.boolean(),
+  icon: z.string().optional(),
+  docs: z.string().optional(),
   models: z.array(ModelSchema),
 })
 
