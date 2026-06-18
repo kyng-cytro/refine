@@ -9,31 +9,32 @@ interface FormState {
   saving: boolean
   saved: boolean
   enabled: boolean
+  hasKey: boolean
 }
 
 const defaultForms = () =>
   Object.fromEntries(
-    PROVIDERS.map((p) => [p.id, { apiKey: "", showKey: false, saving: false, saved: false, enabled: true }]),
+    PROVIDERS.map((p) => [p.id, { apiKey: "", showKey: false, saving: false, saved: false, enabled: false, hasKey: false }]),
   ) as Record<ModelProvider, FormState>
 
 export default function ProvidersTab() {
   const [forms, setForms] = useState<Record<ModelProvider, FormState>>(defaultForms)
   const [models, setModels] = useState<Record<string, boolean>>(
-    Object.fromEntries(getModels().map((m) => [m.id, true])),
+    Object.fromEntries(getModels().map((m) => [m.id, false])),
   )
   const [error, setError] = useState("")
 
   useEffect(() => {
     api.providers.list().then((providerStates: ProviderState[]) => {
       const modelMap: Record<string, boolean> = {}
-      const enabledMap: Partial<Record<ModelProvider, boolean>> = {}
+      const stateMap: Partial<Record<ModelProvider, { enabled: boolean; hasKey: boolean }>> = {}
       providerStates.forEach((p) => {
-        enabledMap[p.provider as ModelProvider] = p.enabled
+        stateMap[p.provider as ModelProvider] = { enabled: p.enabled, hasKey: p.hasKey }
         p.models.forEach((m) => { modelMap[m.id] = m.enabled })
       })
       setForms((prev) =>
         Object.fromEntries(
-          PROVIDERS.map((p) => [p.id, { ...prev[p.id], enabled: enabledMap[p.id] ?? true }]),
+          PROVIDERS.map((p) => [p.id, { ...prev[p.id], enabled: stateMap[p.id]?.enabled ?? false, hasKey: stateMap[p.id]?.hasKey ?? false }]),
         ) as Record<ModelProvider, FormState>,
       )
       setModels((prev) => ({ ...prev, ...modelMap }))
@@ -47,7 +48,7 @@ export default function ProvidersTab() {
     setError("")
     try {
       await api.providers.upsert(p, key, forms[p].enabled)
-      setForms((prev) => ({ ...prev, [p]: { ...prev[p], saving: false, saved: true, apiKey: "" } }))
+      setForms((prev) => ({ ...prev, [p]: { ...prev[p], saving: false, saved: true, hasKey: true, apiKey: "" } }))
       setTimeout(() => setForms((prev) => ({ ...prev, [p]: { ...prev[p], saved: false } })), 2000)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save")
@@ -80,6 +81,7 @@ export default function ProvidersTab() {
     saving: forms[p.id].saving,
     saved: forms[p.id].saved,
     enabled: forms[p.id].enabled,
+    hasKey: forms[p.id].hasKey,
     onKeyChange: (v) => setForms((prev) => ({ ...prev, [p.id]: { ...prev[p.id], apiKey: v } })),
     onToggleShow: () => setForms((prev) => ({ ...prev, [p.id]: { ...prev[p.id], showKey: !prev[p.id].showKey } })),
     onSave: () => save(p.id),

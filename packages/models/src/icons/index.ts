@@ -5,7 +5,6 @@ import {
   siMeta,
   siMistralai,
   siQwen,
-  siHuggingface,
 } from "simple-icons"
 
 function fromSi(si: { svg: string }): string {
@@ -23,5 +22,4 @@ export const icons = {
   meta: fromSi(siMeta),
   mistralai: fromSi(siMistralai),
   qwen: fromSi(siQwen),
-  huggingface: fromSi(siHuggingface),
 }

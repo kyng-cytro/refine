@@ -1,12 +1,5 @@
 export type { ModelProvider, Tone } from "@refine/schemas"
 
-export interface ModelConfig {
-  id: string
-  label: string
-  provider: string
-  apiUrl: string
-}
-
 export interface ServerConfig {
   configured: true
   serverUrl: string

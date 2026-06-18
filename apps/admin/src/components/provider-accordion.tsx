@@ -21,13 +21,18 @@ export interface ProviderEntry {
   saved?: boolean
   onSave?: () => void
   enabled?: boolean
+  hasKey?: boolean
   onToggleEnabled?: (enabled: boolean) => void
 }
 
 interface Props {
   entries: ProviderEntry[]
   models: Record<string, boolean>
-  onToggleModel: (provider: ModelProvider, modelId: string, enabled: boolean) => void
+  onToggleModel: (
+    provider: ModelProvider,
+    modelId: string,
+    enabled: boolean,
+  ) => void
 }
 
 export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
@@ -35,12 +40,16 @@ export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
     <Accordion type="single" collapsible className="space-y-2">
       {PROVIDERS.map((p: Provider) => {
         const entry = entries.find((e) => e.provider === p.id)!
-        const hasKey = !!entry.apiKey.trim()
+        const hasKey = entry.hasKey ?? !!entry.apiKey.trim()
         const isDashboard = entry.onSave !== undefined
         const hasFreeModels = p.models.some((m) => m.free)
 
         return (
-          <AccordionItem key={p.id} value={p.id} className="border rounded-lg px-4 overflow-hidden">
+          <AccordionItem
+            key={p.id}
+            value={p.id}
+            className="border rounded-lg px-4 overflow-hidden"
+          >
             <AccordionTrigger className="hover:no-underline py-4 [&>svg]:hidden">
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 <div
@@ -51,11 +60,20 @@ export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
                   <p className="text-sm font-medium leading-none flex items-center gap-2">
                     {p.label}
                     {isDashboard
-                      ? entry.saved && <span className="text-xs font-normal text-primary">Key saved ✓</span>
-                      : hasKey && <span className="text-xs font-normal text-primary">✓ configured</span>
-                    }
+                      ? entry.saved && (
+                          <span className="text-xs font-normal text-primary">
+                            Key saved ✓
+                          </span>
+                        )
+                      : hasKey && (
+                          <span className="text-xs font-normal text-primary">
+                            ✓ configured
+                          </span>
+                        )}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">{p.description}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {p.description}
+                  </p>
                 </div>
                 {hasFreeModels && (
                   <span className="text-xs font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0">
@@ -65,13 +83,23 @@ export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
                 {entry.onToggleEnabled && (
                   <button
                     type="button"
-                    className={`shrink-0 p-1.5 rounded-md transition-colors ${
+                    disabled={!hasKey}
+                    className={`shrink-0 p-1.5 rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
                       entry.enabled
                         ? "text-primary hover:bg-primary/10"
                         : "text-muted-foreground hover:bg-muted"
                     }`}
-                    title={entry.enabled ? "Disable provider" : "Enable provider"}
-                    onClick={(e) => { e.stopPropagation(); entry.onToggleEnabled!(!entry.enabled) }}
+                    title={
+                      !hasKey
+                        ? "Add an API key first"
+                        : entry.enabled
+                          ? "Disable provider"
+                          : "Enable provider"
+                    }
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      entry.onToggleEnabled!(!entry.enabled)
+                    }}
                   >
                     <Power className="h-4 w-4" />
                   </button>
@@ -106,7 +134,11 @@ export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                       onClick={entry.onToggleShow}
                     >
-                      {entry.showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {entry.showKey ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                   {entry.onSave && (
@@ -125,27 +157,35 @@ export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Models</Label>
                 {p.models.map((m) => {
-                  const active = isDashboard ? (models[m.id] ?? true) : (hasKey && models[m.id])
+                  const active = isDashboard
+                    ? (models[m.id] ?? false)
+                    : hasKey && models[m.id]
                   return (
                     <div
                       key={m.id}
                       className={`flex items-center justify-between rounded-md px-3 py-2 transition-colors ${
-                        isDashboard || hasKey
+                        hasKey
                           ? "cursor-pointer hover:bg-muted"
                           : "opacity-40 cursor-not-allowed"
                       }`}
-                      onClick={() => (isDashboard || hasKey) && onToggleModel(p.id, m.id, !active)}
+                      onClick={() =>
+                        hasKey && onToggleModel(p.id, m.id, !active)
+                      }
                     >
                       <span className="text-sm">{m.label}</span>
                       {m.free && (
-                        <span className="text-xs font-medium text-emerald-600 ml-2 mr-auto">Free</span>
+                        <span className="text-xs font-medium text-emerald-600 ml-2 mr-auto">
+                          Free
+                        </span>
                       )}
                       <ToggleSwitch active={!!active} />
                     </div>
                   )
                 })}
                 {!isDashboard && !hasKey && (
-                  <p className="px-3 pt-1 text-xs text-muted-foreground">Add an API key to enable models</p>
+                  <p className="px-3 pt-1 text-xs text-muted-foreground">
+                    Add an API key to enable models
+                  </p>
                 )}
               </div>
             </AccordionContent>

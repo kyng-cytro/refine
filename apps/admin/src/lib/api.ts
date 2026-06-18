@@ -63,7 +63,7 @@ export const api = {
     upsert: (provider: string, apiKey: string | undefined, enabled: boolean) =>
       request<void>("PUT", `/admin/providers/${provider}`, { apiKey, enabled }),
     toggleModel: (provider: string, modelId: string, enabled: boolean) =>
-      request<void>("PATCH", `/admin/providers/${provider}/models/${modelId}`, {
+      request<void>("PATCH", `/admin/providers/${provider}/models/${encodeURIComponent(modelId)}`, {
         enabled,
       }),
   },
@@ -75,7 +75,7 @@ export const api = {
     listModels: (sessionId: string) =>
       request<SessionModelPref[]>("GET", `/admin/sessions/${sessionId}/models`),
     toggleModel: (sessionId: string, modelId: string, enabled: boolean) =>
-      request<void>("PATCH", `/admin/sessions/${sessionId}/models/${modelId}`, {
+      request<void>("PATCH", `/admin/sessions/${sessionId}/models/${encodeURIComponent(modelId)}`, {
         enabled,
       }),
   },

@@ -17,11 +17,35 @@ export const PROVIDERS: Provider[] = [
     icon: icons.openrouter,
     create: (apiKey) => createOpenRouter({ apiKey }),
     models: [
-      { id: "meta-llama/llama-3.3-70b-instruct:free", label: "Llama 3.3 70B", free: true, icon: icons.meta },
-      { id: "google/gemma-3-12b-it:free", label: "Gemma 3 12B", free: true, icon: icons.google },
-      { id: "mistralai/mistral-7b-instruct:free", label: "Mistral 7B", free: true, icon: icons.mistralai },
-      { id: "microsoft/phi-3-mini-128k-instruct:free", label: "Phi-3 Mini", free: true },
-      { id: "qwen/qwen-2.5-7b-instruct:free", label: "Qwen 2.5 7B", free: true, icon: icons.qwen },
+      {
+        id: "meta-llama/llama-3.3-70b-instruct:free",
+        label: "Llama 3.3 70B",
+        free: true,
+        icon: icons.meta,
+      },
+      {
+        id: "google/gemma-3-12b-it:free",
+        label: "Gemma 3 12B",
+        free: true,
+        icon: icons.google,
+      },
+      {
+        id: "mistralai/mistral-7b-instruct:free",
+        label: "Mistral 7B",
+        free: true,
+        icon: icons.mistralai,
+      },
+      {
+        id: "microsoft/phi-3-mini-128k-instruct:free",
+        label: "Phi-3 Mini",
+        free: true,
+      },
+      {
+        id: "qwen/qwen-2.5-7b-instruct:free",
+        label: "Qwen 2.5 7B",
+        free: true,
+        icon: icons.qwen,
+      },
     ],
   },
   {
@@ -70,10 +94,14 @@ export function getProvider(id: string): Provider | undefined {
 }
 
 export function getModels(): Array<Model & { provider: ModelProvider }> {
-  return PROVIDERS.flatMap((p) => p.models.map((m) => ({ ...m, provider: p.id })))
+  return PROVIDERS.flatMap((p) =>
+    p.models.map((m) => ({ ...m, provider: p.id })),
+  )
 }
 
-export function getModel(id: string): (Model & { provider: ModelProvider }) | undefined {
+export function getModel(
+  id: string,
+): (Model & { provider: ModelProvider }) | undefined {
   return getModels().find((m) => m.id === id)
 }
 

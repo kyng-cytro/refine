@@ -15,7 +15,10 @@ import * as HttpStatusCodes from "stoker/http-status-codes"
 
 export const setupStatus: AppRouteHandler<SetupStatus> = async (c) => {
   try {
-    return c.json({ configured: await dal.isConfigured(), url: Bun.env.HOST }, HttpStatusCodes.OK)
+    return c.json(
+      { configured: await dal.isConfigured(), url: Bun.env.HOST },
+      HttpStatusCodes.OK,
+    )
   } catch (error) {
     c.var.logger.error(`[ADMIN:SETUP:STATUS] ${error}`)
     throw new HTTPException(HttpStatusCodes.INTERNAL_SERVER_ERROR, {
@@ -40,7 +43,10 @@ export const upsert: AppRouteHandler<Upsert> = async (c) => {
     const { provider } = c.req.valid("param")
     const { apiKey, enabled } = c.req.valid("json")
     const row = await dal.upsert(provider as ModelProvider, apiKey, enabled)
-    return c.json({ provider: row.slug as ModelProvider, enabled: row.enabled }, HttpStatusCodes.OK)
+    return c.json(
+      { provider: row.slug as ModelProvider, enabled: row.enabled },
+      HttpStatusCodes.OK,
+    )
   } catch (error) {
     c.var.logger.error(`[ADMIN:PROVIDERS:UPSERT] ${error}`)
     throw new HTTPException(HttpStatusCodes.INTERNAL_SERVER_ERROR, {
@@ -53,9 +59,13 @@ export const toggleModel: AppRouteHandler<ToggleModel> = async (c) => {
   try {
     const { provider, modelId } = c.req.valid("param")
     const { enabled } = c.req.valid("json")
-    const modelConfig = getModel(modelId)
-    if (!modelConfig || modelConfig.provider !== provider) {
-      return c.json({ message: "Model not found for this provider" }, HttpStatusCodes.BAD_REQUEST)
+    console.log(provider, modelId, enabled)
+    const config = getModel(modelId)
+    if (!config || config.provider !== provider) {
+      return c.json(
+        { message: "Model not found for this provider" },
+        HttpStatusCodes.BAD_REQUEST,
+      )
     }
     const pref = await dal.toggleModel(modelId, enabled)
     return c.json({ enabled: pref.enabled }, HttpStatusCodes.OK)
@@ -67,7 +77,9 @@ export const toggleModel: AppRouteHandler<ToggleModel> = async (c) => {
   }
 }
 
-export const toggleSessionModel: AppRouteHandler<ToggleSessionModel> = async (c) => {
+export const toggleSessionModel: AppRouteHandler<ToggleSessionModel> = async (
+  c,
+) => {
   try {
     const { sessionId, modelId } = c.req.valid("param")
     const { enabled } = c.req.valid("json")
@@ -84,11 +96,16 @@ export const toggleSessionModel: AppRouteHandler<ToggleSessionModel> = async (c)
   }
 }
 
-export const listSessionModels: AppRouteHandler<ListSessionModels> = async (c) => {
+export const listSessionModels: AppRouteHandler<ListSessionModels> = async (
+  c,
+) => {
   try {
     const { sessionId } = c.req.valid("param")
     const prefs = await dal.listSessionModelPrefs(sessionId)
-    return c.json(prefs.map((p) => ({ modelId: p.modelId, enabled: p.enabled })), HttpStatusCodes.OK)
+    return c.json(
+      prefs.map((p) => ({ modelId: p.modelId, enabled: p.enabled })),
+      HttpStatusCodes.OK,
+    )
   } catch (error) {
     c.var.logger.error(`[ADMIN:SESSIONS:MODEL:LIST] ${error}`)
     throw new HTTPException(HttpStatusCodes.INTERNAL_SERVER_ERROR, {

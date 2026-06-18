@@ -42,7 +42,6 @@ export const SetupStatusSchema = z.object({
 
 export type AdminToken = z.infer<typeof AdminTokenSchema>
 export type AdminSession = z.infer<typeof AdminSessionSchema>
-export type AdminModelState = z.infer<typeof AdminModelStateSchema>
 export type AdminProviderState = z.infer<typeof AdminProviderStateSchema>
 export type SessionModelPref = z.infer<typeof SessionModelPrefSchema>
 export type SetupStatus = z.infer<typeof SetupStatusSchema>
