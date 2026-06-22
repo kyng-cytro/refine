@@ -11,6 +11,7 @@ WORKDIR /app
 COPY --from=pruner /app/out/json/ .
 RUN bun install --frozen-lockfile
 COPY --from=pruner /app/out/full/ .
+COPY tsconfig.json ./tsconfig.json
 WORKDIR /app/apps/admin
 RUN bun run build
 
