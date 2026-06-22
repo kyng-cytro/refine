@@ -2,7 +2,7 @@ import { env } from "bun"
 import consola from "consola"
 import { z, type ZodError } from "zod"
 
-export const schema = z.object({
+const schema = z.object({
   PORT: z.coerce.number().default(3000),
   HOST: z.string().default("http://localhost:3000"),
   APP_ENV: z.enum(["development", "production", "test"]).default("development"),

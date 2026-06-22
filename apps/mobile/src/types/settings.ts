@@ -1,6 +1,4 @@
-export type { ModelProvider, Tone } from "@refine/schemas"
-
-export interface ServerConfig {
+interface ServerConfig {
   configured: true
   serverUrl: string
   sessionToken: string
@@ -8,7 +6,7 @@ export interface ServerConfig {
   toneSlug: string
 }
 
-export interface UnconfiguredConfig {
+interface UnconfiguredConfig {
   configured: false
   reason: "no_server" | "no_tone" | "no_model"
 }

@@ -1,11 +1,4 @@
-import {
-  siOpenrouter,
-  siAnthropic,
-  siGoogle,
-  siMeta,
-  siMistralai,
-  siQwen,
-} from "simple-icons"
+import { siAnthropic, siGoogle, siOpenrouter } from "simple-icons"
 
 function fromSi(si: { svg: string }): string {
   return si.svg.replace("<svg ", '<svg fill="currentColor" ')
@@ -19,7 +12,4 @@ export const icons = {
   openai: OPENAI_SVG,
   anthropic: fromSi(siAnthropic),
   google: fromSi(siGoogle),
-  meta: fromSi(siMeta),
-  mistralai: fromSi(siMistralai),
-  qwen: fromSi(siQwen),
 }

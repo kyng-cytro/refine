@@ -1,8 +1,11 @@
 import { Platform } from "react-native"
+import * as SecureStore from "expo-secure-store"
 import { useSettingsStore } from "@/store/settings-store"
 import type { NativeConfig } from "@/types/settings"
 
 const isAndroid = Platform.OS === "android"
+
+const SESSION_TOKEN_KEY = "refine_session_token"
 
 const getModule = () => {
   if (!isAndroid) return null
@@ -13,16 +16,18 @@ const getModule = () => {
   }
 }
 
-/**
- * Sync server config to native SharedPreferences so ProcessTextActivity
- * can call the server without React Native running.
- */
 export const syncActiveConfig = (): void => {
-  const mod = getModule()
-  if (!mod) return
-
   const { serverUrl, sessionToken, modelId, toneSlug } =
     useSettingsStore.getState()
+
+  void (
+    sessionToken
+      ? SecureStore.setItemAsync(SESSION_TOKEN_KEY, sessionToken)
+      : SecureStore.deleteItemAsync(SESSION_TOKEN_KEY)
+  ).catch(() => {})
+
+  const mod = getModule()
+  if (!mod) return
 
   try {
     mod.setEncrypted("sessionToken", sessionToken)
@@ -51,7 +56,12 @@ export const syncActiveConfig = (): void => {
   }
 }
 
-export const loadSessionTokenFromNative = (): string => {
+export const loadSessionToken = async (): Promise<string> => {
+  try {
+    const token = await SecureStore.getItemAsync(SESSION_TOKEN_KEY)
+    if (token) return token
+  } catch {}
+
   const mod = getModule()
   if (!mod) return ""
   try {

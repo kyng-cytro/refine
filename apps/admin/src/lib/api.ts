@@ -2,10 +2,10 @@ import { getPendingToken, getToken } from "@/lib/storage"
 import type {
   AdminProviderState,
   AdminSession,
+  AdminSessionProvider,
   AdminToken,
   HistoryItem,
   Paginated,
-  SessionModelPref,
   SetupStatus,
   Tone,
 } from "@refine/schemas"
@@ -15,7 +15,7 @@ export type {
   Paginated,
   AdminProviderState as ProviderState,
   AdminSession as Session,
-  SessionModelPref,
+  AdminSessionProvider as SessionProviderState,
   SetupStatus,
   AdminToken as Token,
   Tone,
@@ -63,9 +63,13 @@ export const api = {
     upsert: (provider: string, apiKey: string | undefined, enabled: boolean) =>
       request<void>("PUT", `/admin/providers/${provider}`, { apiKey, enabled }),
     toggleModel: (provider: string, modelId: string, enabled: boolean) =>
-      request<void>("PATCH", `/admin/providers/${provider}/models/${encodeURIComponent(modelId)}`, {
-        enabled,
-      }),
+      request<void>(
+        "PATCH",
+        `/admin/providers/${provider}/models/${encodeURIComponent(modelId)}`,
+        {
+          enabled,
+        },
+      ),
   },
   sessions: {
     list: () => request<AdminSession[]>("GET", "/admin/sessions"),
@@ -73,11 +77,22 @@ export const api = {
       request<AdminSession>("PATCH", `/admin/sessions/${id}`, { expiresAt }),
     remove: (id: string) => request<void>("DELETE", `/admin/sessions/${id}`),
     listModels: (sessionId: string) =>
-      request<SessionModelPref[]>("GET", `/admin/sessions/${sessionId}/models`),
-    toggleModel: (sessionId: string, modelId: string, enabled: boolean) =>
-      request<void>("PATCH", `/admin/sessions/${sessionId}/models/${encodeURIComponent(modelId)}`, {
-        enabled,
-      }),
+      request<AdminSessionProvider[]>(
+        "GET",
+        `/admin/sessions/${sessionId}/models`,
+      ),
+    toggleModel: (
+      sessionId: string,
+      modelId: string,
+      enabled: boolean | null,
+    ) =>
+      request<void>(
+        "PATCH",
+        `/admin/sessions/${sessionId}/models/${encodeURIComponent(modelId)}`,
+        {
+          enabled,
+        },
+      ),
   },
   tones: {
     list: () => request<Tone[]>("GET", "/admin/tones"),

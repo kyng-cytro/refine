@@ -1,3 +1,4 @@
+import { isModelEnabledForSession } from "@/lib/availability"
 import type { AppRouteHandler, AuthenticatedContext } from "@/lib/context"
 import { createProviderInstance, getModel } from "@/lib/models"
 import * as dal from "@/routes/refine/refine.dal"
@@ -31,7 +32,7 @@ export const refine: AppRouteHandler<Refine, AuthenticatedContext> = async (
     if (!config) {
       return c.json({ message: "Unknown model" }, HttpStatusCodes.BAD_REQUEST)
     }
-    const isEnabled = await dal.isModelEnabled(modelId, session.id)
+    const isEnabled = await isModelEnabledForSession(modelId, session.id)
     if (!isEnabled) {
       return c.json(
         { message: "Model not available on this server" },

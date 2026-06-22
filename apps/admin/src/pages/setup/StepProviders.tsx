@@ -1,7 +1,10 @@
 import { useState } from "react"
 import { api } from "@/lib/api"
 import { PROVIDERS, getModels, type ModelProvider } from "@/lib/models"
-import { ProviderAccordion, type ProviderEntry } from "@/components/provider-accordion"
+import {
+  ProviderAccordion,
+  type ProviderEntry,
+} from "@/components/provider-accordion"
 import { Button } from "@/components/ui/button"
 
 interface Props {
@@ -28,7 +31,8 @@ export default function StepProviders({ onNext }: Props) {
     apiKey: keys[p.id],
     showKey: showKey[p.id],
     onKeyChange: (v) => setKeys((prev) => ({ ...prev, [p.id]: v })),
-    onToggleShow: () => setShowKey((prev) => ({ ...prev, [p.id]: !prev[p.id] })),
+    onToggleShow: () =>
+      setShowKey((prev) => ({ ...prev, [p.id]: !prev[p.id] })),
   }))
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,9 +45,19 @@ export default function StepProviders({ onNext }: Props) {
     setLoading(true)
     setError("")
     try {
-      await Promise.all(configured.map((p) => api.providers.upsert(p.id, keys[p.id].trim(), true)))
       await Promise.all(
-        getModels().map((m) => api.providers.toggleModel(m.provider, m.id, hasKey(m.provider as ModelProvider) && models[m.id])),
+        configured.map((p) =>
+          api.providers.upsert(p.id, keys[p.id].trim(), true),
+        ),
+      )
+      await Promise.all(
+        getModels().map((m) =>
+          api.providers.toggleModel(
+            m.provider,
+            m.id,
+            hasKey(m.provider as ModelProvider) && models[m.id],
+          ),
+        ),
       )
       onNext()
     } catch (err) {
@@ -56,16 +70,22 @@ export default function StepProviders({ onNext }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Configure Providers</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Configure Providers
+        </h1>
         <p className="text-muted-foreground mt-1.5">
-          Add API keys for the providers you want to use and enable their models.
+          Add API keys for the providers you want to use and enable their
+          models.
         </p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <ProviderAccordion
+          variant="setup"
           entries={entries}
           models={models}
-          onToggleModel={(_, modelId, enabled) => setModels((prev) => ({ ...prev, [modelId]: enabled }))}
+          onToggleModel={(_, modelId, enabled) =>
+            setModels((prev) => ({ ...prev, [modelId]: enabled }))
+          }
         />
         {error && <p className="text-destructive text-sm">{error}</p>}
         <Button type="submit" className="w-full" disabled={loading}>

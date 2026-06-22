@@ -1,2 +1,2 @@
-export { PROVIDERS, getProvider, getModel, getModels } from "@refine/models"
-export type { Provider, Model, ModelProvider } from "@refine/models"
+export { PROVIDERS, getModels } from "@refine/models"
+export type { Provider, ModelProvider } from "@refine/models"

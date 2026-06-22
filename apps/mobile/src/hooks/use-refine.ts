@@ -30,7 +30,6 @@ export const useRefine = (): UseRefineResult => {
         toneSlug: toneSlug,
       })
 
-      // Optimistically prepend to history; full refresh happens on pull-to-refresh
       prependItem({
         id: String(Date.now()),
         source: text,

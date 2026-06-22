@@ -13,10 +13,10 @@ import { ExternalLink, Eye, EyeOff, Power, Save } from "lucide-react"
 
 export interface ProviderEntry {
   provider: ModelProvider
-  apiKey: string
-  showKey: boolean
-  onKeyChange: (key: string) => void
-  onToggleShow: () => void
+  apiKey?: string
+  showKey?: boolean
+  onKeyChange?: (key: string) => void
+  onToggleShow?: () => void
   saving?: boolean
   saved?: boolean
   onSave?: () => void
@@ -25,7 +25,10 @@ export interface ProviderEntry {
   onToggleEnabled?: (enabled: boolean) => void
 }
 
+type Variant = "setup" | "providers" | "devices"
+
 interface Props {
+  variant: Variant
   entries: ProviderEntry[]
   models: Record<string, boolean>
   onToggleModel: (
@@ -35,13 +38,20 @@ interface Props {
   ) => void
 }
 
-export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
+export function ProviderAccordion({
+  variant,
+  entries,
+  models,
+  onToggleModel,
+}: Props) {
+  const showApiKey = variant !== "devices"
+  const isManaged = variant === "providers"
   return (
     <Accordion type="single" collapsible className="space-y-2">
       {PROVIDERS.map((p: Provider) => {
         const entry = entries.find((e) => e.provider === p.id)!
-        const hasKey = entry.hasKey ?? !!entry.apiKey.trim()
-        const isDashboard = entry.onSave !== undefined
+        const hasKey =
+          entry.hasKey ?? (entry.apiKey ? !!entry.apiKey.trim() : false)
         const hasFreeModels = p.models.some((m) => m.free)
 
         return (
@@ -59,7 +69,7 @@ export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
                 <div className="text-left min-w-0 flex-1">
                   <p className="text-sm font-medium leading-none flex items-center gap-2">
                     {p.label}
-                    {isDashboard
+                    {isManaged
                       ? entry.saved && (
                           <span className="text-xs font-normal text-primary">
                             Key saved ✓
@@ -91,7 +101,9 @@ export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
                     }`}
                     title={
                       !hasKey
-                        ? "Add an API key first"
+                        ? showApiKey
+                          ? "Add an API key first"
+                          : "Provider not available on this server"
                         : entry.enabled
                           ? "Disable provider"
                           : "Enable provider"
@@ -108,56 +120,58 @@ export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
             </AccordionTrigger>
 
             <AccordionContent className="pb-4 space-y-4">
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label>API Key</Label>
-                  <a
-                    href={p.docs}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-                  >
-                    Get API key <ExternalLink className="h-3 w-3" />
-                  </a>
-                </div>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Input
-                      type={entry.showKey ? "text" : "password"}
-                      placeholder={p.placeholder}
-                      value={entry.apiKey}
-                      onChange={(e) => entry.onKeyChange(e.target.value)}
-                      className="pr-9"
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                      onClick={entry.onToggleShow}
+              {showApiKey && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label>API Key</Label>
+                    <a
+                      href={p.docs}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary hover:underline inline-flex items-center gap-1"
                     >
-                      {entry.showKey ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
+                      Get API key <ExternalLink className="h-3 w-3" />
+                    </a>
                   </div>
-                  {entry.onSave && (
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      disabled={!entry.apiKey.trim() || entry.saving}
-                      onClick={entry.onSave}
-                    >
-                      <Save className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        type={entry.showKey ? "text" : "password"}
+                        placeholder={p.placeholder}
+                        value={entry.apiKey ?? ""}
+                        onChange={(e) => entry.onKeyChange!(e.target.value)}
+                        className="pr-9"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        onClick={entry.onToggleShow}
+                      >
+                        {entry.showKey ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    {entry.onSave && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        disabled={!entry.apiKey?.trim() || entry.saving}
+                        onClick={entry.onSave}
+                      >
+                        <Save className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Models</Label>
                 {p.models.map((m) => {
-                  const active = isDashboard
+                  const active = isManaged
                     ? (models[m.id] ?? false)
                     : hasKey && models[m.id]
                   return (
@@ -182,7 +196,7 @@ export function ProviderAccordion({ entries, models, onToggleModel }: Props) {
                     </div>
                   )
                 })}
-                {!isDashboard && !hasKey && (
+                {showApiKey && !isManaged && !hasKey && (
                   <p className="px-3 pt-1 text-xs text-muted-foreground">
                     Add an API key to enable models
                   </p>

@@ -19,9 +19,7 @@ import {
 } from "react-native-paper"
 import { SafeAreaView } from "react-native-safe-area-context"
 
-import { syncActiveConfig } from "@/services/shared-prefs-bridge"
-import { useSettingsStore } from "@/store/settings-store"
-import { createClient } from "@refine/sdk"
+import { pairAndBootstrap } from "@/services/pairing"
 
 interface PairValues {
   serverUrl: string
@@ -35,9 +33,10 @@ function parsePairQR(data: string): PairValues | null {
     const token = url.searchParams.get("token")
     const name = decodeURIComponent(url.searchParams.get("name") ?? "My Phone")
     if (!token) return null
-    const serverUrl = url.protocol === "refine:"
-      ? decodeURIComponent(url.searchParams.get("url") ?? "")
-      : url.origin
+    const serverUrl =
+      url.protocol === "refine:"
+        ? decodeURIComponent(url.searchParams.get("url") ?? "")
+        : url.origin
     if (!serverUrl) return null
     return { serverUrl, pairingToken: token, deviceName: name }
   } catch {
@@ -46,63 +45,26 @@ function parsePairQR(data: string): PairValues | null {
 }
 
 function usePair() {
-  const { setServerConfig } = useSettingsStore()
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const connect = async ({
-    serverUrl,
-    pairingToken,
-    deviceName,
-  }: PairValues) => {
-    const url = serverUrl.trim().replace(/\/$/, "")
-    const token = pairingToken.trim()
-    const name = deviceName.trim() || "My Phone"
-
-    if (!url) {
-      setError("Server URL is required")
-      return false
-    }
-    if (!token) {
-      setError("Pairing token is required")
-      return false
-    }
-
+  const connect = async (values: PairValues) => {
     setError("")
     setLoading(true)
     try {
-      const client = createClient({ baseURL: url })
-      const { sessionToken } = await client.auth.pair({
-        pairingToken: token,
-        deviceName: name,
-      })
-
-      setServerConfig(url, sessionToken)
-      syncActiveConfig()
-
-      const authed = createClient({ baseURL: url, sessionToken })
-      const [tones, { providers }] = await Promise.all([
-        authed.tones.list(),
-        authed.providers.list(),
-      ])
-      if (tones[0]) {
-        useSettingsStore.getState().setTone(tones[0].slug)
-        useSettingsStore.getState().setTones(tones)
+      const res = await pairAndBootstrap(values)
+      if (!res.ok) {
+        setError(res.error ?? "Connection failed")
+        return false
       }
-      const firstModel = providers.flatMap((p) => p.models)[0]
-      if (firstModel) useSettingsStore.getState().setModel(firstModel.id)
-
       router.replace("/")
       return true
-    } catch (e: any) {
-      setError(e?.data?.message ?? e?.message ?? "Connection failed")
-      return false
     } finally {
       setLoading(false)
     }
   }
 
-  return { connect, error, setError, loading }
+  return { connect, error, loading }
 }
 
 export default function SetupScreen() {

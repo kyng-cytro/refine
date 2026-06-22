@@ -1,7 +1,11 @@
 import * as responses from "@/lib/helpers/responses"
 import { adminAuth } from "@/middlewares/auth"
 import { createRoute, z } from "@hono/zod-openapi"
-import { ModelProviderSchema, ToggleModelSchema } from "@refine/schemas"
+import {
+  AdminSessionProviderSchema,
+  ModelProviderSchema,
+  ToggleModelSchema,
+} from "@refine/schemas"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 import { helpers } from "stoker/openapi"
 import { createErrorSchema } from "stoker/openapi/schemas"
@@ -24,6 +28,10 @@ const ProviderStateSchema = z.object({
 const UpsertSchema = z.object({
   apiKey: z.string().min(1).optional(),
   enabled: z.boolean().default(true),
+})
+
+const ToggleSessionModelSchema = z.object({
+  enabled: z.boolean().nullable(),
 })
 
 export const setupStatus = createRoute({
@@ -118,15 +126,18 @@ export const toggleSessionModel = createRoute({
       sessionId: z.string().min(1),
       modelId: z.string().min(1),
     }),
-    body: helpers.jsonContent(ToggleModelSchema, "Toggle model for session"),
+    body: helpers.jsonContent(
+      ToggleSessionModelSchema,
+      "Toggle or clear model for session",
+    ),
   },
   responses: {
     [HttpStatusCodes.OK]: helpers.jsonContent(
-      z.object({ enabled: z.boolean() }),
+      z.object({ enabled: z.boolean().nullable() }),
       "Updated model availability for session",
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: helpers.jsonContent(
-      createErrorSchema(ToggleModelSchema),
+      createErrorSchema(ToggleSessionModelSchema),
       "Validation error",
     ),
     ...responses.unauthorized,
@@ -146,13 +157,13 @@ export const listSessionModels = createRoute({
   },
   responses: {
     [HttpStatusCodes.OK]: helpers.jsonContent(
-      z.array(z.object({ modelId: z.string(), enabled: z.boolean() })),
-      "Per-session model overrides",
+      z.array(AdminSessionProviderSchema),
+      "Per-device provider and model availability",
     ),
     ...responses.unauthorized,
     ...responses.serverError,
   },
-  summary: "List per-device model preference overrides",
+  summary: "List per-device provider and model availability",
 })
 
 export type SetupStatus = typeof setupStatus

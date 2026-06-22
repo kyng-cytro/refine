@@ -13,24 +13,6 @@ export const getProvider = async (provider: ModelProvider) => {
   return { ...row, apiKey: await decrypt(row.apiKey) }
 }
 
-export const isModelEnabled = async (modelId: string, sessionId: string) => {
-  const sessionPref = await db.query.userModelPrefs.findFirst({
-    where: orm.and(
-      orm.eq(schema.userModelPrefs.sessionId, sessionId),
-      orm.eq(schema.userModelPrefs.modelId, modelId),
-    ),
-  })
-  if (sessionPref) return sessionPref.enabled
-
-  const globalPref = await db.query.userModelPrefs.findFirst({
-    where: orm.and(
-      orm.isNull(schema.userModelPrefs.sessionId),
-      orm.eq(schema.userModelPrefs.modelId, modelId),
-    ),
-  })
-  return globalPref ? globalPref.enabled : true
-}
-
 export const resolveTone = async (sessionId: string, toneSlug: string) => {
   const userTone = await db.query.tones.findFirst({
     where: orm.and(

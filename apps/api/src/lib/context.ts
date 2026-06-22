@@ -3,7 +3,7 @@ import type { schema } from "@refine/db"
 import type { Env, Schema } from "hono"
 import type { PinoLogger } from "hono-pino"
 
-export type Session = typeof schema.sessions.$inferSelect
+type Session = typeof schema.sessions.$inferSelect
 
 export interface CustomContext extends Env {
   Variables: {

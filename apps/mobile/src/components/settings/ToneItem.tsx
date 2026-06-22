@@ -66,7 +66,6 @@ export function ToneItem({
     />
   )
 
-  // Global tones can't be deleted by users
   if (tone.isGlobal) return content
 
   return (

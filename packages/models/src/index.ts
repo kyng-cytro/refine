@@ -5,7 +5,7 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 import { icons } from "./icons"
 import type { Model, ModelProvider, Provider } from "./types"
 
-export type { ModelProvider, Model, Provider } from "./types"
+export type { Model, ModelProvider, Provider } from "./types"
 
 export const PROVIDERS: Provider[] = [
   {
@@ -18,33 +18,16 @@ export const PROVIDERS: Provider[] = [
     create: (apiKey) => createOpenRouter({ apiKey }),
     models: [
       {
-        id: "meta-llama/llama-3.3-70b-instruct:free",
-        label: "Llama 3.3 70B",
+        id: "openrouter/free",
+        label: "Auto (Free)",
         free: true,
-        icon: icons.meta,
+        icon: icons.openrouter,
       },
       {
-        id: "google/gemma-3-12b-it:free",
-        label: "Gemma 3 12B",
+        id: "openai/gpt-oss-20b:free",
+        label: "GPT-OSS 20B",
         free: true,
-        icon: icons.google,
-      },
-      {
-        id: "mistralai/mistral-7b-instruct:free",
-        label: "Mistral 7B",
-        free: true,
-        icon: icons.mistralai,
-      },
-      {
-        id: "microsoft/phi-3-mini-128k-instruct:free",
-        label: "Phi-3 Mini",
-        free: true,
-      },
-      {
-        id: "qwen/qwen-2.5-7b-instruct:free",
-        label: "Qwen 2.5 7B",
-        free: true,
-        icon: icons.qwen,
+        icon: icons.openai,
       },
     ],
   },

@@ -12,7 +12,7 @@ import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper"
 import AppTabs from "@/components/app-tabs"
 import { getApiClient } from "@/services/api"
 import {
-  loadSessionTokenFromNative,
+  loadSessionToken,
   syncActiveConfig,
 } from "@/services/shared-prefs-bridge"
 import { useHistoryStore } from "@/store/history-store"
@@ -68,10 +68,14 @@ export default function RootLayout() {
   const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
-    const token = loadSessionTokenFromNative()
-    if (token) setSessionToken(token)
-    setInitialized(true)
-    SplashScreen.hideAsync()
+    loadSessionToken()
+      .then((token) => {
+        if (token) setSessionToken(token)
+      })
+      .finally(() => {
+        setInitialized(true)
+        SplashScreen.hideAsync()
+      })
   }, [])
 
   useEffect(() => {
@@ -98,6 +102,10 @@ export default function RootLayout() {
           .flatMap((p) => p.models)
           .filter((m) => m.enabledByUser !== false)
         setModels(models)
+        const { modelId: current, setModel } = useSettingsStore.getState()
+        if (!models.some((m) => m.id === current)) {
+          setModel(models[0]?.id ?? "")
+        }
       })
       .catch(onUnauth)
   }, [serverUrl, sessionToken])

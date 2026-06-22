@@ -12,12 +12,12 @@ import { helpers } from "stoker/openapi"
 
 const tags = ["Admin / History"]
 
-export const AdminHistoryItemSchema = HistoryItemSchema.extend({
+const AdminHistoryItemSchema = HistoryItemSchema.extend({
   deviceName: z.string().nullable(),
   sessionId: z.string(),
 })
 
-export const AdminHistoryResponseSchema = paginationResponse(AdminHistoryItemSchema)
+const AdminHistoryResponseSchema = paginationResponse(AdminHistoryItemSchema)
 
 export const list = createRoute({
   method: "get",
@@ -26,7 +26,10 @@ export const list = createRoute({
   middleware: [adminAuth] as const,
   request: { query: HistoryQuerySchema },
   responses: {
-    [HttpStatusCodes.OK]: helpers.jsonContent(AdminHistoryResponseSchema, "Paginated history"),
+    [HttpStatusCodes.OK]: helpers.jsonContent(
+      AdminHistoryResponseSchema,
+      "Paginated history",
+    ),
     ...responses.unauthorized,
     ...responses.serverError,
   },

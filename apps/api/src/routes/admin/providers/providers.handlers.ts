@@ -1,3 +1,4 @@
+import { resolveProviders } from "@/lib/availability"
 import type { AppRouteHandler } from "@/lib/context"
 import { getModel } from "@/lib/models"
 import * as dal from "@/routes/admin/providers/providers.dal"
@@ -29,7 +30,20 @@ export const setupStatus: AppRouteHandler<SetupStatus> = async (c) => {
 
 export const listProviders: AppRouteHandler<ListProviders> = async (c) => {
   try {
-    return c.json(await dal.listAll(), HttpStatusCodes.OK)
+    const resolved = await resolveProviders()
+    return c.json(
+      resolved.map((p) => ({
+        provider: p.provider,
+        enabled: p.enabled,
+        hasKey: p.configured,
+        models: p.models.map((m) => ({
+          id: m.id,
+          label: m.label,
+          enabled: m.globalEnabled,
+        })),
+      })),
+      HttpStatusCodes.OK,
+    )
   } catch (error) {
     c.var.logger.error(`[ADMIN:PROVIDERS:LIST] ${error}`)
     throw new HTTPException(HttpStatusCodes.INTERNAL_SERVER_ERROR, {
@@ -59,7 +73,6 @@ export const toggleModel: AppRouteHandler<ToggleModel> = async (c) => {
   try {
     const { provider, modelId } = c.req.valid("param")
     const { enabled } = c.req.valid("json")
-    console.log(provider, modelId, enabled)
     const config = getModel(modelId)
     if (!config || config.provider !== provider) {
       return c.json(
@@ -86,6 +99,10 @@ export const toggleSessionModel: AppRouteHandler<ToggleSessionModel> = async (
     if (!getModel(modelId)) {
       return c.json({ message: "Unknown model" }, HttpStatusCodes.BAD_REQUEST)
     }
+    if (enabled === null) {
+      await dal.clearSessionModel(modelId, sessionId)
+      return c.json({ enabled: null }, HttpStatusCodes.OK)
+    }
     const pref = await dal.toggleModel(modelId, enabled, sessionId)
     return c.json({ enabled: pref.enabled }, HttpStatusCodes.OK)
   } catch (error) {
@@ -101,9 +118,23 @@ export const listSessionModels: AppRouteHandler<ListSessionModels> = async (
 ) => {
   try {
     const { sessionId } = c.req.valid("param")
-    const prefs = await dal.listSessionModelPrefs(sessionId)
+    const resolved = await resolveProviders(sessionId)
     return c.json(
-      prefs.map((p) => ({ modelId: p.modelId, enabled: p.enabled })),
+      resolved.map((p) => ({
+        provider: p.provider,
+        label: p.label,
+        configured: p.configured,
+        enabled: p.enabled,
+        usable: p.usable,
+        models: p.models.map((m) => ({
+          id: m.id,
+          label: m.label,
+          free: m.free,
+          globalEnabled: m.globalEnabled,
+          sessionOverride: m.sessionOverride,
+          effectiveEnabled: m.effectiveEnabled,
+        })),
+      })),
       HttpStatusCodes.OK,
     )
   } catch (error) {

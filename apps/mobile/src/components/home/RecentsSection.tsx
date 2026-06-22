@@ -18,9 +18,7 @@ export const RecentsSection = () => {
       const client = getApiClient()
       const result = await client.history.list({ limit: 50 })
       setItems(result.data)
-    } catch {
-      // Keep existing items on error
-    }
+    } catch {}
   }
 
   const handleRefresh = withHaptics(async () => {
@@ -33,9 +31,7 @@ export const RecentsSection = () => {
     removeItem(id)
     try {
       await getApiClient().history.delete(id)
-    } catch {
-      // Silently fail — item is already removed from local state
-    }
+    } catch {}
   }
 
   const refreshControl = (

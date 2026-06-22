@@ -6,18 +6,19 @@ import { notFound, onError } from "stoker/middlewares"
 
 const app = createApp()
 
-app.onError(onError)
-app.notFound(notFound)
-
 app.openAPIRegistry.registerComponent("securitySchemes", "Bearer Auth", {
   type: "http",
   scheme: "bearer",
 })
 
 configureOpenAPI(app)
+
 app.route("/", routes)
 
 const root = createRoot(app)
+
+root.onError(onError)
+root.notFound(notFound)
 
 process.on("unhandledRejection", (reason) => {
   consola.error("Unhandled Rejection:", reason)
