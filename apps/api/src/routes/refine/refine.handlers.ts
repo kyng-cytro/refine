@@ -1,11 +1,8 @@
+import { isModelEnabledForSession } from "@/lib/availability"
 import type { AppRouteHandler, AuthenticatedContext } from "@/lib/context"
-import { MODEL_MAP } from "@/lib/models"
+import { createProviderInstance, getModel } from "@/lib/models"
 import * as dal from "@/routes/refine/refine.dal"
 import type { Refine } from "@/routes/refine/refine.routes"
-import { createAnthropic } from "@ai-sdk/anthropic"
-import { createGoogleGenerativeAI } from "@ai-sdk/google"
-import { createOpenAI } from "@ai-sdk/openai"
-import type { ModelProvider } from "@refine/schemas"
 import { generateText } from "ai"
 import { HTTPException } from "hono/http-exception"
 import * as HttpStatusCodes from "stoker/http-status-codes"
@@ -25,33 +22,24 @@ Refine the text according to the tone described above. Return only the refined t
 const buildSystemPrompt = (toneInstructions: string) =>
   `${SYSTEM_PREAMBLE}\n${toneInstructions}\n${SYSTEM_POSTAMBLE}`
 
-const PROVIDER_FACTORIES: Record<
-  ModelProvider,
-  (apiKey: string) => (modelId: string) => unknown
-> = {
-  openai: (apiKey) => createOpenAI({ apiKey }),
-  anthropic: (apiKey) => createAnthropic({ apiKey }),
-  google: (apiKey) => createGoogleGenerativeAI({ apiKey }),
-}
-
 export const refine: AppRouteHandler<Refine, AuthenticatedContext> = async (
   c,
 ) => {
   try {
     const { text, modelId, toneSlug } = c.req.valid("json")
     const { session } = c.var
-    const modelConfig = MODEL_MAP[modelId]
-    if (!modelConfig) {
+    const config = getModel(modelId)
+    if (!config) {
       return c.json({ message: "Unknown model" }, HttpStatusCodes.BAD_REQUEST)
     }
-    const isEnabled = await dal.isModelEnabled(modelId, session.id)
+    const isEnabled = await isModelEnabledForSession(modelId, session.id)
     if (!isEnabled) {
       return c.json(
         { message: "Model not available on this server" },
         HttpStatusCodes.BAD_REQUEST,
       )
     }
-    const provider = await dal.getProvider(modelConfig.provider)
+    const provider = await dal.getProvider(config.provider)
     if (!provider) {
       return c.json(
         { message: "Provider not configured on this server" },
@@ -62,10 +50,8 @@ export const refine: AppRouteHandler<Refine, AuthenticatedContext> = async (
     if (!tone) {
       return c.json({ message: "Tone not found" }, HttpStatusCodes.BAD_REQUEST)
     }
-    const providerFn = PROVIDER_FACTORIES[modelConfig.provider](provider.apiKey)
-    const model = providerFn(modelId) as Parameters<
-      typeof generateText
-    >[0]["model"]
+    const client = createProviderInstance(config.provider, provider.apiKey)
+    const model = client(modelId) as Parameters<typeof generateText>[0]["model"]
     const { text: refined } = await generateText({
       model,
       system: buildSystemPrompt(tone.instructions),

@@ -1,35 +1,31 @@
+import { resolveProviders } from "@/lib/availability"
 import type { AppRouteHandler, AuthenticatedContext } from "@/lib/context"
-import { MODELS } from "@/lib/models"
-import * as dal from "@/routes/providers/providers.dal"
 import type { List } from "@/routes/providers/providers.routes"
-import type { ModelProvider } from "@refine/schemas"
 import { HTTPException } from "hono/http-exception"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 
 export const list: AppRouteHandler<List, AuthenticatedContext> = async (c) => {
   try {
-    const [enabledProviders, modelPrefs] = await Promise.all([
-      dal.list(),
-      dal.listGlobalPrefs(),
-    ])
-    const disabledModels = new Set(
-      modelPrefs.filter((p) => !p.enabled).map((p) => p.modelId),
-    )
-    const providers = enabledProviders.map((p) => {
-      const providerModels = MODELS.filter((m) => m.provider === p.slug)
-      return {
-        provider: p.slug as ModelProvider,
+    const resolved = await resolveProviders(c.var.session.id)
+    const providers = resolved
+      .filter((p) => p.usable)
+      .map((p) => ({
+        provider: p.provider,
         enabled: p.enabled,
-        models: providerModels
-          .filter((m) => !disabledModels.has(m.id))
+        icon: p.icon,
+        docs: p.docs,
+        models: p.models
+          .filter((m) => m.effectiveEnabled)
           .map((m) => ({
             id: m.id,
             label: m.label,
             provider: m.provider,
             enabledByUser: true,
+            free: m.free,
+            icon: m.icon,
           })),
-      }
-    })
+      }))
+      .filter((p) => p.models.length > 0)
     return c.json({ providers }, HttpStatusCodes.OK)
   } catch (error) {
     c.var.logger.error(`[PROVIDERS:LIST] ${error}`)

@@ -17,7 +17,6 @@ export default function SetupWizard({ onComplete }: Props) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Left panel */}
       <div className="hidden lg:flex w-72 shrink-0 flex-col border-r bg-sidebar px-8 py-10">
         <div className="flex items-center gap-2 mb-10">
           <Logo />
@@ -53,9 +52,7 @@ export default function SetupWizard({ onComplete }: Props) {
         </nav>
       </div>
 
-      {/* Content */}
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-10">
-        {/* Mobile step indicator */}
         <div className="flex items-center gap-1.5 mb-8 lg:hidden">
           {STEPS.map((_, i) => (
             <div

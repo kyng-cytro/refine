@@ -12,8 +12,8 @@ export const ModelChip = () => {
 
   const current = models.find((m) => m.id === modelId)
 
-  const handleSelect = (modelId: string) => {
-    setModel(modelId)
+  const handleSelect = (id: string) => {
+    setModel(id)
     setVisible(false)
     syncActiveConfig()
   }
@@ -26,8 +26,8 @@ export const ModelChip = () => {
         <Chip
           mode="outlined"
           onPress={() => setVisible(true)}
-          icon={current?.provider
-            ? () => <ProviderIcon provider={current.provider} size={16} color={theme.colors.primary} />
+          icon={current?.icon
+            ? () => <ProviderIcon svg={current.icon!} size={16} color={theme.colors.primary} />
             : "brain"
           }
           compact
@@ -43,6 +43,7 @@ export const ModelChip = () => {
           <Menu.Item
             key={m.id}
             title={m.label}
+            leadingIcon={m.icon ? ({ color }) => <ProviderIcon svg={m.icon!} size={20} color={color} /> : undefined}
             onPress={() => handleSelect(m.id)}
             trailingIcon={m.id === modelId ? "check" : undefined}
           />

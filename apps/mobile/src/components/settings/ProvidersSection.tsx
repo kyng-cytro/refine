@@ -7,9 +7,10 @@ import ProviderIcon from "@/components/ProviderIcon"
 import type { Provider } from "@refine/schemas"
 
 const PROVIDER_LABELS: Record<string, string> = {
-  google: "Google",
-  anthropic: "Anthropic",
+  openrouter: "OpenRouter",
   openai: "OpenAI",
+  anthropic: "Anthropic",
+  google: "Google",
 }
 
 export function ProvidersSection() {
@@ -39,11 +40,13 @@ export function ProvidersSection() {
           }
           left={(props) => (
             <View {...props} style={[props.style, { justifyContent: "center", alignItems: "center" }]}>
-              <ProviderIcon
-                provider={p.provider}
-                size={22}
-                color={theme.colors.primary}
-              />
+              {p.icon && (
+                <ProviderIcon
+                  svg={p.icon}
+                  size={22}
+                  color={theme.colors.primary}
+                />
+              )}
             </View>
           )}
         />

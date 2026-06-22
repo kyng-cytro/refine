@@ -1,17 +1,19 @@
 # Refine
 
-An unintrusive, self-hosted text refinement tool. Input text anywhere and hit **Refine** — your text gets rewritten by an LLM of your choice, in a tone of your choice, using your own API keys on your own server.
+An unintrusive, self-hosted text refinement tool. Select text anywhere on Android, tap **Refine** — your text is rewritten by an LLM of your choice, in a tone of your choice, using your own API keys on your own server.
 
 No subscriptions. No shared infrastructure. You control the models, the tones, and the keys.
 
 **Three pieces:**
 - **API** — Hono server (Bun) that holds your provider credentials and handles refinements
 - **Admin panel** — React SPA for managing providers, devices, and pairing tokens
-- **Mobile app** — a dedicated input surface plus a system context menu action for refining selected text in-place
+- **Mobile app** — dedicated input surface plus system context menu action for refining selected text in-place
+
+**[→ Self-Hosting Guide](GUIDE.md)**
 
 ---
 
-## Monorepo structure
+## Monorepo
 
 ```
 refine/
@@ -25,285 +27,79 @@ refine/
 │   └── sdk/        Typed API client used by mobile
 ```
 
-**Tooling:** Bun, Turbo, TypeScript across all packages.
+**Tooling:** Bun, Turbo, TypeScript.
 
 ---
 
-## Getting started
-
-### Prerequisites
-
-- Bun ≥ 1.2
-- Android SDK / emulator (for mobile)
-
-### Install
+## Local development
 
 ```bash
 bun install
-```
-
-### Database
-
-```bash
-bun run db:migrate   # creates refine.db and runs all migrations
-bun run db:seed      # adds the default global "Refined" tone
-```
-
-### API
-
-Copy `apps/api/.env.example` to `apps/api/.env`:
-
-```env
-ADMIN_TOKEN="your-secret-admin-token"
-HOST="http://192.168.1.x:3000"       # must be reachable from the mobile device
-DATABASE_URL="file:../../refine.db"
-ENCRYPTION_KEY="32-char-random-string"
-```
-
-`HOST` must be the address the phone can reach — use your LAN IP or public hostname, not `localhost`.
-
-```bash
-bun run api:dev
-```
-
-### Admin panel
-
-```bash
-bun run admin:dev
-```
-
-Open `http://localhost:5173/admin/`. Authenticate with your `ADMIN_TOKEN`.
-
-### Mobile
-
-```bash
-bun run mobile:prebuild    # generates android/ — run once, and re-run after app.json changes
-bun run mobile:android     # builds and launches on emulator/device
-```
-
-### API + admin together
-
-```bash
+bun run db:migrate && bun run db:seed
 bun run dev
 ```
 
----
+Copy `apps/api/.env.example` to `apps/api/.env` before running.
 
-## Scripts reference
-
-| Command                   | What it does                                           |
-| ------------------------- | ------------------------------------------------------ |
-| `bun run dev`             | API + admin dev servers                                |
-| `bun run api:dev`         | API only                                               |
-| `bun run admin:dev`       | Admin only                                             |
-| `bun run admin:build`     | Production build (outputs to `apps/api/public/admin/`) |
-| `bun run type-check`      | TypeScript check across all packages                   |
-| `bun run db:generate`     | Generate migration SQL from schema changes             |
-| `bun run db:migrate`      | Run pending migrations                                 |
-| `bun run db:seed`         | Seed default data                                      |
-| `bun run mobile:android`  | Build and run Android app                              |
-| `bun run mobile:prebuild` | Expo prebuild (generates native `android/`)            |
+| Command | What it does |
+|---|---|
+| `bun run dev` | API + admin dev servers |
+| `bun run api:dev` | API only |
+| `bun run admin:dev` | Admin only |
+| `bun run admin:build` | Production build (outputs to `apps/api/public/admin/`) |
+| `bun run type-check` | TypeScript across all packages |
+| `bun run db:generate` | Generate migration SQL from schema changes |
+| `bun run db:migrate` | Run pending migrations |
+| `bun run db:seed` | Seed default data |
+| `bun run mobile:android` | Build and run Android app |
+| `bun run mobile:prebuild` | Expo prebuild (generates native `android/`) |
 
 ---
 
-## Architecture
+## Adding a provider
 
-### API server
+All provider definitions live in `packages/models/src/`. Admin and mobile consume them directly — three files to touch.
 
-`createApp()` mounts the Hono router at `/v1` with OpenAPI docs at `/v1/docs`.
-
-`createRoot(app)` wraps it at the root level:
-
-- `GET /favicon.png` — serves the favicon
-- `GET /pair?token=X&name=Y` — redirects to the `refine://pair?...` deep link (HTTPS links auto-linkify in messaging apps; raw `refine://` scheme links do not)
-- `/admin/*` — serves the built SPA
-- `GET /admin` → redirects to `/admin/`
-
-**Routes under `/v1`:**
-
-| Prefix                | Purpose                                         |
-| --------------------- | ----------------------------------------------- |
-| `/v1/auth`            | Device pairing + session auth                   |
-| `/v1/refine`          | Text refinement (proxies to LLM)                |
-| `/v1/tones`           | Per-device tone CRUD                            |
-| `/v1/history`         | Refinement history                              |
-| `/v1/providers`       | Device-visible provider/model list              |
-| `/v1/admin/providers` | Admin: manage provider API keys + model toggles |
-| `/v1/admin/sessions`  | Admin: manage sessions/devices                  |
-| `/v1/admin/tokens`    | Admin: generate pairing tokens                  |
-| `/v1/admin/setup`     | Admin: check if server is configured            |
-
-### Database
-
-SQLite via Drizzle ORM + Bun SQLite. Tables: `pairing_tokens`, `sessions`, `history`, `tones`, `providers`, `userModelPrefs`.
-
-Provider API keys are encrypted with AES-256-GCM before storage (`ENCRYPTION_KEY` env var on the server, Android Keystore on the mobile side).
-
-### Mobile
-
-**ProcessTextActivity** — a pure Kotlin Android activity (no React Native runtime) registered as an `ACTION_PROCESS_TEXT` handler. It reads the active config blob from `EncryptedSharedPreferences` and makes raw HTTP calls to the API. This is the entry that appears in Android's "Share" and "Process text" menus.
-
-**SharedPreferences bridge** — `src/services/shared-prefs-bridge.ts` wraps a local Expo module (`modules/refine-shared-prefs/`) exposing plain and encrypted shared prefs. Called whenever settings change so the Kotlin activity always has current data.
-
-**Deep links** — `refine://pair?token=X&url=Y&name=Z` opens the pair confirmation dialog. The server's `/pair` endpoint generates these redirects from the HTTPS pairing links shown in the admin panel.
-
----
-
-## Adding a new provider
-
-Adding a provider touches nine files. Walk through them in order.
-
-### 1. Shared schemas — `packages/schemas/src/index.ts`
-
-Add `"yourprovider"` to `ModelProviderSchema`:
+### 1. Type — `packages/models/src/types.ts`
 
 ```ts
-export const ModelProviderSchema = z.enum([
-  "openai",
-  "anthropic",
-  "google",
-  "yourprovider",
-])
+export type ModelProvider = "openrouter" | "openai" | "anthropic" | "google" | "yourprovider"
 ```
 
-### 2. API model list — `apps/api/src/lib/models.ts`
+### 2. Icon — `packages/models/src/icons/index.ts`
 
-Add entries to `MODELS`:
+Icons come from `simple-icons`. Add the import and export it:
 
 ```ts
-{ id: "yourmodel-v1", label: "Your Model v1", provider: "yourprovider" },
+import { siYourprovider } from "simple-icons"
+
+export const icons = {
+  yourprovider: fromSi(siYourprovider),
+}
 ```
 
-### 3. Wire the AI SDK — `apps/api/src/routes/refine/refine.dal.ts`
+If the provider isn't in `simple-icons`, inline the SVG as a string with `fill="currentColor"`.
 
-Install the Vercel AI SDK package:
+### 3. Provider entry — `packages/models/src/index.ts`
 
 ```bash
-bun add @ai-sdk/yourprovider --cwd apps/api
+bun add @ai-sdk/yourprovider --cwd packages/models
 ```
-
-Add a case in the provider factory:
 
 ```ts
 import { createYourProvider } from "@ai-sdk/yourprovider"
 
-case "yourprovider": {
-  const provider = createYourProvider({ apiKey })
-  return provider(modelId)
-}
-```
-
-### 4. Database — no changes needed
-
-The `providers` table stores slugs as plain strings.
-
-### 5. Admin model list — `apps/admin/src/lib/models.ts`
-
-Add to `MODELS` and `PROVIDERS`:
-
-```ts
-export const MODELS: ModelConfig[] = [
-  // ...existing
-  { id: "yourmodel-v1", label: "Your Model v1", provider: "yourprovider" },
-]
-
-export const PROVIDERS: ModelProvider[] = ["openai", "anthropic", "google", "yourprovider"]
-```
-
-### 6. Admin provider metadata — `apps/admin/src/lib/provider-meta.tsx`
-
-Add a `Logo` component and an entry in `PROVIDER_META`. The logo SVG uses `className` for sizing so it adapts to context:
-
-```tsx
-const YourProviderLogo: React.FC<{ className?: string }> = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className} fill="currentColor">
-    <path d="YOUR_SVG_PATH_DATA" />
-  </svg>
-)
-
-export const PROVIDER_META: Record<ModelProvider, ProviderMetaItem> = {
-  // ...existing
-  yourprovider: {
-    label: "Your Provider",
-    description: "Model names shown in the accordion",
-    placeholder: "key-prefix…",
-    Logo: YourProviderLogo,
-  },
-}
-```
-
-### 7. Mobile model list — `apps/mobile/src/constants/models.ts`
-
-```ts
 {
-  id: "yourmodel-v1",
-  label: "Your Model v1",
-  provider: "yourprovider",
-  apiUrl: "https://api.yourprovider.com/v1/...",
+  id: "yourprovider",
+  label: "Your Provider",
+  description: "Short description shown in the admin panel",
+  placeholder: "key-prefix…",
+  docs: "https://yourprovider.com/api-keys",
+  icon: icons.yourprovider,
+  create: (apiKey) => createYourProvider({ apiKey }),
+  models: [
+    { id: "yourmodel-v1", label: "Your Model v1", icon: icons.yourprovider },
+  ],
 },
 ```
 
-### 8. Mobile SVG icon — `apps/mobile/src/components/ProviderIcon.tsx`
-
-```tsx
-function YourProviderIcon({ size, color }: { size: number; color: string }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="YOUR_SVG_PATH_DATA" fill={color} />
-    </Svg>
-  )
-}
-
-// in the switch:
-case "yourprovider":
-  return <YourProviderIcon size={size} color={color} />
-```
-
-Use the official brand SVG path. The icon is tinted with the theme's `primary` color via `fill={color}` — don't hardcode a brand color.
-
-### 9. Mobile display label — `apps/mobile/src/components/settings/ProvidersSection.tsx`
-
-```ts
-const PROVIDER_LABELS: Record<string, string> = {
-  // ...existing
-  yourprovider: "Your Provider",
-}
-```
-
-Once these changes are in place, go to the admin panel, enter an API key under the new provider slug, and it will appear in the mobile app.
-
----
-
-## Database migrations
-
-```bash
-# 1. Edit packages/db/src/schema/*.ts
-# 2. Generate the SQL
-bun run db:generate
-# 3. Review the new file in packages/db/drizzle/
-# 4. Apply
-bun run db:migrate
-```
-
-Migration files are committed to the repo. Never edit them after they have been applied.
-
----
-
-## Expo config plugin
-
-`plugins/withProcessTextActivity.ts` handles the Kotlin share-sheet activity:
-
-- Injects the `<activity>` manifest entry with the `ACTION_PROCESS_TEXT` intent filter
-- Copies `modules/ProcessTextActivity.kt` into the generated `android/` directory
-
-Run `bun run mobile:prebuild` after changing `app.json`, `plugins/`, or `modules/`.
-
----
-
-## Type checking
-
-```bash
-bun run type-check   # all packages
-```
-
-Each package has its own `tsconfig.json`. The Turbo root task runs them in dependency order.

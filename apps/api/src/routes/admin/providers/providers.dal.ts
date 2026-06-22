@@ -1,27 +1,6 @@
 import { encrypt } from "@/lib/crypto"
 import { db, orm, schema } from "@/lib/db"
-import { MODELS } from "@/lib/models"
 import type { ModelProvider } from "@refine/schemas"
-
-export const listAll = async () => {
-  const [allProviders, globalPrefs] = await Promise.all([
-    db.query.providers.findMany(),
-    db.query.userModelPrefs.findMany({
-      where: orm.isNull(schema.userModelPrefs.sessionId),
-    }),
-  ])
-  const disabledModels = new Set(globalPrefs.filter((p) => !p.enabled).map((p) => p.modelId))
-  return allProviders.map((p) => ({
-    provider: p.slug as ModelProvider,
-    enabled: p.enabled,
-    hasKey: true,
-    models: MODELS.filter((m) => m.provider === (p.slug as ModelProvider)).map((m) => ({
-      id: m.id,
-      label: m.label,
-      enabled: !disabledModels.has(m.id),
-    })),
-  }))
-}
 
 export const upsert = async (
   provider: ModelProvider,
@@ -57,7 +36,11 @@ export const isConfigured = async (): Promise<boolean> => {
   return !!row
 }
 
-export const toggleModel = async (modelId: string, enabled: boolean, sessionId: string | null = null) => {
+export const toggleModel = async (
+  modelId: string,
+  enabled: boolean,
+  sessionId: string | null = null,
+) => {
   if (sessionId === null) {
     const [row] = await db
       .insert(schema.userModelPrefs)
@@ -83,8 +66,13 @@ export const toggleModel = async (modelId: string, enabled: boolean, sessionId: 
   return row!
 }
 
-export const listSessionModelPrefs = async (sessionId: string) => {
-  return db.query.userModelPrefs.findMany({
-    where: orm.eq(schema.userModelPrefs.sessionId, sessionId),
-  })
+export const clearSessionModel = async (modelId: string, sessionId: string) => {
+  await db
+    .delete(schema.userModelPrefs)
+    .where(
+      orm.and(
+        orm.eq(schema.userModelPrefs.sessionId, sessionId),
+        orm.eq(schema.userModelPrefs.modelId, modelId),
+      ),
+    )
 }

@@ -74,7 +74,6 @@ export default function Dashboard({ onSignOut }: Props) {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/50 md:hidden"
@@ -82,7 +81,6 @@ export default function Dashboard({ onSignOut }: Props) {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 flex w-56 shrink-0 flex-col border-r bg-sidebar transition-transform duration-200 md:static md:z-auto md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -129,7 +127,6 @@ export default function Dashboard({ onSignOut }: Props) {
         </div>
       </aside>
 
-      {/* Main */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden item">
         <header className="border-b px-6 py-5 shrink-0 flex items-center gap-4">
           <button

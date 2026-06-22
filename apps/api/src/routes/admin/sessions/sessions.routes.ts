@@ -8,7 +8,7 @@ import { createErrorSchema } from "stoker/openapi/schemas"
 
 const tags = ["Admin / Sessions"]
 
-export const SessionSchema = z.object({
+const SessionSchema = z.object({
   id: z.string(),
   deviceName: z.string(),
   createdAt: z.number(),
@@ -26,7 +26,10 @@ export const list = createRoute({
   tags,
   middleware: [adminAuth] as const,
   responses: {
-    [HttpStatusCodes.OK]: helpers.jsonContent(z.array(SessionSchema), "Connected devices"),
+    [HttpStatusCodes.OK]: helpers.jsonContent(
+      z.array(SessionSchema),
+      "Connected devices",
+    ),
     ...responses.unauthorized,
     ...responses.serverError,
   },

@@ -92,7 +92,6 @@ export const ToneBottomSheet = forwardRef<ToneBottomSheetHandle, Props>(
         syncActiveConfig()
         close()
       } catch (e: any) {
-        // Error handled silently — could add a snackbar here
       } finally {
         setSaving(false)
       }

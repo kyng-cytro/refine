@@ -10,11 +10,9 @@
     "build": "bun run src/index.ts --build"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.83",
-    "@ai-sdk/google": "^3.0.81",
-    "@ai-sdk/openai": "^3.0.70",
     "@hono/zod-openapi": "^1.2.2",
     "@refine/db": "workspace:*",
+    "@refine/models": "workspace:*",
     "@refine/schemas": "workspace:*",
     "@scalar/hono-api-reference": "^0.10.4",
     "ai": "^6.0.202",

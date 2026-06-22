@@ -23,7 +23,6 @@ export const TonesSection = () => {
   const { tones, toneSlug, setTone } = useSettingsStore()
 
   const openSheet = (tone?: Tone) => {
-    // Global tones can't be edited by users
     if (tone?.isGlobal) return
     setEditingTone(tone ?? null)
     bottomSheetRef.current?.present()
@@ -74,7 +73,9 @@ export const TonesSection = () => {
       <ToneBottomSheet
         ref={bottomSheetRef}
         editingTone={editingTone}
-        onSaved={async () => { await refreshTones() }}
+        onSaved={async () => {
+          await refreshTones()
+        }}
         onDismiss={() => setEditingTone(null)}
       />
     </>

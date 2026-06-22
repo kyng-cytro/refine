@@ -5,9 +5,7 @@ import { mmkvStorage } from "./storage"
 
 interface SettingsState {
   serverUrl: string
-  // sessionToken is NOT persisted here — held in memory and synced to EncryptedSharedPreferences
   sessionToken: string
-  // Cached from server on startup
   tones: Tone[]
   models: Model[]
   toneSlug: string
@@ -58,7 +56,6 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: "refine-settings",
       storage: createJSONStorage(() => mmkvStorage),
-      // sessionToken is NOT persisted to MMKV — only to EncryptedSharedPreferences via bridge
       partialize: (s) => ({
         serverUrl: s.serverUrl,
         toneSlug: s.toneSlug,

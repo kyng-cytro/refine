@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react"
-import { api, type Session, type SessionModelPref, type Token } from "@/lib/api"
-import { MODELS } from "@/lib/models"
+import {
+  api,
+  type Session,
+  type SessionProviderState,
+  type Token,
+} from "@/lib/api"
+import { type ModelProvider } from "@/lib/models"
+import { ProviderAccordion } from "@/components/provider-accordion"
 import { CopyButton } from "@/components/copy-button"
 import { PairingTokenDisplay } from "@/components/pairing-token-display"
-import { ToggleSwitch } from "@/components/ui/toggle-switch"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
@@ -15,7 +26,11 @@ function formatExpiry(expiresAt: number | null): string {
   if (!expiresAt) return "Never"
   const d = new Date(expiresAt)
   if (d < new Date()) return "Expired"
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })
 }
 
 interface DeviceRowProps {
@@ -26,30 +41,61 @@ interface DeviceRowProps {
 
 function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
   const [expanded, setExpanded] = useState(false)
-  const [prefs, setPrefs] = useState<Record<string, boolean>>({})
+  const [tree, setTree] = useState<SessionProviderState[]>([])
   const [loaded, setLoaded] = useState(false)
   const [expiryInput, setExpiryInput] = useState(
-    session.expiresAt ? new Date(session.expiresAt).toISOString().slice(0, 16) : ""
+    session.expiresAt
+      ? new Date(session.expiresAt).toISOString().slice(0, 16)
+      : "",
   )
   const [savingExpiry, setSavingExpiry] = useState(false)
 
   const isExpired = session.expiresAt !== null && session.expiresAt < Date.now()
 
+  const refetch = async () => setTree(await api.sessions.listModels(session.id))
+
   const loadPrefs = async () => {
     if (loaded) return
-    const rows = await api.sessions.listModels(session.id)
-    const map: Record<string, boolean> = {}
-    rows.forEach((r: SessionModelPref) => { map[r.modelId] = r.enabled })
-    setPrefs(map)
+    await refetch()
     setLoaded(true)
   }
 
+  const patchModels = (ids: string[], enabled: boolean) =>
+    setTree((prev) =>
+      prev.map((p) => ({
+        ...p,
+        models: p.models.map((m) =>
+          ids.includes(m.id)
+            ? {
+                ...m,
+                sessionOverride: enabled,
+                effectiveEnabled: p.usable && enabled,
+              }
+            : m,
+        ),
+      })),
+    )
+
   const toggle = async (modelId: string, enabled: boolean) => {
-    setPrefs((prev) => ({ ...prev, [modelId]: enabled }))
+    patchModels([modelId], enabled)
     try {
       await api.sessions.toggleModel(session.id, modelId, enabled)
     } catch {
-      setPrefs((prev) => ({ ...prev, [modelId]: !enabled }))
+      await refetch()
+    }
+  }
+
+  const toggleProvider = async (providerId: string, enabled: boolean) => {
+    const provider = tree.find((p) => p.provider === providerId)
+    if (!provider || !provider.usable) return
+    const ids = provider.models.map((m) => m.id)
+    patchModels(ids, enabled)
+    try {
+      await Promise.all(
+        ids.map((id) => api.sessions.toggleModel(session.id, id, enabled)),
+      )
+    } catch {
+      await refetch()
     }
   }
 
@@ -65,7 +111,9 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
   }
 
   return (
-    <div className={`rounded-lg border overflow-hidden ${isExpired ? "opacity-60" : ""}`}>
+    <div
+      className={`rounded-lg border overflow-hidden ${isExpired ? "opacity-60" : ""}`}
+    >
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
@@ -74,10 +122,12 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
           <div>
             <p className="text-sm font-medium">{session.deviceName}</p>
             <p className="text-xs text-muted-foreground">
-              via {session.pairingTokenLabel} · {new Date(session.createdAt).toLocaleDateString()}
+              via {session.pairingTokenLabel} ·{" "}
+              {new Date(session.createdAt).toLocaleDateString()}
               {session.expiresAt !== null && (
                 <span className={isExpired ? " text-destructive" : ""}>
-                  {" "}· expires {formatExpiry(session.expiresAt)}
+                  {" "}
+                  · expires {formatExpiry(session.expiresAt)}
                 </span>
               )}
             </p>
@@ -88,10 +138,15 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
             variant="ghost"
             size="icon"
             className="text-muted-foreground hover:text-foreground"
-            onClick={() => { setExpanded((v) => !v); loadPrefs() }}
+            onClick={() => {
+              setExpanded((v) => !v)
+              loadPrefs()
+            }}
           >
             <Settings2 className="h-4 w-4" />
-            <ChevronDown className={`h-3 w-3 ml-0.5 transition-transform ${expanded ? "rotate-180" : ""}`} />
+            <ChevronDown
+              className={`h-3 w-3 ml-0.5 transition-transform ${expanded ? "rotate-180" : ""}`}
+            />
           </Button>
           <Button
             variant="ghost"
@@ -107,7 +162,9 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
       {expanded && (
         <div className="border-t px-4 py-3 bg-muted/30 space-y-4">
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Session expiry</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+              Session expiry
+            </p>
             <div className="flex items-center gap-2">
               <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <Input
@@ -116,7 +173,12 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
                 onChange={(e) => setExpiryInput(e.target.value)}
                 className="h-8 text-sm"
               />
-              <Button size="sm" variant="outline" onClick={saveExpiry} disabled={savingExpiry}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={saveExpiry}
+                disabled={savingExpiry}
+              >
                 {savingExpiry ? "Saving…" : "Set"}
               </Button>
               {expiryInput && (
@@ -124,7 +186,11 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
                   size="sm"
                   variant="ghost"
                   className="text-muted-foreground"
-                  onClick={() => { setExpiryInput(""); onExpiryChange(session.id, null); api.sessions.expiry(session.id, null) }}
+                  onClick={() => {
+                    setExpiryInput("")
+                    onExpiryChange(session.id, null)
+                    api.sessions.expiry(session.id, null)
+                  }}
                 >
                   Clear
                 </Button>
@@ -133,26 +199,37 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
           </div>
 
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Model overrides</p>
-            <p className="text-xs text-muted-foreground mb-3">Override global model availability for this device only.</p>
-            <div className="space-y-1">
-              {MODELS.map((m) => {
-                const active = prefs[m.id] ?? true
-                return (
-                  <div
-                    key={m.id}
-                    className="flex items-center justify-between rounded-md px-3 py-2 cursor-pointer hover:bg-muted transition-colors"
-                    onClick={() => toggle(m.id, !active)}
-                  >
-                    <div>
-                      <span className="text-sm">{m.label}</span>
-                      <span className="text-xs text-muted-foreground ml-2">{m.provider}</span>
-                    </div>
-                    <ToggleSwitch active={active} />
-                  </div>
-                )
-              })}
-            </div>
+            <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+              Provider &amp; model overrides
+            </p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Override global provider and model availability for this device
+              only. Providers without an API key or disabled globally can't be
+              enabled here.
+            </p>
+            {!loaded ? (
+              <p className="text-sm text-muted-foreground">Loading…</p>
+            ) : (
+              <ProviderAccordion
+                variant="devices"
+                entries={tree.map((p) => ({
+                  provider: p.provider as ModelProvider,
+                  enabled:
+                    p.usable && p.models.every((m) => m.effectiveEnabled),
+                  hasKey: p.usable,
+                  onToggleEnabled: (enabled) =>
+                    toggleProvider(p.provider, enabled),
+                }))}
+                models={Object.fromEntries(
+                  tree.flatMap((p) =>
+                    p.models.map((m) => [m.id, m.effectiveEnabled]),
+                  ),
+                )}
+                onToggleModel={(_provider, modelId, enabled) =>
+                  toggle(modelId, enabled)
+                }
+              />
+            )}
           </div>
         </div>
       )}
@@ -172,7 +249,10 @@ export default function DevicesTab() {
   const load = () => {
     setLoading(true)
     Promise.all([api.sessions.list(), api.setup.status()])
-      .then(([s, setup]) => { setSessions(s); setServerUrl(setup.url) })
+      .then(([s, setup]) => {
+        setSessions(s)
+        setServerUrl(setup.url)
+      })
       .catch(() => setError("Failed to load."))
       .finally(() => setLoading(false))
   }
@@ -205,7 +285,9 @@ export default function DevicesTab() {
   }
 
   const updateExpiry = (id: string, expiresAt: number | null) => {
-    setSessions((prev) => prev.map((s) => s.id === id ? { ...s, expiresAt } : s))
+    setSessions((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, expiresAt } : s)),
+    )
   }
 
   return (
@@ -214,14 +296,19 @@ export default function DevicesTab() {
         <CardHeader>
           <CardTitle className="text-base">New Pairing Token</CardTitle>
           <CardDescription>
-            Generate a token and share the QR code or link with the user to pair their device.
+            Generate a token and share the QR code or link with the user to pair
+            their device.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {serverUrl && (
             <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
-              <span className="text-xs text-muted-foreground shrink-0">Server URL</span>
-              <code className="text-xs font-mono flex-1 truncate">{serverUrl}</code>
+              <span className="text-xs text-muted-foreground shrink-0">
+                Server URL
+              </span>
+              <code className="text-xs font-mono flex-1 truncate">
+                {serverUrl}
+              </code>
               <CopyButton text={serverUrl} />
             </div>
           )}
@@ -251,17 +338,26 @@ export default function DevicesTab() {
       <Separator />
 
       <div className="space-y-3">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Connected Devices</h2>
+        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+          Connected Devices
+        </h2>
         {loading ? (
           <p className="text-sm text-muted-foreground">Loading…</p>
         ) : sessions.length === 0 ? (
           <div className="rounded-lg border border-dashed p-8 text-center">
             <Smartphone className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-            <p className="text-sm text-muted-foreground">No devices connected yet.</p>
+            <p className="text-sm text-muted-foreground">
+              No devices connected yet.
+            </p>
           </div>
         ) : (
           sessions.map((s) => (
-            <DeviceRow key={s.id} session={s} onRevoke={revoke} onExpiryChange={updateExpiry} />
+            <DeviceRow
+              key={s.id}
+              session={s}
+              onRevoke={revoke}
+              onExpiryChange={updateExpiry}
+            />
           ))
         )}
       </div>
