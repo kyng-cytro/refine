@@ -111,8 +111,9 @@ export default function RootLayout() {
   }, [serverUrl, sessionToken])
 
   useEffect(() => {
+    if (!initialized) return
     syncActiveConfig()
-  }, [serverUrl, sessionToken, modelId, toneSlug])
+  }, [initialized, serverUrl, sessionToken, modelId, toneSlug])
 
   useEffect(() => {
     if (!initialized) return
