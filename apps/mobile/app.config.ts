@@ -1,7 +1,6 @@
 import {
   AndroidConfig,
   withAndroidManifest,
-  withAppBuildGradle,
   withDangerousMod,
   type ConfigPlugin,
 } from "@expo/config-plugins"
@@ -39,17 +38,6 @@ const withProcessTextActivity: ConfigPlugin = (config) => {
         },
       ],
     })
-    return cfg
-  })
-
-  config = withAppBuildGradle(config, (cfg) => {
-    const dep = `implementation("androidx.security:security-crypto:1.1.0-alpha06")`
-    if (!cfg.modResults.contents.includes("security-crypto")) {
-      cfg.modResults.contents = cfg.modResults.contents.replace(
-        /dependencies\s*\{/,
-        `dependencies {\n    ${dep}`,
-      )
-    }
     return cfg
   })
 

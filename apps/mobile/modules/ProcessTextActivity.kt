@@ -2,6 +2,7 @@ package com.refine.app
 
 import android.app.Activity
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
@@ -13,8 +14,6 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -32,7 +31,7 @@ class ProcessTextActivity : Activity() {
     if (text.isNullOrBlank()) { finish(); return }
 
     val configJson = try {
-      getEncryptedPrefs().getString("activeConfig", null)
+      getPrefs().getString("activeConfig", null)
     } catch (e: Exception) { null }
 
     if (configJson == null) {
@@ -50,6 +49,7 @@ class ProcessTextActivity : Activity() {
       val msg = when (reason) {
         "no_server" -> "Open Refine to connect to a server"
         "no_tone" -> "Open Refine to configure a tone"
+        "no_model" -> "Open Refine to choose a model"
         else -> "Open Refine to finish setup"
       }
       buildErrorSheet(msg) { returnOriginal(text) }.show(); return
@@ -222,12 +222,8 @@ class ProcessTextActivity : Activity() {
     setResult(RESULT_OK, reply)
   }
 
-  private fun getEncryptedPrefs() = EncryptedSharedPreferences.create(
-    this, "RefineSecurePrefs",
-    MasterKey.Builder(this).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-  )
+  private fun getPrefs() =
+    getSharedPreferences("RefineAppPrefs", Context.MODE_PRIVATE)
 }
 
 private class ApiException(msg: String) : Exception(msg)

@@ -29,10 +29,6 @@ export const syncActiveConfig = (): void => {
   const mod = getModule()
   if (!mod) return
 
-  try {
-    mod.setEncrypted("sessionToken", sessionToken)
-  } catch {}
-
   const config: NativeConfig =
     !serverUrl || !sessionToken
       ? { configured: false, reason: "no_server" }
@@ -49,8 +45,8 @@ export const syncActiveConfig = (): void => {
             }
 
   try {
-    mod.set("serverUrl", serverUrl)
-    mod.setEncrypted("activeConfig", JSON.stringify(config))
+    mod.set("sessionToken", sessionToken)
+    mod.set("activeConfig", JSON.stringify(config))
   } catch (e) {
     console.warn("[bridge] syncActiveConfig failed:", e)
   }
@@ -65,7 +61,7 @@ export const loadSessionToken = async (): Promise<string> => {
   const mod = getModule()
   if (!mod) return ""
   try {
-    return mod.getEncrypted("sessionToken") ?? ""
+    return mod.get("sessionToken") ?? ""
   } catch {
     return ""
   }
