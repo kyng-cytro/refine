@@ -1,31 +1,13 @@
 import { app, BrowserWindow } from "electron"
-import { join } from "path"
-
-const createWindow = () => {
-  const win = new BrowserWindow({
-    width: 980,
-    height: 720,
-    show: false,
-    autoHideMenuBar: true,
-    webPreferences: {
-      preload: join(__dirname, "../preload/index.js"),
-    },
-  })
-
-  win.once("ready-to-show", () => win.show())
-
-  if (process.env["ELECTRON_RENDERER_URL"]) {
-    win.loadURL(process.env["ELECTRON_RENDERER_URL"])
-  } else {
-    win.loadFile(join(__dirname, "../renderer/index.html"))
-  }
-}
+import { registerIpc } from "./ipc"
+import { createMainWindow } from "./windows/main-window"
 
 app.whenReady().then(() => {
-  createWindow()
+  registerIpc()
+  createMainWindow()
 
   app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
   })
 })
 

@@ -3,15 +3,7 @@ import react from "@vitejs/plugin-react"
 import { defineConfig, externalizeDepsPlugin } from "electron-vite"
 import { resolve } from "path"
 
-// @refine/* packages are source-only TS and electron-store is ESM-only, so
-// they must be bundled into the (CJS) main build rather than externalized.
-const bundled = [
-  "@refine/sdk",
-  "@refine/schemas",
-  "@refine/models",
-  "ofetch",
-  "electron-store",
-]
+const bundled = ["@refine/sdk", "@refine/schemas", "@refine/models", "ofetch"]
 
 export default defineConfig({
   main: {
