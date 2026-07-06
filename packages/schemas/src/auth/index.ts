@@ -1,3 +1,4 @@
+import { DeviceTypeSchema } from "../common"
 import { z } from "zod"
 
 export const PairRequestSchema = z.object({
@@ -12,6 +13,7 @@ export const PairResponseSchema = z.object({
 export const SessionInfoSchema = z.object({
   id: z.string(),
   deviceName: z.string(),
+  deviceType: DeviceTypeSchema,
   createdAt: z.number(),
 })
 

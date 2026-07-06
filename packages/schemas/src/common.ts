@@ -4,6 +4,10 @@ export const IdParamSchema = z.object({
   id: z.string(),
 })
 
+export const DeviceTypeSchema = z.enum(["mobile", "desktop", "browser"])
+
+export type DeviceType = z.infer<typeof DeviceTypeSchema>
+
 export const PaginationQuerySchema = z.object({
   cursor: z.string().optional(),
   limit: z.coerce.number().min(1).max(100).default(50),
