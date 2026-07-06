@@ -11,6 +11,8 @@
     "admin:build": "turbo build --filter=@refine/admin",
     "db:migrate": "turbo db:migrate --filter=@refine/db",
     "db:generate": "turbo db:generate --filter=@refine/db",
+    "desktop:dev": "turbo dev --filter=@refine/desktop",
+    "desktop:dist": "turbo dist --filter=@refine/desktop",
     "mobile:android": "turbo android --filter=@refine/mobile",
     "mobile:prebuild": "turbo prebuild --filter=@refine/mobile",
     "mobile:eas:preview": "turbo eas:preview --filter=@refine/mobile",
@@ -23,6 +25,11 @@
     "packages/*"
   ],
   "packageManager": "bun@1.2.19",
+  "trustedDependencies": [
+    "electron",
+    "electron-builder",
+    "esbuild"
+  ],
   "devDependencies": {
     "@types/bun": "latest",
     "turbo": "^2.9.6",

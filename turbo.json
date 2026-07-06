@@ -12,6 +12,11 @@
       "cache": false,
       "persistent": true
     },
+    "dist": {
+      "cache": false,
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
     "android": {
       "cache": false,
       "persistent": true,
