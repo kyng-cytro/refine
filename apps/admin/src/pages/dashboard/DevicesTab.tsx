@@ -5,7 +5,9 @@ import {
   type SessionProviderState,
   type Token,
 } from "@/lib/api"
+import { deviceTypeIcon, DEVICE_TYPES, type DeviceType } from "@/lib/device-type"
 import { type ModelProvider } from "@/lib/models"
+import { DeviceTypeSelector } from "@/components/device-type-selector"
 import { ProviderAccordion } from "@/components/provider-accordion"
 import { CopyButton } from "@/components/copy-button"
 import { PairingTokenDisplay } from "@/components/pairing-token-display"
@@ -40,6 +42,7 @@ interface DeviceRowProps {
 }
 
 function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
+  const DeviceIcon = deviceTypeIcon(session.deviceType)
   const [expanded, setExpanded] = useState(false)
   const [tree, setTree] = useState<SessionProviderState[]>([])
   const [loaded, setLoaded] = useState(false)
@@ -117,7 +120,7 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
-            <Smartphone className="h-4 w-4 text-muted-foreground" />
+            <DeviceIcon className="h-4 w-4 text-muted-foreground" />
           </div>
           <div>
             <p className="text-sm font-medium">{session.deviceName}</p>
@@ -242,6 +245,7 @@ export default function DevicesTab() {
   const [serverUrl, setServerUrl] = useState("")
   const [loading, setLoading] = useState(true)
   const [label, setLabel] = useState("")
+  const [deviceType, setDeviceType] = useState<DeviceType>("mobile")
   const [newToken, setNewToken] = useState<Token | null>(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState("")
@@ -266,7 +270,7 @@ export default function DevicesTab() {
     setError("")
     setNewToken(null)
     try {
-      setNewToken(await api.tokens.create(label.trim()))
+      setNewToken(await api.tokens.create(label.trim(), deviceType))
       setLabel("")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create token.")
@@ -313,20 +317,29 @@ export default function DevicesTab() {
             </div>
           )}
 
-          <form onSubmit={generate} className="flex gap-2">
-            <div className="flex-1 space-y-1.5">
-              <Label htmlFor="device-label">Device label</Label>
-              <Input
-                id="device-label"
-                placeholder="My Phone"
-                value={label}
-                onChange={(e) => setLabel(e.target.value)}
-              />
+          <form onSubmit={generate} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Device type</Label>
+              <DeviceTypeSelector value={deviceType} onChange={setDeviceType} />
             </div>
-            <div className="flex items-end">
-              <Button type="submit" disabled={!label.trim() || creating}>
-                {creating ? "Creating…" : "Generate"}
-              </Button>
+            <div className="flex gap-2">
+              <div className="flex-1 space-y-1.5">
+                <Label htmlFor="device-label">Device label</Label>
+                <Input
+                  id="device-label"
+                  placeholder={
+                    DEVICE_TYPES.find((t) => t.value === deviceType)
+                      ?.placeholder
+                  }
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
+                />
+              </div>
+              <div className="flex items-end">
+                <Button type="submit" disabled={!label.trim() || creating}>
+                  {creating ? "Creating…" : "Generate"}
+                </Button>
+              </div>
             </div>
           </form>
 

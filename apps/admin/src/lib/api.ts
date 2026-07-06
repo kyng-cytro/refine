@@ -4,6 +4,7 @@ import type {
   AdminSession,
   AdminSessionProvider,
   AdminToken,
+  DeviceType,
   HistoryItem,
   Paginated,
   SetupStatus,
@@ -55,8 +56,8 @@ export const api = {
   },
   tokens: {
     list: () => request<AdminToken[]>("GET", "/admin/tokens"),
-    create: (label: string) =>
-      request<AdminToken>("POST", "/admin/tokens", { label }),
+    create: (label: string, deviceType: DeviceType) =>
+      request<AdminToken>("POST", "/admin/tokens", { label, deviceType }),
   },
   providers: {
     list: () => request<AdminProviderState[]>("GET", "/admin/providers"),
