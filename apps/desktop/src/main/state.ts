@@ -16,9 +16,7 @@ type PersistedSettings = {
   autoApply: boolean
   overlayCorner: OverlayCorner
   launchAtLogin: boolean
-  /** base64 of safeStorage-encrypted session token */
   encryptedSessionToken: string
-  /** plaintext fallback when safeStorage is unavailable (no keyring) */
   plainSessionToken: string
 }
 
@@ -104,7 +102,11 @@ class AppState {
     this.emit()
   }
 
-  setServerConfig(serverUrl: string, sessionToken: string, deviceName: string): void {
+  setServerConfig(
+    serverUrl: string,
+    sessionToken: string,
+    deviceName: string,
+  ): void {
     const secure = safeStorage.isEncryptionAvailable()
     this.store.set({
       serverUrl,

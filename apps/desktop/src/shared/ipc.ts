@@ -1,4 +1,3 @@
-/** Renderer -> main (ipcRenderer.invoke / ipcMain.handle) */
 export const IPC = {
   settingsGet: "settings:get",
   settingsUpdate: "settings:update",
@@ -17,7 +16,6 @@ export const IPC = {
   shortcutSetRecording: "shortcut:set-recording",
 } as const
 
-/** Main -> renderer (webContents.send / ipcRenderer.on) */
 export const EVENTS = {
   stateChanged: "state:changed",
   overlayState: "overlay:state",

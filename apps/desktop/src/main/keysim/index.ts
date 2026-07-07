@@ -11,11 +11,6 @@ let cached: Capability | null = null
 const hasCommand = (command: string): boolean =>
   spawnSync("which", [command], { stdio: "ignore" }).status === 0
 
-/**
- * Whether we can simulate Ctrl/Cmd+C/V system-wide on this machine.
- * "manual" means: user copies text themselves, we refine the clipboard,
- * user pastes the result themselves.
- */
 export const detectCapability = (): Capability => {
   if (cached) return cached
 
@@ -37,9 +32,6 @@ export const detectCapability = (): Capability => {
     }
     return cached
   }
-
-  // Windows (PowerShell SendKeys) and macOS (osascript) are always present;
-  // macOS additionally needs accessibility trust, checked at simulate time.
   cached = { capability: "full" }
   return cached
 }

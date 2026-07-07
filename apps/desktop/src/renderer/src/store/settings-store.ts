@@ -14,11 +14,6 @@ interface SettingsState extends SettingsSnapshot {
   update: (patch: UpdatableSettings) => Promise<boolean | undefined>
 }
 
-/**
- * Read-mostly mirror of the main process state. All mutations round-trip
- * through main (single writer); the echoed state:changed broadcast updates
- * this store, the tray, and any other window at once.
- */
 export const useSettingsStore = create<SettingsState>()((set) => ({
   hydrated: false,
   capabilities: null,

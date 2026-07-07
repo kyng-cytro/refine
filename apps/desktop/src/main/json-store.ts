@@ -2,7 +2,6 @@ import { app } from "electron"
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "fs"
 import { dirname, join } from "path"
 
-/** Minimal persisted JSON settings store (electron-store without the ESM baggage). */
 export class JsonStore<T extends Record<string, unknown>> {
   private path: string
   private data: T
@@ -12,9 +11,7 @@ export class JsonStore<T extends Record<string, unknown>> {
     let loaded: Partial<T> = {}
     try {
       loaded = JSON.parse(readFileSync(this.path, "utf8"))
-    } catch {
-      // first run or corrupt file - fall back to defaults
-    }
+    } catch {}
     this.data = { ...defaults, ...loaded }
   }
 

@@ -1,4 +1,5 @@
 import { useEffect } from "react"
+import KitchenSink from "@/screens/KitchenSink"
 import { useSettingsStore } from "@/store/settings-store"
 
 export default function App() {
@@ -11,12 +12,12 @@ export default function App() {
   if (!hydrated) return null
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-2">
-      <h1 className="text-2xl font-semibold">Refine</h1>
-      <p className="text-sm text-gray-500">
+    <div className="h-screen overflow-y-auto">
+      <p className="p-4 text-body-small text-on-surface-variant">
         {connected ? "Connected" : "Not connected"} · {capabilities?.platform}{" "}
         · keysim {capabilities?.keySim}
       </p>
+      <KitchenSink />
     </div>
   )
 }
