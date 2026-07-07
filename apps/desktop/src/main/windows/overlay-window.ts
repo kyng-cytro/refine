@@ -4,7 +4,8 @@ import { EVENTS } from "../../shared/ipc"
 import type { OverlayCorner, OverlayState } from "../../shared/types"
 import { state } from "../state"
 
-const WIDTH = 220
+const WIDTH = 280
+const ERROR_WIDTH = 420
 const HEIGHT = 52
 const INSET = 16
 
@@ -46,10 +47,10 @@ const ensureOverlay = (): BrowserWindow => {
   return overlay
 }
 
-const positionFor = (corner: OverlayCorner) => {
+const positionFor = (corner: OverlayCorner, winWidth: number) => {
   const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
   const { x, y, width, height } = display.workArea
-  const left = corner.endsWith("left") ? x + INSET : x + width - WIDTH - INSET
+  const left = corner.endsWith("left") ? x + INSET : x + width - winWidth - INSET
   const top = corner.startsWith("top") ? y + INSET : y + height - HEIGHT - INSET
   return { x: Math.round(left), y: Math.round(top) }
 }
@@ -59,8 +60,9 @@ export const showOverlay = (
   autoHideMs?: number,
 ): void => {
   const win = ensureOverlay()
-  const { x, y } = positionFor(state.overlayCorner)
-  win.setBounds({ x, y, width: WIDTH, height: HEIGHT })
+  const winWidth = payload.state === "error" ? ERROR_WIDTH : WIDTH
+  const { x, y } = positionFor(state.overlayCorner, winWidth)
+  win.setBounds({ x, y, width: winWidth, height: HEIGHT })
 
   const send = () => win.webContents.send(EVENTS.overlayState, payload)
   if (win.webContents.isLoading()) win.webContents.once("did-finish-load", send)
