@@ -68,12 +68,3 @@ export type PairIncoming = {
   url: string
   name?: string
 }
-
-export type HistoryEntry = {
-  id: string
-  source: string
-  refined: string
-  modelId: string
-  toneSlug: string
-  createdAt: number
-}

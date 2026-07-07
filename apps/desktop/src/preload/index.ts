@@ -1,7 +1,15 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron"
+import type {
+  CreateTone,
+  HistoryItem,
+  ProvidersResponse,
+  RefineRequest,
+  RefineResponse,
+  Tone,
+  UpdateTone,
+} from "@refine/schemas"
 import { EVENTS, IPC } from "../shared/ipc"
 import type {
-  HistoryEntry,
   OverlayState,
   PairIncoming,
   PairInput,
@@ -32,21 +40,23 @@ const api = {
     disconnect: (): Promise<void> => ipcRenderer.invoke(IPC.sessionDisconnect),
     bootstrap: (): Promise<void> => ipcRenderer.invoke(IPC.sessionBootstrap),
   },
-  refine: (body: { text: string; modelId: string; toneSlug: string }): Promise<{ refined: string }> =>
+  refine: (body: RefineRequest): Promise<RefineResponse> =>
     ipcRenderer.invoke(IPC.refineRun, body),
   tones: {
-    list: () => ipcRenderer.invoke(IPC.tonesList),
-    create: (body: { name: string; slug: string; instructions: string }) =>
+    list: (): Promise<Tone[]> => ipcRenderer.invoke(IPC.tonesList),
+    create: (body: CreateTone): Promise<Tone> =>
       ipcRenderer.invoke(IPC.tonesCreate, body),
-    update: (id: string, body: Partial<{ name: string; slug: string; instructions: string }>) =>
+    update: (id: string, body: UpdateTone): Promise<Tone> =>
       ipcRenderer.invoke(IPC.tonesUpdate, id, body),
-    delete: (id: string) => ipcRenderer.invoke(IPC.tonesDelete, id),
+    delete: (id: string): Promise<void> =>
+      ipcRenderer.invoke(IPC.tonesDelete, id),
   },
   providers: {
-    list: () => ipcRenderer.invoke(IPC.providersList),
+    list: (): Promise<ProvidersResponse> =>
+      ipcRenderer.invoke(IPC.providersList),
   },
   history: {
-    list: (limit?: number): Promise<HistoryEntry[]> =>
+    list: (limit?: number): Promise<HistoryItem[]> =>
       ipcRenderer.invoke(IPC.historyList, limit),
     delete: (id: string): Promise<void> =>
       ipcRenderer.invoke(IPC.historyDelete, id),
@@ -61,7 +71,7 @@ const api = {
     subscribe(EVENTS.stateChanged, cb),
   onOverlayState: (cb: (overlay: OverlayState) => void) =>
     subscribe(EVENTS.overlayState, cb),
-  onHistoryPrepend: (cb: (entry: HistoryEntry) => void) =>
+  onHistoryPrepend: (cb: (entry: HistoryItem) => void) =>
     subscribe(EVENTS.historyPrepend, cb),
   onPairIncoming: (cb: (pair: PairIncoming) => void) =>
     subscribe(EVENTS.pairIncoming, cb),
