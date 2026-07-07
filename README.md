@@ -16,6 +16,30 @@ The server ships as a container image on GHCR (`ghcr.io/kyng-cytro/refine`); des
 
 ---
 
+## Screenshots
+
+### Desktop app
+
+| Home | Settings | Pairing |
+|:---:|:---:|:---:|
+| ![Desktop — home](docs/screenshots/desktop-home.png) | ![Desktop — settings](docs/screenshots/desktop-settings.png) | ![Desktop — pairing](docs/screenshots/desktop-setup.png) |
+
+### Mobile app (Android)
+
+| Home | Settings | Pairing |
+|:---:|:---:|:---:|
+| ![Mobile — home](docs/screenshots/mobile-home.png) | ![Mobile — settings](docs/screenshots/mobile-settings.png) | ![Mobile — pairing](docs/screenshots/mobile-setup.png) |
+
+### Admin panel
+
+| Providers | Devices |
+|:---:|:---:|
+| ![Admin — providers](docs/screenshots/admin-providers.png) | ![Admin — devices](docs/screenshots/admin-devices.png) |
+| **Tones** | **History** |
+| ![Admin — tones](docs/screenshots/admin-tones.png) | ![Admin — history](docs/screenshots/admin-history.png) |
+
+---
+
 ## Monorepo
 
 ```
