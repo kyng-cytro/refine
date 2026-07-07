@@ -18,6 +18,11 @@ RUN bun run build
 
 # ---- Stage 3: Runtime ----
 FROM oven/bun:1.2-alpine AS runtime
+LABEL org.opencontainers.image.title="Refine"
+LABEL org.opencontainers.image.description="Self-hostable Refine server: the Hono API plus the bundled admin UI in one container. Pair devices, manage providers/models/tones, and refine text."
+LABEL org.opencontainers.image.source="https://github.com/kyng-cytro/refine"
+LABEL org.opencontainers.image.documentation="https://github.com/kyng-cytro/refine/blob/main/GUIDE.md"
+LABEL org.opencontainers.image.licenses="MIT"
 WORKDIR /app
 COPY --from=pruner /app/out/json/ .
 RUN bun install --frozen-lockfile --production
