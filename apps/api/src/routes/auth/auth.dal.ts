@@ -1,4 +1,5 @@
 import { db, schema, orm } from "@/lib/db"
+import type { DeviceType } from "@refine/schemas"
 import { randomUUIDv7 } from "bun"
 
 export const findUnusedToken = async (token: string) => {
@@ -17,6 +18,7 @@ export const findUnusedToken = async (token: string) => {
 export const createSession = async (
   pairingTokenId: string,
   deviceName: string,
+  deviceType: DeviceType,
 ) => {
   const sessionToken = randomUUIDv7() + "-" + randomUUIDv7()
 
@@ -27,7 +29,7 @@ export const createSession = async (
 
   const [session] = await db
     .insert(schema.sessions)
-    .values({ pairingTokenId, deviceName, sessionToken })
+    .values({ pairingTokenId, deviceName, deviceType, sessionToken })
     .returning()
 
   return session!

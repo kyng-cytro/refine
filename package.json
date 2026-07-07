@@ -11,19 +11,31 @@
     "admin:build": "turbo build --filter=@refine/admin",
     "db:migrate": "turbo db:migrate --filter=@refine/db",
     "db:generate": "turbo db:generate --filter=@refine/db",
+    "desktop:dev": "turbo dev --filter=@refine/desktop",
+    "desktop:dist": "turbo dist --filter=@refine/desktop",
     "mobile:android": "turbo android --filter=@refine/mobile",
     "mobile:prebuild": "turbo prebuild --filter=@refine/mobile",
     "mobile:eas:preview": "turbo eas:preview --filter=@refine/mobile",
     "mobile:eas:production": "turbo eas:production --filter=@refine/mobile",
     "mobile:eas:production-apk": "turbo eas:production-apk --filter=@refine/mobile",
-    "dev": "turbo dev --filter=@refine/api --filter=@refine/admin"
+    "dev": "turbo dev --filter=@refine/api --filter=@refine/admin",
+    "changeset": "changeset",
+    "version-packages": "changeset version && bun install --lockfile-only",
+    "tag-release": "changeset tag"
   },
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "packageManager": "bun@1.2.19",
+  "trustedDependencies": [
+    "electron",
+    "electron-builder",
+    "esbuild"
+  ],
   "devDependencies": {
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.31.0",
     "@types/bun": "latest",
     "turbo": "^2.9.6",
     "typescript": "~5.8.3"

@@ -17,8 +17,8 @@ export const list: AppRouteHandler<List> = async (c) => {
 
 export const create: AppRouteHandler<Create> = async (c) => {
   try {
-    const { label } = c.req.valid("json")
-    return c.json(await dal.create(label), HttpStatusCodes.CREATED)
+    const { label, deviceType } = c.req.valid("json")
+    return c.json(await dal.create(label, deviceType), HttpStatusCodes.CREATED)
   } catch (error) {
     c.var.logger.error(`[ADMIN:TOKENS:CREATE] ${error}`)
     throw new HTTPException(HttpStatusCodes.INTERNAL_SERVER_ERROR, {

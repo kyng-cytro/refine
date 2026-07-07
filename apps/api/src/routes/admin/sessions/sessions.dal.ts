@@ -7,6 +7,7 @@ type SessionRow = typeof schema.sessions.$inferSelect & {
 const map = (row: SessionRow) => ({
   id: row.id,
   deviceName: row.deviceName,
+  deviceType: row.deviceType,
   createdAt: row.createdAt.getTime(),
   expiresAt: row.expiresAt?.getTime() ?? null,
   pairingTokenLabel: row.pairingToken.label,

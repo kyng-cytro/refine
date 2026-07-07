@@ -24,6 +24,7 @@ export const expiry: AppRouteHandler<SetExpiry> = async (c) => {
     return c.json({
       id: updated.id,
       deviceName: updated.deviceName,
+      deviceType: updated.deviceType,
       createdAt: updated.createdAt.getTime(),
       expiresAt: updated.expiresAt?.getTime() ?? null,
       pairingTokenLabel: "",

@@ -1,20 +1,12 @@
 import * as responses from "@/lib/helpers/responses"
 import { adminAuth } from "@/middlewares/auth"
 import { createRoute, z } from "@hono/zod-openapi"
-import { IdParamSchema } from "@refine/schemas"
+import { AdminSessionSchema, IdParamSchema } from "@refine/schemas"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 import { helpers } from "stoker/openapi"
 import { createErrorSchema } from "stoker/openapi/schemas"
 
 const tags = ["Admin / Sessions"]
-
-const SessionSchema = z.object({
-  id: z.string(),
-  deviceName: z.string(),
-  createdAt: z.number(),
-  expiresAt: z.number().nullable(),
-  pairingTokenLabel: z.string(),
-})
 
 const SetExpirySchema = z.object({
   expiresAt: z.number().nullable(),
@@ -27,7 +19,7 @@ export const list = createRoute({
   middleware: [adminAuth] as const,
   responses: {
     [HttpStatusCodes.OK]: helpers.jsonContent(
-      z.array(SessionSchema),
+      z.array(AdminSessionSchema),
       "Connected devices",
     ),
     ...responses.unauthorized,
@@ -46,7 +38,10 @@ export const expiry = createRoute({
     body: helpers.jsonContent(SetExpirySchema, "Set session expiry"),
   },
   responses: {
-    [HttpStatusCodes.OK]: helpers.jsonContent(SessionSchema, "Updated session"),
+    [HttpStatusCodes.OK]: helpers.jsonContent(
+      AdminSessionSchema,
+      "Updated session",
+    ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: helpers.jsonContent(
       createErrorSchema(SetExpirySchema),
       "Validation error",

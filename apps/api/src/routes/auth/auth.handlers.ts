@@ -14,7 +14,11 @@ export const pair: AppRouteHandler<Pair> = async (c) => {
         HttpStatusCodes.UNAUTHORIZED,
       )
     }
-    const session = await dal.createSession(token.id, deviceName)
+    const session = await dal.createSession(
+      token.id,
+      deviceName,
+      token.deviceType,
+    )
     return c.json({ sessionToken: session.sessionToken }, HttpStatusCodes.OK)
   } catch (error) {
     c.var.logger.error(`[AUTH:PAIR] ${error}`)
@@ -31,6 +35,7 @@ export const me: AppRouteHandler<Me, AuthenticatedContext> = async (c) => {
       {
         id: session.id,
         deviceName: session.deviceName,
+        deviceType: session.deviceType,
         createdAt: session.createdAt.getTime(),
       },
       HttpStatusCodes.OK,

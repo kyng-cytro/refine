@@ -38,8 +38,8 @@ export const createRoot = (app: ReturnType<typeof createApp>) => {
   const root = createRouter()
   root.get("/favicon.png", serveStatic({ path: "./public/favicon.png" }))
   root.get("/pair", (c) => {
-    const { token, name } = c.req.query()
-    const deepLink = `refine://pair?token=${token}&url=${encodeURIComponent(HOST)}&name=${name ?? ""}`
+    const { token, name, type } = c.req.query()
+    const deepLink = `refine://pair?token=${token}&url=${encodeURIComponent(HOST)}&name=${name ?? ""}&type=${type ?? "mobile"}`
     return c.redirect(deepLink, 302)
   })
   root.use("/admin/*", serveStatic({ root: "./public" }))

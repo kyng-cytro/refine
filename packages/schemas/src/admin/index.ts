@@ -1,3 +1,4 @@
+import { DeviceTypeSchema } from "../common"
 import { z } from "zod"
 
 export const AdminTokenSchema = z.object({
@@ -5,6 +6,7 @@ export const AdminTokenSchema = z.object({
   token: z.string(),
   label: z.string(),
   used: z.boolean(),
+  deviceType: DeviceTypeSchema,
   createdAt: z.number(),
   link: z.string(),
 })
@@ -12,6 +14,7 @@ export const AdminTokenSchema = z.object({
 export const AdminSessionSchema = z.object({
   id: z.string(),
   deviceName: z.string(),
+  deviceType: DeviceTypeSchema,
   createdAt: z.number(),
   expiresAt: z.number().nullable(),
   pairingTokenLabel: z.string(),

@@ -9,6 +9,9 @@ export const pairingTokens = sqliteTable("pairing_tokens", {
   token: text("token").notNull().unique(),
   label: text("label").notNull(),
   used: integer("used", { mode: "boolean" }).notNull().default(false),
+  deviceType: text("device_type", { enum: ["mobile", "desktop", "browser"] })
+    .notNull()
+    .default("mobile"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -24,6 +27,9 @@ export const sessions = sqliteTable("sessions", {
     .notNull()
     .references(() => pairingTokens.id, { onDelete: "cascade" }),
   deviceName: text("device_name").notNull(),
+  deviceType: text("device_type", { enum: ["mobile", "desktop", "browser"] })
+    .notNull()
+    .default("mobile"),
   sessionToken: text("session_token").notNull().unique(),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()

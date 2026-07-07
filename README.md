@@ -20,11 +20,13 @@ refine/
 ├── apps/
 │   ├── api/        Hono HTTP API (Bun runtime)
 │   ├── admin/      React SPA — provider & device management
+│   ├── desktop/    Electron desktop app (Windows/macOS/Linux)
 │   └── mobile/     Expo React Native app (Android only)
 ├── packages/
 │   ├── db/         Drizzle ORM schema, migrations, seed
-│   ├── schemas/    Zod types shared between API and admin
-│   └── sdk/        Typed API client used by mobile
+│   ├── models/     Provider/model catalog + icons
+│   ├── schemas/    Zod types shared across API, admin, SDK, apps
+│   └── sdk/        Typed API client used by mobile and desktop
 ```
 
 **Tooling:** Bun, Turbo, TypeScript.
@@ -51,8 +53,11 @@ Copy `apps/api/.env.example` to `apps/api/.env` before running.
 | `bun run db:generate` | Generate migration SQL from schema changes |
 | `bun run db:migrate` | Run pending migrations |
 | `bun run db:seed` | Seed default data |
+| `bun run desktop:dev` | Electron desktop app in dev |
+| `bun run desktop:dist` | Build desktop installers for the current OS |
 | `bun run mobile:android` | Build and run Android app |
 | `bun run mobile:prebuild` | Expo prebuild (generates native `android/`) |
+| `bun changeset` | Add a changeset (run in every PR that changes a package) |
 
 ---
 

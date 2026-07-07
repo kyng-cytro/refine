@@ -1,6 +1,7 @@
 import * as responses from "@/lib/helpers/responses"
 import { adminAuth } from "@/middlewares/auth"
 import { createRoute, z } from "@hono/zod-openapi"
+import { AdminTokenSchema, DeviceTypeSchema } from "@refine/schemas"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 import { helpers } from "stoker/openapi"
 import { createErrorSchema } from "stoker/openapi/schemas"
@@ -9,15 +10,7 @@ const tags = ["Admin / Tokens"]
 
 const CreateSchema = z.object({
   label: z.string().min(1),
-})
-
-const TokenSchema = z.object({
-  id: z.string(),
-  token: z.string(),
-  label: z.string(),
-  used: z.boolean(),
-  createdAt: z.number(),
-  link: z.string(),
+  deviceType: DeviceTypeSchema.default("mobile"),
 })
 
 export const list = createRoute({
@@ -27,7 +20,7 @@ export const list = createRoute({
   middleware: [adminAuth] as const,
   responses: {
     [HttpStatusCodes.OK]: helpers.jsonContent(
-      z.array(TokenSchema),
+      z.array(AdminTokenSchema),
       "Pairing tokens",
     ),
     ...responses.unauthorized,
@@ -46,7 +39,7 @@ export const create = createRoute({
   },
   responses: {
     [HttpStatusCodes.CREATED]: helpers.jsonContent(
-      TokenSchema,
+      AdminTokenSchema,
       "Created token",
     ),
     [HttpStatusCodes.UNPROCESSABLE_ENTITY]: helpers.jsonContent(

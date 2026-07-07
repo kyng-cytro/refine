@@ -7,6 +7,7 @@ import {
 import type { ExpoConfig } from "expo/config"
 import * as fs from "fs"
 import * as path from "path"
+import pkg from "./package.json"
 
 const IS_DEV = process.env.APP_VARIANT !== "production"
 
@@ -107,7 +108,7 @@ const config: ExpoConfig = {
   name: IS_DEV ? "Refine (Dev)" : "Refine",
   slug: "refine",
   owner: "cytro",
-  version: "1.0.0",
+  version: pkg.version,
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: "refine",

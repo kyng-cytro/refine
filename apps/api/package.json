@@ -7,7 +7,7 @@
     "type-check": "bunx tsc --noEmit",
     "start": "bun run src/index.ts",
     "dev": "bun run --watch src/index.ts",
-    "build": "bun run src/index.ts --build"
+    "build": "echo 'api runs from source; no build step'"
   },
   "dependencies": {
     "@hono/zod-openapi": "^1.2.2",
