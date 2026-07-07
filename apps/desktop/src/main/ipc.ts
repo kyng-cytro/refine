@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain, safeStorage } from "electron"
+import { app, BrowserWindow, ipcMain, safeStorage } from "electron"
 import { hostname } from "os"
 import type { CreateTone, RefineRequest, UpdateTone } from "@refine/schemas"
 import { EVENTS, IPC } from "../shared/ipc"
@@ -46,6 +46,9 @@ export const registerIpc = (): void => {
       state.update(patch)
       let shortcutOk: boolean | undefined
       if (shortcutChanged) shortcutOk = registerShortcut(state.shortcut)
+      if (patch.launchAtLogin !== undefined && process.platform !== "linux") {
+        app.setLoginItemSettings({ openAtLogin: patch.launchAtLogin })
+      }
       return { snapshot: state.snapshot(), shortcutOk }
     },
   )
