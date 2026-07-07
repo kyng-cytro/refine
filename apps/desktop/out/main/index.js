@@ -15,6 +15,7 @@ const node_fs = require("node:fs");
 const node_path = require("node:path");
 const fs = require("fs");
 const child_process = require("child_process");
+const util = require("util");
 const IPC = {
   settingsGet: "settings:get",
   settingsUpdate: "settings:update",
@@ -30,10 +31,13 @@ const IPC = {
   historyList: "history:list",
   historyDelete: "history:delete",
   systemCapabilities: "system:capabilities",
+  shortcutSetRecording: "shortcut:set-recording",
   pairConsume: "pair:consume"
 };
 const EVENTS = {
   stateChanged: "state:changed",
+  overlayState: "overlay:state",
+  historyPrepend: "history:prepend",
   pairIncoming: "pair:incoming"
 };
 let mainWindow = null;
@@ -4460,6 +4464,7 @@ const pairAndBootstrap = async ({
     return { ok: false, error: apiError(e) };
   }
 };
+const exec = util.promisify(child_process.execFile);
 let cached = null;
 const hasCommand = (command) => child_process.spawnSync("which", [command], { stdio: "ignore" }).status === 0;
 const detectCapability = () => {
@@ -4483,6 +4488,59 @@ const detectCapability = () => {
   cached = { capability: "full" };
   return cached;
 };
+const modifier = process.platform === "darwin" ? "cmd" : "ctrl";
+const simulate = async (key) => {
+  if (detectCapability().capability !== "full") return;
+  if (process.platform === "linux") {
+    await exec("xdotool", ["key", "--clearmodifiers", `${modifier}+${key}`]);
+    return;
+  }
+  if (process.platform === "darwin") {
+    await exec("osascript", [
+      "-e",
+      `tell application "System Events" to keystroke "${key}" using command down`
+    ]);
+    return;
+  }
+  if (process.platform === "win32") {
+    await exec("powershell", [
+      "-NoProfile",
+      "-NonInteractive",
+      "-WindowStyle",
+      "Hidden",
+      "-Command",
+      `Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('^${key}')`
+    ]);
+  }
+};
+const simulateCopy = () => simulate("c");
+const simulatePaste = () => simulate("v");
+let currentAccelerator = null;
+let onTrigger = null;
+let paused = false;
+const setTrigger = (handler) => {
+  onTrigger = handler;
+};
+const registerShortcut = (accelerator) => {
+  electron.globalShortcut.unregisterAll();
+  currentAccelerator = accelerator;
+  if (paused || !accelerator) return true;
+  try {
+    electron.globalShortcut.register(accelerator, () => onTrigger?.());
+    return electron.globalShortcut.isRegistered(accelerator);
+  } catch {
+    return false;
+  }
+};
+const setRecording = (recording) => {
+  paused = recording;
+  if (recording) {
+    electron.globalShortcut.unregisterAll();
+  } else if (currentAccelerator) {
+    registerShortcut(currentAccelerator);
+  }
+};
+const unregisterAll = () => electron.globalShortcut.unregisterAll();
 const broadcastState = () => {
   const snapshot = state.snapshot();
   for (const win of electron.BrowserWindow.getAllWindows()) {
@@ -4506,10 +4564,16 @@ const registerIpc = () => {
   electron.ipcMain.handle(
     IPC.settingsUpdate,
     (_e, patch) => {
+      const shortcutChanged = patch.shortcut !== void 0 && patch.shortcut !== state.shortcut;
       state.update(patch);
-      return { snapshot: state.snapshot() };
+      let shortcutOk;
+      if (shortcutChanged) shortcutOk = registerShortcut(state.shortcut);
+      return { snapshot: state.snapshot(), shortcutOk };
     }
   );
+  electron.ipcMain.handle(IPC.shortcutSetRecording, (_e, recording) => {
+    setRecording(recording);
+  });
   electron.ipcMain.handle(IPC.systemCapabilities, () => {
     const { capability, reason } = detectCapability();
     return {
@@ -4569,6 +4633,145 @@ const registerIpc = () => {
     IPC.historyDelete,
     (_e, id) => requireClient().history.delete(id)
   );
+};
+const WIDTH = 220;
+const HEIGHT = 52;
+const INSET = 16;
+let overlay = null;
+let hideTimer = null;
+const load = (win) => {
+  if (process.env["ELECTRON_RENDERER_URL"]) {
+    win.loadURL(`${process.env["ELECTRON_RENDERER_URL"]}#/overlay`);
+  } else {
+    win.loadFile(path.join(__dirname, "../renderer/index.html"), { hash: "/overlay" });
+  }
+};
+const ensureOverlay = () => {
+  if (overlay && !overlay.isDestroyed()) return overlay;
+  overlay = new electron.BrowserWindow({
+    width: WIDTH,
+    height: HEIGHT,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    movable: false,
+    minimizable: false,
+    maximizable: false,
+    skipTaskbar: true,
+    focusable: false,
+    hasShadow: false,
+    alwaysOnTop: true,
+    show: false,
+    webPreferences: { preload: path.join(__dirname, "../preload/index.js") }
+  });
+  overlay.setAlwaysOnTop(true, "screen-saver");
+  overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  overlay.setIgnoreMouseEvents(true);
+  load(overlay);
+  return overlay;
+};
+const positionFor = (corner) => {
+  const display = electron.screen.getDisplayNearestPoint(electron.screen.getCursorScreenPoint());
+  const { x, y, width, height } = display.workArea;
+  const left = corner.endsWith("left") ? x + INSET : x + width - WIDTH - INSET;
+  const top = corner.startsWith("top") ? y + INSET : y + height - HEIGHT - INSET;
+  return { x: Math.round(left), y: Math.round(top) };
+};
+const showOverlay = (payload, autoHideMs) => {
+  const win = ensureOverlay();
+  const { x, y } = positionFor(state.overlayCorner);
+  win.setBounds({ x, y, width: WIDTH, height: HEIGHT });
+  const send = () => win.webContents.send(EVENTS.overlayState, payload);
+  if (win.webContents.isLoading()) win.webContents.once("did-finish-load", send);
+  else send();
+  win.showInactive();
+  if (hideTimer) clearTimeout(hideTimer);
+  if (autoHideMs) hideTimer = setTimeout(() => hideOverlay(), autoHideMs);
+};
+const hideOverlay = () => {
+  if (hideTimer) {
+    clearTimeout(hideTimer);
+    hideTimer = null;
+  }
+  if (overlay && !overlay.isDestroyed()) overlay.hide();
+};
+const createOverlayWindow = () => {
+  ensureOverlay();
+};
+const sleep = (ms) => new Promise((r2) => setTimeout(r2, ms));
+let inFlight = false;
+let lastRun = 0;
+const pollClipboard = async (previous) => {
+  for (let i = 0; i < 20; i++) {
+    await sleep(50);
+    const text = electron.clipboard.readText();
+    if (text && text !== previous) return text;
+  }
+  return "";
+};
+const runShortcutRefine = async () => {
+  const now = Date.now();
+  if (inFlight || now - lastRun < 400) return;
+  inFlight = true;
+  const capability = detectCapability().capability;
+  const previousClipboard = electron.clipboard.readText();
+  try {
+    const { connected, modelId, toneSlug } = state.snapshot();
+    if (!connected || !modelId || !toneSlug) {
+      showOverlay({ state: "error", message: "Not connected" }, 2500);
+      return;
+    }
+    let text;
+    if (capability === "full") {
+      electron.clipboard.clear();
+      await sleep(150);
+      await simulateCopy();
+      text = await pollClipboard("");
+      if (!text) {
+        if (previousClipboard) electron.clipboard.writeText(previousClipboard);
+        showOverlay({ state: "error", message: "No text selected" }, 2500);
+        return;
+      }
+    } else {
+      text = previousClipboard;
+      if (!text) {
+        showOverlay({ state: "error", message: "Clipboard is empty" }, 2500);
+        return;
+      }
+    }
+    showOverlay({ state: "refining", message: "Refining…" });
+    let refined;
+    try {
+      const client = getClient();
+      if (!client) throw new Error("Not connected");
+      const res = await client.refine({ text, modelId, toneSlug });
+      refined = res.refined;
+    } catch (e) {
+      if (capability === "full" && previousClipboard) {
+        electron.clipboard.writeText(previousClipboard);
+      }
+      showOverlay({ state: "error", message: apiError(e) }, 2500);
+      return;
+    }
+    electron.clipboard.writeText(refined);
+    if (state.autoApply && capability === "full") {
+      await sleep(120);
+      await simulatePaste();
+    }
+    showOverlay({ state: "success", message: "Refined" }, 1200);
+    const entry = {
+      id: `shortcut-${now}`,
+      source: text,
+      refined,
+      modelId,
+      toneSlug,
+      createdAt: now
+    };
+    getMainWindow()?.webContents.send(EVENTS.historyPrepend, entry);
+  } finally {
+    inFlight = false;
+    lastRun = Date.now();
+  }
 };
 let tray = null;
 const iconPath = (name) => electron.app.isPackaged ? path.join(process.resourcesPath, "tray", name) : path.join(__dirname, "../../resources/tray", name);
@@ -4633,7 +4836,10 @@ if (!gotLock) {
   electron.app.whenReady().then(() => {
     registerIpc();
     createMainWindow();
+    createOverlayWindow();
     createTray();
+    setTrigger(runShortcutRefine);
+    registerShortcut(state.shortcut);
     const link = findDeepLink(process.argv);
     if (link) handleDeepLink(link);
     electron.app.on("activate", () => {
@@ -4641,6 +4847,7 @@ if (!gotLock) {
     });
   });
   electron.app.on("before-quit", () => setQuitting(true));
+  electron.app.on("will-quit", () => unregisterAll());
 }
 exports.br = br;
 exports.qn = qn;

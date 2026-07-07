@@ -11,6 +11,7 @@ import type {
 import { apiError, bootstrapCatalog, getClient, pairAndBootstrap } from "./api-client"
 import { consumePendingPair } from "./deep-link"
 import { detectCapability } from "./keysim"
+import { registerShortcut, setRecording } from "./shortcut"
 import { state } from "./state"
 
 export const broadcastState = (): void => {
@@ -40,10 +41,18 @@ export const registerIpc = (): void => {
   ipcMain.handle(
     IPC.settingsUpdate,
     (_e, patch: UpdatableSettings): UpdateResult => {
+      const shortcutChanged =
+        patch.shortcut !== undefined && patch.shortcut !== state.shortcut
       state.update(patch)
-      return { snapshot: state.snapshot() }
+      let shortcutOk: boolean | undefined
+      if (shortcutChanged) shortcutOk = registerShortcut(state.shortcut)
+      return { snapshot: state.snapshot(), shortcutOk }
     },
   )
+
+  ipcMain.handle(IPC.shortcutSetRecording, (_e, recording: boolean) => {
+    setRecording(recording)
+  })
 
   ipcMain.handle(IPC.systemCapabilities, (): SystemCapabilities => {
     const { capability, reason } = detectCapability()

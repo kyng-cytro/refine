@@ -5,12 +5,16 @@ import {
   registerProtocolClient,
 } from "./deep-link"
 import { registerIpc } from "./ipc"
+import { runShortcutRefine } from "./refine-flow"
+import { registerShortcut, setTrigger, unregisterAll } from "./shortcut"
+import { state } from "./state"
 import { createTray } from "./tray"
 import {
   createMainWindow,
   getMainWindow,
   setQuitting,
 } from "./windows/main-window"
+import { createOverlayWindow } from "./windows/overlay-window"
 
 const gotLock = app.requestSingleInstanceLock()
 
@@ -36,7 +40,11 @@ if (!gotLock) {
   app.whenReady().then(() => {
     registerIpc()
     createMainWindow()
+    createOverlayWindow()
     createTray()
+
+    setTrigger(runShortcutRefine)
+    registerShortcut(state.shortcut)
 
     const link = findDeepLink(process.argv)
     if (link) handleDeepLink(link)
@@ -47,4 +55,5 @@ if (!gotLock) {
   })
 
   app.on("before-quit", () => setQuitting(true))
+  app.on("will-quit", () => unregisterAll())
 }

@@ -36,7 +36,7 @@ export function HistoryCard({ item, onDelete }: Props) {
         <p className="line-clamp-3 text-body-medium text-on-surface">
           {item.refined}
         </p>
-        <div className="mt-2.5 flex items-center gap-2">
+        <div className="mt-2 flex items-center gap-2">
           <span className="flex-1 truncate text-body-small text-on-surface-variant/70">
             {item.source}
           </span>

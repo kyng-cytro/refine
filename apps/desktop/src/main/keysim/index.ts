@@ -1,5 +1,8 @@
-import { spawnSync } from "child_process"
+import { execFile, spawnSync } from "child_process"
+import { promisify } from "util"
 import type { KeySimCapability } from "../../shared/types"
+
+const exec = promisify(execFile)
 
 export type Capability = {
   capability: KeySimCapability
@@ -32,6 +35,40 @@ export const detectCapability = (): Capability => {
     }
     return cached
   }
+
   cached = { capability: "full" }
   return cached
 }
+
+const modifier = process.platform === "darwin" ? "cmd" : "ctrl"
+
+const simulate = async (key: "c" | "v"): Promise<void> => {
+  if (detectCapability().capability !== "full") return
+
+  if (process.platform === "linux") {
+    await exec("xdotool", ["key", "--clearmodifiers", `${modifier}+${key}`])
+    return
+  }
+
+  if (process.platform === "darwin") {
+    await exec("osascript", [
+      "-e",
+      `tell application "System Events" to keystroke "${key}" using command down`,
+    ])
+    return
+  }
+
+  if (process.platform === "win32") {
+    await exec("powershell", [
+      "-NoProfile",
+      "-NonInteractive",
+      "-WindowStyle",
+      "Hidden",
+      "-Command",
+      `Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('^${key}')`,
+    ])
+  }
+}
+
+export const simulateCopy = () => simulate("c")
+export const simulatePaste = () => simulate("v")
