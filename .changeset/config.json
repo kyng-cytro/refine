@@ -7,5 +7,5 @@
   "updateInternalDependencies": "patch",
   "linked": [["@refine/api", "@refine/admin"]],
   "privatePackages": { "version": true, "tag": true },
-  "ignore": []
+  "ignore": ["@refine/schemas", "@refine/sdk", "@refine/db", "@refine/models"]
 }

@@ -1,5 +1,7 @@
-appId: co.qoray.refine
+appId: io.refine.desktop
 productName: Refine
+executableName: refine
+artifactName: ${productName}-${version}-${arch}.${ext}
 directories:
   output: dist
   buildResources: resources
