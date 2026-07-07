@@ -15,7 +15,9 @@ const load = (win: BrowserWindow) => {
   if (process.env["ELECTRON_RENDERER_URL"]) {
     win.loadURL(`${process.env["ELECTRON_RENDERER_URL"]}#/overlay`)
   } else {
-    win.loadFile(join(__dirname, "../renderer/index.html"), { hash: "/overlay" })
+    win.loadFile(join(__dirname, "../renderer/index.html"), {
+      hash: "/overlay",
+    })
   }
 }
 
@@ -52,7 +54,10 @@ const positionFor = (corner: OverlayCorner) => {
   return { x: Math.round(left), y: Math.round(top) }
 }
 
-export const showOverlay = (payload: OverlayState, autoHideMs?: number): void => {
+export const showOverlay = (
+  payload: OverlayState,
+  autoHideMs?: number,
+): void => {
   const win = ensureOverlay()
   const { x, y } = positionFor(state.overlayCorner)
   win.setBounds({ x, y, width: WIDTH, height: HEIGHT })

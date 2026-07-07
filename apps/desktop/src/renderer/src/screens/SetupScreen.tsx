@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/m3/Button"
 import { Spinner } from "@/components/m3/Spinner"
@@ -34,12 +34,14 @@ export default function SetupScreen() {
   const [deviceName, setDeviceName] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const seededName = useRef(false)
 
   useEffect(() => {
-    if (!deviceName && capabilities?.hostname) {
-      setDeviceName(capabilities.hostname)
+    if (!seededName.current && capabilities?.hostname) {
+      seededName.current = true
+      setDeviceName((current) => current || capabilities.hostname)
     }
-  }, [capabilities, deviceName])
+  }, [capabilities])
 
   const handlePaste = (value: string, fallback: (v: string) => void) => {
     const parsed = parsePairLink(value)

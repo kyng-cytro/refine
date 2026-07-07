@@ -74,7 +74,7 @@ function AppRoutes() {
   )
 }
 
-export default function App() {
+function MainApp() {
   const { hydrated, hydrate } = useSettingsStore()
 
   useEffect(() => {
@@ -88,4 +88,9 @@ export default function App() {
       <AppRoutes />
     </HashRouter>
   )
+}
+
+export default function App() {
+  if (window.location.hash === "#/overlay") return <OverlayScreen />
+  return <MainApp />
 }
