@@ -11,7 +11,6 @@ import { AppShell } from "@/components/AppShell"
 import { PairConfirmDialog } from "@/components/PairConfirmDialog"
 import { ipc } from "@/lib/ipc"
 import HomeScreen from "@/screens/HomeScreen"
-import KitchenSink from "@/screens/KitchenSink"
 import OverlayScreen from "@/screens/OverlayScreen"
 import SettingsScreen from "@/screens/SettingsScreen"
 import SetupScreen from "@/screens/SetupScreen"
@@ -64,7 +63,6 @@ function AppRoutes() {
         </Route>
         <Route path="/setup" element={<SetupScreen />} />
         <Route path="/overlay" element={<OverlayScreen />} />
-        <Route path="/kitchen-sink" element={<KitchenSink />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <PairConfirmDialog

@@ -49,19 +49,19 @@ export function BehaviorSection() {
 
   return (
     <Section title="Shortcut">
-      <div className="mb-4">
-        <p className="mb-1.5 text-label-medium text-on-surface-variant">
-          Global shortcut
-        </p>
-        <ShortcutRecorder />
-        {manual && capabilities?.keySimReason && (
-          <p className="mt-2 rounded-m3-sm bg-surface-container px-3 py-2 text-body-small text-on-surface-variant">
-            {capabilities.keySimReason}
-          </p>
-        )}
-      </div>
-
       <Surface level={1} className="divide-y divide-outline-variant rounded-m3-md">
+        <div className="p-4">
+          <p className="mb-1.5 text-body-large text-on-surface">
+            Global shortcut
+          </p>
+          <ShortcutRecorder />
+          {manual && capabilities?.keySimReason && (
+            <p className="mt-2 rounded-m3-sm bg-surface-container-high px-3 py-2 text-body-small text-on-surface-variant">
+              {capabilities.keySimReason}
+            </p>
+          )}
+        </div>
+
         <Row
           title="Auto-apply refined text"
           description={

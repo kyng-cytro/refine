@@ -4568,6 +4568,9 @@ const registerIpc = () => {
       state.update(patch);
       let shortcutOk;
       if (shortcutChanged) shortcutOk = registerShortcut(state.shortcut);
+      if (patch.launchAtLogin !== void 0 && process.platform !== "linux") {
+        electron.app.setLoginItemSettings({ openAtLogin: patch.launchAtLogin });
+      }
       return { snapshot: state.snapshot(), shortcutOk };
     }
   );
