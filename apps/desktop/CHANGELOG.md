@@ -1,5 +1,11 @@
 # @refine/desktop
 
+## 0.1.1
+
+### Patch Changes
+
+- [#4](https://github.com/kyng-cytro/refine/pull/4) [`4959c0b`](https://github.com/kyng-cytro/refine/commit/4959c0b24c0ab25691c2d9b828f306493379d042) Thanks [@kyng-cytro](https://github.com/kyng-cytro)! - Fix the desktop release build: pin Electron to an exact version (electron-builder can't resolve a range) and stop electron-builder's implicit CI publish.
+
 ## 0.1.0
 
 ### Minor Changes
