@@ -1,0 +1,154 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.changesets.outputs.published }}
+      publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.19
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Changesets
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: bun run version-packages
+          publish: bun run tag-release
+          createGithubReleases: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
+  docker:
+    needs: release
+    if: needs.release.outputs.published == 'true' && contains(needs.release.outputs.publishedPackages, '@refine/api')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version
+        id: version
+        run: echo "version=$(node -p "require('./apps/api/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/kyng-cytro/refine:${{ steps.version.outputs.version }}
+            ghcr.io/kyng-cytro/refine:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  desktop:
+    needs: release
+    if: needs.release.outputs.published == 'true' && contains(needs.release.outputs.publishedPackages, '@refine/desktop')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            dist: dist:linux
+            artifacts: apps/desktop/dist/*.AppImage apps/desktop/dist/*.deb
+          - os: macos-latest
+            dist: dist:mac
+            artifacts: apps/desktop/dist/*.dmg apps/desktop/dist/*.zip
+          - os: windows-latest
+            dist: dist:win
+            artifacts: apps/desktop/dist/*.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.19
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Read version
+        id: version
+        shell: bash
+        run: echo "version=$(node -p "require('./apps/desktop/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Build installers
+        run: bun run --filter @refine/desktop ${{ matrix.dist }}
+
+      - name: Upload to release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "@refine/desktop@${{ steps.version.outputs.version }}" ${{ matrix.artifacts }} --clobber
+
+  mobile:
+    needs: release
+    if: needs.release.outputs.published == 'true' && contains(needs.release.outputs.publishedPackages, '@refine/mobile')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.19
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Read version
+        id: version
+        run: echo "version=$(node -p "require('./apps/mobile/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger EAS build
+        id: build
+        working-directory: apps/mobile
+        run: |
+          BUILD_ID=$(eas build --platform android --profile production-apk --non-interactive --no-wait --json | node -p "JSON.parse(require('fs').readFileSync(0)).find(Boolean).id")
+          echo "url=https://expo.dev/accounts/cytro/projects/refine/builds/$BUILD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Link build on release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="@refine/mobile@${{ steps.version.outputs.version }}"
+          BODY=$(gh release view "$TAG" --json body -q .body)
+          printf '%s\n\n---\n\n**Android APK:** [download from EAS](%s)\n' "$BODY" "${{ steps.build.outputs.url }}" \
+            | gh release edit "$TAG" --notes-file -

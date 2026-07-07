@@ -18,7 +18,10 @@
     "mobile:eas:preview": "turbo eas:preview --filter=@refine/mobile",
     "mobile:eas:production": "turbo eas:production --filter=@refine/mobile",
     "mobile:eas:production-apk": "turbo eas:production-apk --filter=@refine/mobile",
-    "dev": "turbo dev --filter=@refine/api --filter=@refine/admin"
+    "dev": "turbo dev --filter=@refine/api --filter=@refine/admin",
+    "changeset": "changeset",
+    "version-packages": "changeset version && bun install --lockfile-only",
+    "tag-release": "changeset tag"
   },
   "workspaces": [
     "apps/*",
@@ -31,6 +34,8 @@
     "esbuild"
   ],
   "devDependencies": {
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.31.0",
     "@types/bun": "latest",
     "turbo": "^2.9.6",
     "typescript": "~5.8.3"
