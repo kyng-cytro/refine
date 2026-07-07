@@ -1,13 +1,16 @@
 # Refine
 
-An unintrusive, self-hosted text refinement tool. Select text anywhere on Android, tap **Refine** — your text is rewritten by an LLM of your choice, in a tone of your choice, using your own API keys on your own server.
+An unintrusive, self-hosted text refinement tool. Select text anywhere — on your desktop or on Android — press **Refine**, and your text is rewritten by an LLM of your choice, in a tone of your choice, using your own API keys on your own server.
 
 No subscriptions. No shared infrastructure. You control the models, the tones, and the keys.
 
-**Three pieces:**
+**The pieces:**
 - **API** — Hono server (Bun) that holds your provider credentials and handles refinements
 - **Admin panel** — React SPA for managing providers, devices, and pairing tokens
-- **Mobile app** — dedicated input surface plus system context menu action for refining selected text in-place
+- **Desktop app** — Windows/macOS/Linux (Electron). A global shortcut refines selected text in place, with a system tray for quick model/tone switching and a full window UI
+- **Mobile app** — Android. Dedicated input surface plus a system context-menu action for refining selected text in-place
+
+The server ships as a container image on GHCR (`ghcr.io/kyng-cytro/refine`); desktop installers and the Android APK are attached to each [GitHub release](https://github.com/kyng-cytro/refine/releases).
 
 **[→ Self-Hosting Guide](GUIDE.md)**
 
