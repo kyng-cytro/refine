@@ -1,7 +1,12 @@
-import { BrowserWindow } from "electron"
+import { app, BrowserWindow } from "electron"
 import { join } from "path"
 
 let mainWindow: BrowserWindow | null = null
+let quitting = false
+
+export const setQuitting = (value: boolean): void => {
+  quitting = value
+}
 
 export const getMainWindow = (): BrowserWindow | null => mainWindow
 
@@ -19,12 +24,23 @@ export const createMainWindow = (): BrowserWindow => {
     minHeight: 480,
     show: false,
     autoHideMenuBar: true,
+    icon: app.isPackaged
+      ? undefined
+      : join(__dirname, "../../resources/icon.png"),
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
     },
   })
 
   mainWindow.once("ready-to-show", () => mainWindow?.show())
+
+  mainWindow.on("close", (e) => {
+    if (!quitting) {
+      e.preventDefault()
+      mainWindow?.hide()
+    }
+  })
+
   mainWindow.on("closed", () => {
     mainWindow = null
   })

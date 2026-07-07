@@ -37,6 +37,10 @@ const EVENTS = {
   pairIncoming: "pair:incoming"
 };
 let mainWindow = null;
+let quitting = false;
+const setQuitting = (value) => {
+  quitting = value;
+};
 const getMainWindow = () => mainWindow;
 const createMainWindow = () => {
   if (mainWindow && !mainWindow.isDestroyed()) {
@@ -51,11 +55,18 @@ const createMainWindow = () => {
     minHeight: 480,
     show: false,
     autoHideMenuBar: true,
+    icon: electron.app.isPackaged ? void 0 : path.join(__dirname, "../../resources/icon.png"),
     webPreferences: {
       preload: path.join(__dirname, "../preload/index.js")
     }
   });
   mainWindow.once("ready-to-show", () => mainWindow?.show());
+  mainWindow.on("close", (e) => {
+    if (!quitting) {
+      e.preventDefault();
+      mainWindow?.hide();
+    }
+  });
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
@@ -4559,6 +4570,49 @@ const registerIpc = () => {
     (_e, id) => requireClient().history.delete(id)
   );
 };
+let tray = null;
+const iconPath = (name) => electron.app.isPackaged ? path.join(process.resourcesPath, "tray", name) : path.join(__dirname, "../../resources/tray", name);
+const trayImage = () => {
+  const name = process.platform === "darwin" ? "trayTemplate.png" : "tray-32.png";
+  const image = electron.nativeImage.createFromPath(iconPath(name));
+  if (process.platform === "darwin") image.setTemplateImage(true);
+  return image;
+};
+const buildMenu = () => {
+  const { tones, models, toneSlug, modelId } = state.snapshot();
+  const modelItems = models.length ? models.map((m) => ({
+    label: m.label,
+    type: "radio",
+    checked: m.id === modelId,
+    click: () => state.update({ modelId: m.id })
+  })) : [{ label: "No models", enabled: false }];
+  const toneItems = tones.length ? tones.map((t2) => ({
+    label: t2.name,
+    type: "radio",
+    checked: t2.slug === toneSlug,
+    click: () => state.update({ toneSlug: t2.slug })
+  })) : [{ label: "No tones", enabled: false }];
+  return electron.Menu.buildFromTemplate([
+    { label: "Open Refine", click: () => createMainWindow() },
+    { type: "separator" },
+    { label: "Model", submenu: modelItems },
+    { label: "Tone", submenu: toneItems },
+    { type: "separator" },
+    { label: "Quit", click: () => electron.app.quit() }
+  ]);
+};
+const refreshTray = () => {
+  if (!tray) return;
+  tray.setContextMenu(buildMenu());
+};
+const createTray = () => {
+  if (tray) return;
+  tray = new electron.Tray(trayImage());
+  tray.setToolTip("Refine");
+  tray.on("click", () => createMainWindow());
+  refreshTray();
+  state.subscribe(refreshTray);
+};
 const gotLock = electron.app.requestSingleInstanceLock();
 if (!gotLock) {
   electron.app.quit();
@@ -4579,15 +4633,14 @@ if (!gotLock) {
   electron.app.whenReady().then(() => {
     registerIpc();
     createMainWindow();
+    createTray();
     const link = findDeepLink(process.argv);
     if (link) handleDeepLink(link);
     electron.app.on("activate", () => {
       if (electron.BrowserWindow.getAllWindows().length === 0) createMainWindow();
     });
   });
-  electron.app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") electron.app.quit();
-  });
+  electron.app.on("before-quit", () => setQuitting(true));
 }
 exports.br = br;
 exports.qn = qn;

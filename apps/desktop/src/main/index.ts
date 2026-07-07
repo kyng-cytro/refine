@@ -5,7 +5,12 @@ import {
   registerProtocolClient,
 } from "./deep-link"
 import { registerIpc } from "./ipc"
-import { createMainWindow, getMainWindow } from "./windows/main-window"
+import { createTray } from "./tray"
+import {
+  createMainWindow,
+  getMainWindow,
+  setQuitting,
+} from "./windows/main-window"
 
 const gotLock = app.requestSingleInstanceLock()
 
@@ -31,6 +36,7 @@ if (!gotLock) {
   app.whenReady().then(() => {
     registerIpc()
     createMainWindow()
+    createTray()
 
     const link = findDeepLink(process.argv)
     if (link) handleDeepLink(link)
@@ -40,7 +46,5 @@ if (!gotLock) {
     })
   })
 
-  app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") app.quit()
-  })
+  app.on("before-quit", () => setQuitting(true))
 }

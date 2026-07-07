@@ -30,13 +30,13 @@ export function HistoryCard({ item, onDelete }: Props) {
       <button
         type="button"
         onClick={copy}
-        className="block w-full text-left"
         title="Copy refined text"
+        className="block w-full text-left"
       >
         <p className="line-clamp-3 text-body-medium text-on-surface">
           {item.refined}
         </p>
-        <div className="mt-1 flex items-center gap-2">
+        <div className="mt-2.5 flex items-center gap-2">
           <span className="flex-1 truncate text-body-small text-on-surface-variant/70">
             {item.source}
           </span>
@@ -45,14 +45,18 @@ export function HistoryCard({ item, onDelete }: Props) {
           </span>
         </div>
       </button>
-      <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="absolute right-2 top-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
         <button
           type="button"
           onClick={copy}
           className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant hover:text-primary"
           aria-label="Copy"
         >
-          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          {copied ? (
+            <Check className="h-4 w-4" />
+          ) : (
+            <Copy className="h-4 w-4" />
+          )}
         </button>
         <button
           type="button"
