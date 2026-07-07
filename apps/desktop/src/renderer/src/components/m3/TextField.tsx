@@ -11,7 +11,6 @@ interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string
 }
 
-/** M3 outlined text field. */
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   ({ label, error, className, id: idProp, ...props }, ref) => {
     const generatedId = useId()
@@ -43,7 +42,6 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
 )
 TextField.displayName = "TextField"
 
-/** Bare multiline input for the refine surface (mobile's flat TextInput). */
 export const TextArea = forwardRef<
   HTMLTextAreaElement,
   TextareaHTMLAttributes<HTMLTextAreaElement>
@@ -66,7 +64,6 @@ interface OutlinedTextAreaProps
   error?: string
 }
 
-/** M3 outlined multiline field (tone instructions editor). */
 export const OutlinedTextArea = forwardRef<
   HTMLTextAreaElement,
   OutlinedTextAreaProps

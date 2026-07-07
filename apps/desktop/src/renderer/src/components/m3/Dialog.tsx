@@ -8,12 +8,10 @@ interface Props {
   title: string
   description?: string
   children?: ReactNode
-  /** Action row, laid out right-aligned per M3. */
   actions?: ReactNode
   className?: string
 }
 
-/** M3 basic dialog. */
 export function Dialog({
   open,
   onOpenChange,

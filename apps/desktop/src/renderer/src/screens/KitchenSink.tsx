@@ -12,7 +12,6 @@ import { Surface } from "@/components/m3/Surface"
 import { Switch } from "@/components/m3/Switch"
 import { TextArea, TextField } from "@/components/m3/TextField"
 
-/** Temporary route to eyeball the M3 components in light/dark. */
 export default function KitchenSink() {
   const [checked, setChecked] = useState(false)
   const [snack, setSnack] = useState(false)

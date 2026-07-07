@@ -1,16 +1,46 @@
 import { app, BrowserWindow } from "electron"
+import {
+  findDeepLink,
+  handleDeepLink,
+  registerProtocolClient,
+} from "./deep-link"
 import { registerIpc } from "./ipc"
-import { createMainWindow } from "./windows/main-window"
+import { createMainWindow, getMainWindow } from "./windows/main-window"
 
-app.whenReady().then(() => {
-  registerIpc()
-  createMainWindow()
+const gotLock = app.requestSingleInstanceLock()
 
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
+if (!gotLock) {
+  app.quit()
+} else {
+  registerProtocolClient()
+
+  app.on("second-instance", (_e, argv) => {
+    const win = getMainWindow() ?? createMainWindow()
+    if (win.isMinimized()) win.restore()
+    win.show()
+    win.focus()
+    const link = findDeepLink(argv)
+    if (link) handleDeepLink(link)
   })
-})
 
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit()
-})
+  app.on("open-url", (e, url) => {
+    e.preventDefault()
+    handleDeepLink(url)
+  })
+
+  app.whenReady().then(() => {
+    registerIpc()
+    createMainWindow()
+
+    const link = findDeepLink(process.argv)
+    if (link) handleDeepLink(link)
+
+    app.on("activate", () => {
+      if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
+    })
+  })
+
+  app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") app.quit()
+  })
+}

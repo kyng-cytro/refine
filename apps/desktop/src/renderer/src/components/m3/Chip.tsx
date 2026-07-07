@@ -8,7 +8,6 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   selected?: boolean
 }
 
-/** M3 assist chip, used as the model/tone selector trigger. */
 export const Chip = forwardRef<HTMLButtonElement, Props>(
   ({ icon, dropdown, selected, className, children, ...props }, ref) => (
     <button

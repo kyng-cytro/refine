@@ -1,9 +1,4 @@
-/*
- * Material 3 color schemes generated from seed #1B6EF3 (the mobile app's
- * fallback source color) with @material/material-color-utilities
- * (SchemeTonalSpot, contrast 0). Regenerate by re-running the generator
- * with a new seed if the brand color changes.
- */
+/* M3 schemes generated from seed #1B6EF3 via @material/material-color-utilities (SchemeTonalSpot) */
 :root {
   --md-primary: #475d92;
   --md-on-primary: #ffffff;

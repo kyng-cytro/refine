@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils"
 type Level = 0 | 1 | 2 | 3
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
-  /** Tonal elevation level, mapped to surface-container-* colors. */
   level?: Level
   shadow?: boolean
 }

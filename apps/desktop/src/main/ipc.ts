@@ -9,6 +9,7 @@ import type {
   UpdateResult,
 } from "../shared/types"
 import { apiError, bootstrapCatalog, getClient, pairAndBootstrap } from "./api-client"
+import { consumePendingPair } from "./deep-link"
 import { detectCapability } from "./keysim"
 import { state } from "./state"
 
@@ -25,13 +26,10 @@ const requireClient = () => {
   return client
 }
 
-/** Refresh state.tones after a tone mutation so the tray stays current. */
 const refreshTones = async () => {
   try {
     state.setTones(await requireClient().tones.list())
-  } catch {
-    // keep the stale list; next bootstrap fixes it
-  }
+  } catch {}
 }
 
 export const registerIpc = (): void => {
@@ -61,6 +59,8 @@ export const registerIpc = (): void => {
   ipcMain.handle(IPC.sessionPair, (_e, input: PairInput) =>
     pairAndBootstrap(input),
   )
+
+  ipcMain.handle(IPC.pairConsume, () => consumePendingPair())
 
   ipcMain.handle(IPC.sessionDisconnect, () => {
     state.clearServerConfig()

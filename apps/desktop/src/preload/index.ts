@@ -39,6 +39,8 @@ const api = {
       ipcRenderer.invoke(IPC.sessionPair, input),
     disconnect: (): Promise<void> => ipcRenderer.invoke(IPC.sessionDisconnect),
     bootstrap: (): Promise<void> => ipcRenderer.invoke(IPC.sessionBootstrap),
+    consumePendingPair: (): Promise<PairIncoming | null> =>
+      ipcRenderer.invoke(IPC.pairConsume),
   },
   refine: (body: RefineRequest): Promise<RefineResponse> =>
     ipcRenderer.invoke(IPC.refineRun, body),

@@ -14,6 +14,7 @@ export const IPC = {
   historyDelete: "history:delete",
   systemCapabilities: "system:capabilities",
   shortcutSetRecording: "shortcut:set-recording",
+  pairConsume: "pair:consume",
 } as const
 
 export const EVENTS = {

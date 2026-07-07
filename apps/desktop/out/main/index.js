@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 const electron = require("electron");
+const path = require("path");
 const os = require("os");
 const Bt = require("node:http");
 const zs = require("node:https");
@@ -13,7 +14,6 @@ const node_net = require("node:net");
 const node_fs = require("node:fs");
 const node_path = require("node:path");
 const fs = require("fs");
-const path = require("path");
 const child_process = require("child_process");
 const IPC = {
   settingsGet: "settings:get",
@@ -29,10 +29,88 @@ const IPC = {
   providersList: "providers:list",
   historyList: "history:list",
   historyDelete: "history:delete",
-  systemCapabilities: "system:capabilities"
+  systemCapabilities: "system:capabilities",
+  pairConsume: "pair:consume"
 };
 const EVENTS = {
-  stateChanged: "state:changed"
+  stateChanged: "state:changed",
+  pairIncoming: "pair:incoming"
+};
+let mainWindow = null;
+const getMainWindow = () => mainWindow;
+const createMainWindow = () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.show();
+    mainWindow.focus();
+    return mainWindow;
+  }
+  mainWindow = new electron.BrowserWindow({
+    width: 980,
+    height: 720,
+    minWidth: 640,
+    minHeight: 480,
+    show: false,
+    autoHideMenuBar: true,
+    webPreferences: {
+      preload: path.join(__dirname, "../preload/index.js")
+    }
+  });
+  mainWindow.once("ready-to-show", () => mainWindow?.show());
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+  });
+  if (process.env["ELECTRON_RENDERER_URL"]) {
+    mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
+  } else {
+    mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
+  }
+  return mainWindow;
+};
+let pending = null;
+const consumePendingPair = () => {
+  const value = pending;
+  pending = null;
+  return value;
+};
+const parsePairDeepLink = (raw) => {
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "refine:" || url.hostname !== "pair") return null;
+    const token = url.searchParams.get("token");
+    const serverUrl = url.searchParams.get("url");
+    if (!token || !serverUrl) return null;
+    return {
+      token,
+      url: serverUrl,
+      name: url.searchParams.get("name") || void 0
+    };
+  } catch {
+    return null;
+  }
+};
+const handleDeepLink = (raw) => {
+  const parsed = parsePairDeepLink(raw);
+  if (!parsed) return;
+  const win = createMainWindow();
+  const send = () => win.webContents.send(EVENTS.pairIncoming, parsed);
+  if (win.webContents.isLoading()) {
+    pending = parsed;
+    win.webContents.once("did-finish-load", send);
+  } else {
+    send();
+  }
+};
+const findDeepLink = (argv) => argv.find((arg) => arg.startsWith("refine://"));
+const registerProtocolClient = () => {
+  if (process.defaultApp) {
+    if (process.argv.length >= 2) {
+      electron.app.setAsDefaultProtocolClient("refine", process.execPath, [
+        path.resolve(process.argv[1])
+      ]);
+    }
+  } else {
+    electron.app.setAsDefaultProtocolClient("refine");
+  }
 };
 var t = Object.defineProperty;
 var o$1 = (e, l) => t(e, "name", { value: l, configurable: true });
@@ -4223,7 +4301,6 @@ const DEFAULTS = {
 class AppState {
   store = new JsonStore("settings.json", DEFAULTS);
   listeners = /* @__PURE__ */ new Set();
-  /** In-memory, refetched from the server on bootstrap. */
   tones = [];
   models = [];
   get sessionToken() {
@@ -4436,6 +4513,7 @@ const registerIpc = () => {
     IPC.sessionPair,
     (_e, input) => pairAndBootstrap(input)
   );
+  electron.ipcMain.handle(IPC.pairConsume, () => consumePendingPair());
   electron.ipcMain.handle(IPC.sessionDisconnect, () => {
     state.clearServerConfig();
   });
@@ -4481,44 +4559,35 @@ const registerIpc = () => {
     (_e, id) => requireClient().history.delete(id)
   );
 };
-let mainWindow = null;
-const createMainWindow = () => {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.show();
-    mainWindow.focus();
-    return mainWindow;
-  }
-  mainWindow = new electron.BrowserWindow({
-    width: 980,
-    height: 720,
-    minWidth: 640,
-    minHeight: 480,
-    show: false,
-    autoHideMenuBar: true,
-    webPreferences: {
-      preload: path.join(__dirname, "../preload/index.js")
-    }
+const gotLock = electron.app.requestSingleInstanceLock();
+if (!gotLock) {
+  electron.app.quit();
+} else {
+  registerProtocolClient();
+  electron.app.on("second-instance", (_e, argv) => {
+    const win = getMainWindow() ?? createMainWindow();
+    if (win.isMinimized()) win.restore();
+    win.show();
+    win.focus();
+    const link = findDeepLink(argv);
+    if (link) handleDeepLink(link);
   });
-  mainWindow.once("ready-to-show", () => mainWindow?.show());
-  mainWindow.on("closed", () => {
-    mainWindow = null;
+  electron.app.on("open-url", (e, url) => {
+    e.preventDefault();
+    handleDeepLink(url);
   });
-  if (process.env["ELECTRON_RENDERER_URL"]) {
-    mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
-  } else {
-    mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
-  }
-  return mainWindow;
-};
-electron.app.whenReady().then(() => {
-  registerIpc();
-  createMainWindow();
-  electron.app.on("activate", () => {
-    if (electron.BrowserWindow.getAllWindows().length === 0) createMainWindow();
+  electron.app.whenReady().then(() => {
+    registerIpc();
+    createMainWindow();
+    const link = findDeepLink(process.argv);
+    if (link) handleDeepLink(link);
+    electron.app.on("activate", () => {
+      if (electron.BrowserWindow.getAllWindows().length === 0) createMainWindow();
+    });
   });
-});
-electron.app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") electron.app.quit();
-});
+  electron.app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") electron.app.quit();
+  });
+}
 exports.br = br;
 exports.qn = qn;

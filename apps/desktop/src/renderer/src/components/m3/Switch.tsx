@@ -6,7 +6,6 @@ interface Props {
   disabled?: boolean
 }
 
-/** M3 switch. */
 export function Switch({ checked, onCheckedChange, disabled }: Props) {
   return (
     <button

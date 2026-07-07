@@ -29,15 +29,19 @@ function AppRoutes() {
   const connected = useSettingsStore((s) => s.connected)
   const [pairParams, setPairParams] = useState<PairIncoming | null>(null)
 
-  useEffect(() => ipc.onPairIncoming(setPairParams), [])
+  useEffect(() => {
+    const unsubscribe = ipc.onPairIncoming(setPairParams)
+    ipc.session.consumePendingPair().then((pair) => {
+      if (pair) setPairParams(pair)
+    })
+    return unsubscribe
+  }, [])
 
-  // Refresh tones/models when opening the app already connected.
   useEffect(() => {
     if (connected) ipc.session.bootstrap().catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Kicked back to setup when disconnected from settings.
   useEffect(() => {
     if (!connected && location.pathname !== "/setup") {
       navigate("/setup", { replace: true })

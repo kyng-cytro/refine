@@ -13,7 +13,6 @@ interface Props<T extends string> {
   className?: string
 }
 
-/** M3 segmented button group. */
 export function SegmentedControl<T extends string>({
   options,
   value,

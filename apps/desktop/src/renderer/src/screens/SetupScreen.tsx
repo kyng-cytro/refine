@@ -6,7 +6,6 @@ import { TextField } from "@/components/m3/TextField"
 import { ipc } from "@/lib/ipc"
 import { useSettingsStore } from "@/store/settings-store"
 
-/** Parse a pasted pairing link (https .../pair?... or refine://pair?...). */
 function parsePairLink(raw: string) {
   try {
     const url = new URL(raw.trim())
@@ -42,7 +41,6 @@ export default function SetupScreen() {
     }
   }, [capabilities, deviceName])
 
-  /** A pasted pairing link in either field fills the whole form. */
   const handlePaste = (value: string, fallback: (v: string) => void) => {
     const parsed = parsePairLink(value)
     if (parsed) {

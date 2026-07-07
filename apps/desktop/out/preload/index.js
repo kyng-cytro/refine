@@ -15,7 +15,8 @@ const IPC = {
   historyList: "history:list",
   historyDelete: "history:delete",
   systemCapabilities: "system:capabilities",
-  shortcutSetRecording: "shortcut:set-recording"
+  shortcutSetRecording: "shortcut:set-recording",
+  pairConsume: "pair:consume"
 };
 const EVENTS = {
   stateChanged: "state:changed",
@@ -38,7 +39,8 @@ const api = {
   session: {
     pair: (input) => electron.ipcRenderer.invoke(IPC.sessionPair, input),
     disconnect: () => electron.ipcRenderer.invoke(IPC.sessionDisconnect),
-    bootstrap: () => electron.ipcRenderer.invoke(IPC.sessionBootstrap)
+    bootstrap: () => electron.ipcRenderer.invoke(IPC.sessionBootstrap),
+    consumePendingPair: () => electron.ipcRenderer.invoke(IPC.pairConsume)
   },
   refine: (body) => electron.ipcRenderer.invoke(IPC.refineRun, body),
   tones: {

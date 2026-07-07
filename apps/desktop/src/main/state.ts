@@ -37,7 +37,6 @@ class AppState {
   private store = new JsonStore<PersistedSettings>("settings.json", DEFAULTS)
   private listeners = new Set<() => void>()
 
-  /** In-memory, refetched from the server on bootstrap. */
   tones: Tone[] = []
   models: Model[] = []
 

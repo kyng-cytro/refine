@@ -4,7 +4,6 @@ import { state } from "./state"
 
 let cached: { key: string; client: RefineClient } | null = null
 
-/** Client for the active session, rebuilt when server/token change. */
 export const getClient = (): RefineClient | null => {
   const baseURL = state.serverUrl
   const sessionToken = state.sessionToken
@@ -21,7 +20,6 @@ export const apiError = (e: unknown): string => {
   return err?.data?.message ?? err?.message ?? "Connection failed"
 }
 
-/** Fetch tones + enabled models for the active session into state. */
 export const bootstrapCatalog = async (): Promise<void> => {
   const client = getClient()
   if (!client) return

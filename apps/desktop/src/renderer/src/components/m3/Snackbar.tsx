@@ -9,7 +9,6 @@ interface Props {
   children: React.ReactNode
 }
 
-/** M3 snackbar - inverse surface pill fixed to the bottom of the window. */
 export function Snackbar({
   visible,
   onDismiss,
