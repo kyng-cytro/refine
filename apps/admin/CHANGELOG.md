@@ -1,5 +1,11 @@
 # @refine/admin
 
+## 0.3.0
+
+### Minor Changes
+
+- 6be04b6: Show each model's list price (USD per 1M tokens) next to it in the provider cards, alongside the existing Free badge for free models.
+
 ## 0.2.0
 
 ### Minor Changes
