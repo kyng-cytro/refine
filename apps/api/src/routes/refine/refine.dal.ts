@@ -36,10 +36,19 @@ export const saveHistory = async (data: {
   modelId: string
   toneSlug: string
   isPrivate?: boolean
-  inputTokens?: number | null
-  outputTokens?: number | null
-  totalTokens?: number | null
 }) => {
   const [row] = await db.insert(schema.history).values(data).returning()
+  return row!
+}
+
+export const saveUsage = async (data: {
+  sessionId: string
+  historyId: string | null
+  model: { id: string; label: string; provider: string }
+  tone: { slug: string; name: string }
+  tokens: { total: number | null; input: number | null; output: number | null } | null
+  cost: { total: number; input: number; output: number } | null
+}) => {
+  const [row] = await db.insert(schema.usage).values(data).returning()
   return row!
 }

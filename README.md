@@ -130,8 +130,15 @@ import { createYourProvider } from "@ai-sdk/yourprovider"
   icon: icons.yourprovider,
   create: (apiKey) => createYourProvider({ apiKey }),
   models: [
-    { id: "yourmodel-v1", label: "Your Model v1", icon: icons.yourprovider },
+    {
+      id: "yourmodel-v1",
+      label: "Your Model v1",
+      icon: icons.yourprovider,
+      cost: { input: 2.5, output: 10 },
+    },
   ],
 },
 ```
+
+`cost` is the model's list price in USD per 1M tokens, used for the admin usage cost estimates. Use `{ input: 0, output: 0 }` for free models, or omit it when pricing is unknown (e.g. auto-routed models).
 

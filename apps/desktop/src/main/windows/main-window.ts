@@ -22,10 +22,12 @@ export const setQuitting = (value: boolean): void => {
 
 export const getMainWindow = (): BrowserWindow | null => mainWindow
 
-export const createMainWindow = (): BrowserWindow => {
+export const createMainWindow = (opts?: { hidden?: boolean }): BrowserWindow => {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.show()
-    mainWindow.focus()
+    if (!opts?.hidden) {
+      mainWindow.show()
+      mainWindow.focus()
+    }
     return mainWindow
   }
 
@@ -42,7 +44,9 @@ export const createMainWindow = (): BrowserWindow => {
     },
   })
 
-  mainWindow.once("ready-to-show", () => mainWindow?.show())
+  if (!opts?.hidden) {
+    mainWindow.once("ready-to-show", () => mainWindow?.show())
+  }
 
   mainWindow.on("close", (e) => {
     if (!quitting) {

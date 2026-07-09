@@ -15,7 +15,7 @@ SPA that mirrors the main-process state over IPC.
 
 ## Global shortcut flow
 
-Select text anywhere, press the shortcut (default `Ctrl/⌘+Shift+R`). The app
+Select text anywhere, press the shortcut (default `Ctrl/⌘+Alt+R`). The app
 reads the selection, refines it via the API, and puts the result on the
 clipboard. With **Auto-apply** enabled it also pastes the result back.
 

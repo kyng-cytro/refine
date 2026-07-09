@@ -1,5 +1,6 @@
 export * from "./pairing"
 export * from "./history"
+export * from "./usage"
 export * from "./tones"
 export * from "./providers"
 export * from "./models"

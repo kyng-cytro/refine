@@ -5,6 +5,7 @@ export interface Model {
   label: string
   free?: boolean
   icon?: string
+  cost?: { input: number; output: number }
 }
 
 export interface Provider {
