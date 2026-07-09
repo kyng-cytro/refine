@@ -1,6 +1,13 @@
 import type { AppRouteHandler } from "@/lib/context"
+import { pruneHistory } from "@/lib/retention"
 import * as dal from "@/routes/admin/history/history.dal"
-import type { List, Remove, RemoveAll } from "@/routes/admin/history/history.routes"
+import type {
+  List,
+  Prune,
+  Remove,
+  RemoveAll,
+} from "@/routes/admin/history/history.routes"
+import { env } from "bun"
 import { HTTPException } from "hono/http-exception"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 
@@ -38,6 +45,23 @@ export const removeAll: AppRouteHandler<RemoveAll> = async (c) => {
     c.var.logger.error(`[ADMIN:HISTORY:DELETE_ALL] ${error}`)
     throw new HTTPException(HttpStatusCodes.INTERNAL_SERVER_ERROR, {
       message: "Failed to delete history",
+    })
+  }
+}
+
+export const prune: AppRouteHandler<Prune> = async (c) => {
+  try {
+    const { days } = c.req.valid("query")
+    const retentionDays = days ?? env.HISTORY_RETENTION_DAYS
+    if (!retentionDays || retentionDays <= 0) {
+      return c.json({ pruned: 0 }, HttpStatusCodes.OK)
+    }
+    const pruned = await pruneHistory(retentionDays)
+    return c.json({ pruned }, HttpStatusCodes.OK)
+  } catch (error) {
+    c.var.logger.error(`[ADMIN:HISTORY:PRUNE] ${error}`)
+    throw new HTTPException(HttpStatusCodes.INTERNAL_SERVER_ERROR, {
+      message: "Failed to prune history",
     })
   }
 }

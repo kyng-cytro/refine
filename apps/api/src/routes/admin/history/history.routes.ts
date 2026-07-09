@@ -64,6 +64,28 @@ export const removeAll = createRoute({
   summary: "Delete all history",
 })
 
+export const prune = createRoute({
+  method: "post",
+  path: "/admin/history/prune",
+  tags,
+  middleware: [adminAuth] as const,
+  request: {
+    query: z.object({
+      days: z.coerce.number().int().nonnegative().optional(),
+    }),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: helpers.jsonContent(
+      z.object({ pruned: z.number() }),
+      "Number of history rows deleted",
+    ),
+    ...responses.unauthorized,
+    ...responses.serverError,
+  },
+  summary: "Delete history older than the retention window (for external cron)",
+})
+
 export type List = typeof list
 export type Remove = typeof remove
 export type RemoveAll = typeof removeAll
+export type Prune = typeof prune
