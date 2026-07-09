@@ -10,12 +10,11 @@ import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper"
 
 import AppTabs from "@/components/app-tabs"
-import { getApiClient } from "@/services/api"
+import { refreshAll } from "@/services/refresh"
 import {
   loadSessionToken,
   syncActiveConfig,
 } from "@/services/shared-prefs-bridge"
-import { useHistoryStore } from "@/store/history-store"
 import { useSettingsStore } from "@/store/settings-store"
 
 SplashScreen.preventAutoHideAsync()
@@ -60,11 +59,8 @@ export default function RootLayout() {
   const serverUrl = useSettingsStore((s) => s.serverUrl)
   const sessionToken = useSettingsStore((s) => s.sessionToken)
   const setSessionToken = useSettingsStore((s) => s.setSessionToken)
-  const setTones = useSettingsStore((s) => s.setTones)
-  const setModels = useSettingsStore((s) => s.setModels)
   const modelId = useSettingsStore((s) => s.modelId)
   const toneSlug = useSettingsStore((s) => s.toneSlug)
-  const setHistoryItems = useHistoryStore((s) => s.setItems)
   const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
@@ -79,35 +75,7 @@ export default function RootLayout() {
   }, [])
 
   useEffect(() => {
-    if (!serverUrl || !sessionToken) return
-    const client = getApiClient()
-    const onUnauth = (e: unknown) => {
-      if (
-        (e as any)?.status === 401 ||
-        String((e as any)?.message).includes("401")
-      ) {
-        useSettingsStore.getState().clearServerConfig()
-      }
-    }
-    client.auth.me().catch(onUnauth)
-    client.tones.list().then(setTones).catch(onUnauth)
-    client.history
-      .list({ limit: 50 })
-      .then((r) => setHistoryItems(r.data))
-      .catch(onUnauth)
-    client.providers
-      .list()
-      .then((r) => {
-        const models = r.providers
-          .flatMap((p) => p.models)
-          .filter((m) => m.enabledByUser !== false)
-        setModels(models)
-        const { modelId: current, setModel } = useSettingsStore.getState()
-        if (!models.some((m) => m.id === current)) {
-          setModel(models[0]?.id ?? "")
-        }
-      })
-      .catch(onUnauth)
+    refreshAll()
   }, [serverUrl, sessionToken])
 
   useEffect(() => {

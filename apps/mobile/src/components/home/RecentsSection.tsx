@@ -5,25 +5,18 @@ import { Text, useTheme } from "react-native-paper"
 import { HistoryCard } from "./HistoryCard"
 import { useHistoryStore } from "@/store/history-store"
 import { getApiClient } from "@/services/api"
+import { refreshAll } from "@/services/refresh"
 import * as Haptics from "expo-haptics"
 import { withHaptics } from "@/utils/haptics"
 
 export const RecentsSection = () => {
-  const { items, setItems, removeItem } = useHistoryStore()
+  const { items, removeItem } = useHistoryStore()
   const [refreshing, setRefreshing] = useState(false)
   const theme = useTheme()
 
-  const loadHistory = async () => {
-    try {
-      const client = getApiClient()
-      const result = await client.history.list({ limit: 50 })
-      setItems(result.data)
-    } catch {}
-  }
-
   const handleRefresh = withHaptics(async () => {
     setRefreshing(true)
-    await loadHistory()
+    await refreshAll()
     setRefreshing(false)
   }, Haptics.ImpactFeedbackStyle.Medium)
 
