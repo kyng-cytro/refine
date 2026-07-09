@@ -10,6 +10,8 @@ files:
 extraResources:
   - from: resources/tray
     to: tray
+  - from: resources/icon.png
+    to: icon.png
 protocols:
   - name: Refine
     schemes:

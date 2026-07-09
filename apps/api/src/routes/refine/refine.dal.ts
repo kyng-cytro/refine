@@ -35,6 +35,10 @@ export const saveHistory = async (data: {
   refined: string
   modelId: string
   toneSlug: string
+  isPrivate?: boolean
+  inputTokens?: number | null
+  outputTokens?: number | null
+  totalTokens?: number | null
 }) => {
   const [row] = await db.insert(schema.history).values(data).returning()
   return row!

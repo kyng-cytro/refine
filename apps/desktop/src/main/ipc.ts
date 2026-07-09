@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, safeStorage } from "electron"
+import { BrowserWindow, ipcMain, safeStorage } from "electron"
 import { hostname } from "os"
 import type { CreateTone, RefineRequest, UpdateTone } from "@refine/schemas"
 import { EVENTS, IPC } from "../shared/ipc"
@@ -8,10 +8,16 @@ import type {
   UpdatableSettings,
   UpdateResult,
 } from "../shared/types"
-import { apiError, bootstrapCatalog, getClient, pairAndBootstrap } from "./api-client"
+import {
+  apiError,
+  bootstrapCatalog,
+  getClient,
+  pairAndBootstrap,
+} from "./api-client"
+import { setLaunchAtLogin } from "./autostart"
 import { consumePendingPair } from "./deep-link"
 import { detectCapability } from "./keysim"
-import { registerShortcut, setRecording } from "./shortcut"
+import { setRecording, setShortcut, SHORTCUT_KEYS } from "./shortcut"
 import { state } from "./state"
 
 export const broadcastState = (): void => {
@@ -41,13 +47,16 @@ export const registerIpc = (): void => {
   ipcMain.handle(
     IPC.settingsUpdate,
     (_e, patch: UpdatableSettings): UpdateResult => {
-      const shortcutChanged =
-        patch.shortcut !== undefined && patch.shortcut !== state.shortcut
+      const changed = (
+        Object.keys(SHORTCUT_KEYS) as (keyof typeof SHORTCUT_KEYS)[]
+      ).filter((key) => patch[key] !== undefined && patch[key] !== state[key])
       state.update(patch)
       let shortcutOk: boolean | undefined
-      if (shortcutChanged) shortcutOk = registerShortcut(state.shortcut)
-      if (patch.launchAtLogin !== undefined && process.platform !== "linux") {
-        app.setLoginItemSettings({ openAtLogin: patch.launchAtLogin })
+      for (const key of changed) {
+        shortcutOk = setShortcut(SHORTCUT_KEYS[key], state[key])
+      }
+      if (patch.launchAtLogin !== undefined) {
+        setLaunchAtLogin(patch.launchAtLogin)
       }
       return { snapshot: state.snapshot(), shortcutOk }
     },
@@ -88,7 +97,11 @@ export const registerIpc = (): void => {
 
   ipcMain.handle(IPC.refineRun, async (_e, body: RefineRequest) => {
     try {
-      return await requireClient().refine(body)
+      return await requireClient().refine({
+        ...body,
+        save: state.saveHistory,
+        private: state.privateHistory,
+      })
     } catch (e) {
       throw new Error(apiError(e))
     }
@@ -102,14 +115,11 @@ export const registerIpc = (): void => {
     return tone
   })
 
-  ipcMain.handle(
-    IPC.tonesUpdate,
-    async (_e, id: string, body: UpdateTone) => {
-      const tone = await requireClient().tones.update(id, body)
-      await refreshTones()
-      return tone
-    },
-  )
+  ipcMain.handle(IPC.tonesUpdate, async (_e, id: string, body: UpdateTone) => {
+    const tone = await requireClient().tones.update(id, body)
+    await refreshTones()
+    return tone
+  })
 
   ipcMain.handle(IPC.tonesDelete, async (_e, id: string) => {
     await requireClient().tones.delete(id)

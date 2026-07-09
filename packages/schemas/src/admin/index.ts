@@ -61,6 +61,29 @@ export const SetupStatusSchema = z.object({
   url: z.string(),
 })
 
+const UsageCountRowSchema = z.object({
+  key: z.string(),
+  refines: z.number(),
+  tokens: z.number(),
+})
+
+export const UsageOverviewSchema = z.object({
+  totals: z.object({ refines: z.number(), tokens: z.number() }),
+  byDay: z.array(
+    z.object({ day: z.string(), refines: z.number(), tokens: z.number() }),
+  ),
+  byModel: z.array(
+    UsageCountRowSchema.extend({
+      inputTokens: z.number(),
+      outputTokens: z.number(),
+      cost: z.number().nullable(),
+    }),
+  ),
+  byTone: z.array(UsageCountRowSchema),
+  byDevice: z.array(z.object({ key: z.string(), refines: z.number() })),
+  estimatedCost: z.number(),
+})
+
 export type AdminToken = z.infer<typeof AdminTokenSchema>
 export type AdminSession = z.infer<typeof AdminSessionSchema>
 export type AdminProviderState = z.infer<typeof AdminProviderStateSchema>
@@ -68,3 +91,4 @@ export type SessionModelPref = z.infer<typeof SessionModelPrefSchema>
 export type AdminSessionModel = z.infer<typeof AdminSessionModelSchema>
 export type AdminSessionProvider = z.infer<typeof AdminSessionProviderSchema>
 export type SetupStatus = z.infer<typeof SetupStatusSchema>
+export type UsageOverview = z.infer<typeof UsageOverviewSchema>

@@ -7,6 +7,7 @@ export const HistoryItemSchema = z.object({
   refined: z.string(),
   modelId: z.string(),
   toneSlug: z.string(),
+  isPrivate: z.boolean().optional(),
   createdAt: z.number(),
 })
 

@@ -6,7 +6,7 @@ import { useSettingsStore } from "@/store/settings-store"
 export function useRefine() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const { modelId, toneSlug } = useSettingsStore()
+  const { modelId, toneSlug, saveHistory } = useSettingsStore()
   const prependItem = useHistoryStore((s) => s.prependItem)
 
   const refine = async (text: string): Promise<boolean> => {
@@ -18,14 +18,16 @@ export function useRefine() {
     setIsLoading(true)
     try {
       const { refined } = await ipc.refine({ text, modelId, toneSlug })
-      prependItem({
-        id: `local-${text.length}-${text.slice(0, 8)}`,
-        source: text,
-        refined,
-        modelId,
-        toneSlug,
-        createdAt: Date.now(),
-      })
+      if (saveHistory) {
+        prependItem({
+          id: `local-${text.length}-${text.slice(0, 8)}`,
+          source: text,
+          refined,
+          modelId,
+          toneSlug,
+          createdAt: Date.now(),
+        })
+      }
       return true
     } catch (e) {
       setError(e instanceof Error ? e.message : "Refine failed")

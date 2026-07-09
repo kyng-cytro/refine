@@ -13,9 +13,12 @@ type PersistedSettings = {
   toneSlug: string
   modelId: string
   shortcut: string
+  cycleToneShortcut: string
   autoApply: boolean
   overlayCorner: OverlayCorner
   launchAtLogin: boolean
+  saveHistory: boolean
+  privateHistory: boolean
   encryptedSessionToken: string
   plainSessionToken: string
 }
@@ -26,9 +29,12 @@ const DEFAULTS: PersistedSettings = {
   toneSlug: "",
   modelId: "",
   shortcut: "CommandOrControl+Shift+R",
+  cycleToneShortcut: "CommandOrControl+Shift+T",
   autoApply: false,
   overlayCorner: "bottom-left",
   launchAtLogin: false,
+  saveHistory: true,
+  privateHistory: false,
   encryptedSessionToken: "",
   plainSessionToken: "",
 }
@@ -72,12 +78,28 @@ class AppState {
     return this.store.get("shortcut")
   }
 
+  get cycleToneShortcut(): string {
+    return this.store.get("cycleToneShortcut")
+  }
+
   get autoApply(): boolean {
     return this.store.get("autoApply")
   }
 
+  get saveHistory(): boolean {
+    return this.store.get("saveHistory")
+  }
+
+  get privateHistory(): boolean {
+    return this.store.get("privateHistory")
+  }
+
   get overlayCorner(): OverlayCorner {
     return this.store.get("overlayCorner")
+  }
+
+  get launchAtLogin(): boolean {
+    return this.store.get("launchAtLogin")
   }
 
   snapshot(): SettingsSnapshot {
@@ -88,9 +110,12 @@ class AppState {
       toneSlug: this.store.get("toneSlug"),
       modelId: this.store.get("modelId"),
       shortcut: this.store.get("shortcut"),
+      cycleToneShortcut: this.store.get("cycleToneShortcut"),
       autoApply: this.store.get("autoApply"),
       overlayCorner: this.store.get("overlayCorner"),
       launchAtLogin: this.store.get("launchAtLogin"),
+      saveHistory: this.store.get("saveHistory"),
+      privateHistory: this.store.get("privateHistory"),
       tones: this.tones,
       models: this.models,
     }

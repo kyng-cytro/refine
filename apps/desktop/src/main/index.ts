@@ -4,9 +4,11 @@ import {
   handleDeepLink,
   registerProtocolClient,
 } from "./deep-link"
+import { setLaunchAtLogin } from "./autostart"
+import { cycleTone } from "./cycle-tone"
 import { registerIpc } from "./ipc"
 import { runShortcutRefine } from "./refine-flow"
-import { registerShortcut, setTrigger, unregisterAll } from "./shortcut"
+import { registerShortcuts, setTrigger, unregisterAll } from "./shortcut"
 import { state } from "./state"
 import { createTray } from "./tray"
 import {
@@ -43,8 +45,14 @@ if (!gotLock) {
     createOverlayWindow()
     createTray()
 
-    setTrigger(runShortcutRefine)
-    registerShortcut(state.shortcut)
+    setTrigger("refine", runShortcutRefine)
+    setTrigger("cycleTone", cycleTone)
+    registerShortcuts({
+      refine: state.shortcut,
+      cycleTone: state.cycleToneShortcut,
+    })
+
+    if (app.isPackaged && state.launchAtLogin) setLaunchAtLogin(true)
 
     const link = findDeepLink(process.argv)
     if (link) handleDeepLink(link)

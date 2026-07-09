@@ -4,6 +4,7 @@ import * as routes from "@/routes/admin/history/history.routes"
 
 const router = createRouter()
   .openapi(routes.list, handlers.list)
+  .openapi(routes.prune, handlers.prune)
   .openapi(routes.remove, handlers.remove)
   .openapi(routes.removeAll, handlers.removeAll)
 

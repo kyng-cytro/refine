@@ -23,9 +23,12 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
   toneSlug: "",
   modelId: "",
   shortcut: "",
+  cycleToneShortcut: "",
   autoApply: false,
   overlayCorner: "bottom-left",
   launchAtLogin: false,
+  saveHistory: true,
+  privateHistory: false,
   tones: [],
   models: [],
 

@@ -15,7 +15,7 @@ export const useRefine = (): UseRefineResult => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { modelId, toneSlug } = useSettingsStore()
+  const { modelId, toneSlug, saveHistory, privateHistory } = useSettingsStore()
   const prependItem = useHistoryStore((s) => s.prependItem)
 
   const refine = async (text: string): Promise<boolean> => {
@@ -28,16 +28,20 @@ export const useRefine = (): UseRefineResult => {
         text,
         modelId: modelId,
         toneSlug: toneSlug,
+        save: saveHistory,
+        private: privateHistory,
       })
 
-      prependItem({
-        id: String(Date.now()),
-        source: text,
-        refined,
-        modelId: modelId,
-        toneSlug: toneSlug,
-        createdAt: Date.now(),
-      })
+      if (saveHistory) {
+        prependItem({
+          id: String(Date.now()),
+          source: text,
+          refined,
+          modelId: modelId,
+          toneSlug: toneSlug,
+          createdAt: Date.now(),
+        })
+      }
 
       return true
     } catch (e: any) {

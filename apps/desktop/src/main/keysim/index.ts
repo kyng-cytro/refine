@@ -46,7 +46,19 @@ const simulate = async (key: "c" | "v"): Promise<void> => {
   if (detectCapability().capability !== "full") return
 
   if (process.platform === "linux") {
-    await exec("xdotool", ["key", "--clearmodifiers", `${modifier}+${key}`])
+    // Hold the modifier explicitly around the key; `key ctrl+v` races and can
+    // deliver a bare "v" if the modifier hasn't registered yet.
+    await exec("xdotool", [
+      "keydown",
+      "--clearmodifiers",
+      modifier,
+      "key",
+      "--delay",
+      "40",
+      key,
+      "keyup",
+      modifier,
+    ])
     return
   }
 

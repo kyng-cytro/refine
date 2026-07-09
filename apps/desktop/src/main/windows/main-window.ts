@@ -4,6 +4,18 @@ import { join } from "path"
 let mainWindow: BrowserWindow | null = null
 let quitting = false
 
+// Linux needs an explicit window icon; macOS/Windows derive it from the bundle.
+const windowIcon = (): string | undefined => {
+  if (process.platform === "linux") {
+    return app.isPackaged
+      ? join(process.resourcesPath, "icon.png")
+      : join(__dirname, "../../resources/icon.png")
+  }
+  return app.isPackaged
+    ? undefined
+    : join(__dirname, "../../resources/icon.png")
+}
+
 export const setQuitting = (value: boolean): void => {
   quitting = value
 }
@@ -24,9 +36,7 @@ export const createMainWindow = (): BrowserWindow => {
     minHeight: 480,
     show: false,
     autoHideMenuBar: true,
-    icon: app.isPackaged
-      ? undefined
-      : join(__dirname, "../../resources/icon.png"),
+    icon: windowIcon(),
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
     },
