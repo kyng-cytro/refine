@@ -4,6 +4,7 @@ import {
   handleDeepLink,
   registerProtocolClient,
 } from "./deep-link"
+import { setLaunchAtLogin } from "./autostart"
 import { registerIpc } from "./ipc"
 import { runShortcutRefine } from "./refine-flow"
 import { registerShortcut, setTrigger, unregisterAll } from "./shortcut"
@@ -45,6 +46,8 @@ if (!gotLock) {
 
     setTrigger(runShortcutRefine)
     registerShortcut(state.shortcut)
+
+    if (app.isPackaged && state.launchAtLogin) setLaunchAtLogin(true)
 
     const link = findDeepLink(process.argv)
     if (link) handleDeepLink(link)

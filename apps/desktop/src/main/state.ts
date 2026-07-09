@@ -92,6 +92,10 @@ class AppState {
     return this.store.get("overlayCorner")
   }
 
+  get launchAtLogin(): boolean {
+    return this.store.get("launchAtLogin")
+  }
+
   snapshot(): SettingsSnapshot {
     return {
       connected: this.connected,

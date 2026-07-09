@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, safeStorage } from "electron"
+import { BrowserWindow, ipcMain, safeStorage } from "electron"
 import { hostname } from "os"
 import type { CreateTone, RefineRequest, UpdateTone } from "@refine/schemas"
 import { EVENTS, IPC } from "../shared/ipc"
@@ -9,6 +9,7 @@ import type {
   UpdateResult,
 } from "../shared/types"
 import { apiError, bootstrapCatalog, getClient, pairAndBootstrap } from "./api-client"
+import { setLaunchAtLogin } from "./autostart"
 import { consumePendingPair } from "./deep-link"
 import { detectCapability } from "./keysim"
 import { registerShortcut, setRecording } from "./shortcut"
@@ -46,8 +47,8 @@ export const registerIpc = (): void => {
       state.update(patch)
       let shortcutOk: boolean | undefined
       if (shortcutChanged) shortcutOk = registerShortcut(state.shortcut)
-      if (patch.launchAtLogin !== undefined && process.platform !== "linux") {
-        app.setLoginItemSettings({ openAtLogin: patch.launchAtLogin })
+      if (patch.launchAtLogin !== undefined) {
+        setLaunchAtLogin(patch.launchAtLogin)
       }
       return { snapshot: state.snapshot(), shortcutOk }
     },

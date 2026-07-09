@@ -93,14 +93,12 @@ export function BehaviorSection() {
           </select>
         </Row>
 
-        {capabilities?.platform !== "linux" && (
-          <Row title="Launch at login">
-            <Switch
-              checked={launchAtLogin}
-              onCheckedChange={(v) => update({ launchAtLogin: v })}
-            />
-          </Row>
-        )}
+        <Row title="Launch at login">
+          <Switch
+            checked={launchAtLogin}
+            onCheckedChange={(v) => update({ launchAtLogin: v })}
+          />
+        </Row>
       </Surface>
     </Section>
   )
