@@ -26,8 +26,13 @@ export const refine: AppRouteHandler<Refine, AuthenticatedContext> = async (
   c,
 ) => {
   try {
-    const { text, modelId, toneSlug, save, private: isPrivate } =
-      c.req.valid("json")
+    const {
+      text,
+      modelId,
+      toneSlug,
+      save,
+      private: isPrivate,
+    } = c.req.valid("json")
     const { session } = c.var
     const config = getModel(modelId)
     if (!config) {
@@ -58,19 +63,38 @@ export const refine: AppRouteHandler<Refine, AuthenticatedContext> = async (
       system: buildSystemPrompt(tone.instructions),
       prompt: text,
     })
-    if (save !== false) {
-      await dal.saveHistory({
-        sessionId: session.id,
-        source: text,
-        refined: refined.trim(),
-        modelId,
-        toneSlug,
-        isPrivate: isPrivate ?? false,
-        inputTokens: usage?.inputTokens ?? null,
-        outputTokens: usage?.outputTokens ?? null,
-        totalTokens: usage?.totalTokens ?? null,
-      })
-    }
+    const historyRow =
+      save !== false
+        ? await dal.saveHistory({
+            sessionId: session.id,
+            source: text,
+            refined: refined.trim(),
+            modelId,
+            toneSlug,
+            isPrivate: isPrivate ?? false,
+          })
+        : null
+    const cost =
+      config.cost && usage
+        ? {
+            input: ((usage.inputTokens ?? 0) / 1e6) * config.cost.input,
+            output: ((usage.outputTokens ?? 0) / 1e6) * config.cost.output,
+          }
+        : null
+    await dal.saveUsage({
+      sessionId: session.id,
+      historyId: historyRow?.id ?? null,
+      model: { id: config.id, label: config.label, provider: config.provider },
+      tone: { slug: tone.slug, name: tone.name },
+      tokens: usage
+        ? {
+            total: usage.totalTokens ?? null,
+            input: usage.inputTokens ?? null,
+            output: usage.outputTokens ?? null,
+          }
+        : null,
+      cost: cost ? { ...cost, total: cost.input + cost.output } : null,
+    })
     return c.json({ refined: refined.trim() }, HttpStatusCodes.OK)
   } catch (error) {
     c.var.logger.error(`[REFINE] ${error}`)
