@@ -5,9 +5,11 @@ import DevicesTab from "@/pages/dashboard/DevicesTab"
 import HistoryTab from "@/pages/dashboard/HistoryTab"
 import ProvidersTab from "@/pages/dashboard/ProvidersTab"
 import TonesTab from "@/pages/dashboard/TonesTab"
+import UsageTab from "@/pages/dashboard/UsageTab"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
+  BarChart3,
   History,
   KeyRound,
   LogOut,
@@ -16,9 +18,10 @@ import {
   Smartphone,
 } from "lucide-react"
 
-type Page = "devices" | "tones" | "history" | "providers"
+type Page = "usage" | "devices" | "tones" | "history" | "providers"
 
 const NAV: { id: Page; label: string; icon: React.ReactNode }[] = [
+  { id: "usage", label: "Usage", icon: <BarChart3 className="h-4 w-4" /> },
   { id: "devices", label: "Devices", icon: <Smartphone className="h-4 w-4" /> },
   {
     id: "tones",
@@ -34,6 +37,10 @@ const NAV: { id: Page; label: string; icon: React.ReactNode }[] = [
 ]
 
 const PAGE_META: Record<Page, { title: string; description: string }> = {
+  usage: {
+    title: "Usage",
+    description: "Refinement volume and token usage across all devices.",
+  },
   devices: {
     title: "Devices",
     description: "Manage connected devices and generate pairing tokens.",
@@ -57,7 +64,7 @@ interface Props {
 }
 
 export default function Dashboard({ onSignOut }: Props) {
-  const [page, setPage] = useState<Page>("devices")
+  const [page, setPage] = useState<Page>("usage")
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const signOut = () => {
@@ -145,7 +152,8 @@ export default function Dashboard({ onSignOut }: Props) {
         </header>
 
         <main className="flex-1 overflow-y-auto px-6 py-6 md:px-8">
-          <div className="max-w-3xl">
+          <div className={page === "usage" ? "max-w-5xl" : "max-w-3xl"}>
+            {page === "usage" && <UsageTab />}
             {page === "devices" && <DevicesTab />}
             {page === "tones" && <TonesTab />}
             {page === "history" && <HistoryTab />}

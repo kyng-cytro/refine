@@ -9,6 +9,7 @@ import type {
   Paginated,
   SetupStatus,
   Tone,
+  UsageOverview,
 } from "@refine/schemas"
 
 export type {
@@ -20,6 +21,7 @@ export type {
   SetupStatus,
   AdminToken as Token,
   Tone,
+  UsageOverview,
 }
 
 const BASE = "/v1"
@@ -49,6 +51,7 @@ type AdminHistoryItem = HistoryItem & {
   deviceName: string | null
   sessionId: string
 }
+
 
 export const api = {
   setup: {
@@ -113,5 +116,9 @@ export const api = {
       ),
     remove: (id: string) => request<void>("DELETE", `/admin/history/${id}`),
     removeAll: () => request<void>("DELETE", "/admin/history"),
+  },
+  usage: {
+    get: (days = 30) =>
+      request<UsageOverview>("GET", `/admin/usage?days=${days}`),
   },
 }
