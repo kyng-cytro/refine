@@ -40,8 +40,13 @@ if (!gotLock) {
   })
 
   app.whenReady().then(() => {
+    const startHidden =
+      process.argv.includes("--hidden") ||
+      (process.platform === "darwin" &&
+        app.getLoginItemSettings().wasOpenedAsHidden)
+
     registerIpc()
-    createMainWindow()
+    createMainWindow({ hidden: startHidden })
     createOverlayWindow()
     createTray()
 

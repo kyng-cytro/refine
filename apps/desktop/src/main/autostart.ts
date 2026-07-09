@@ -22,7 +22,7 @@ const setLinuxAutostart = (enabled: boolean): void => {
     "[Desktop Entry]",
     "Type=Application",
     `Name=${app.getName()}`,
-    `Exec=${linuxExec()}`,
+    `Exec="${linuxExec()}" --hidden`,
     "Icon=refine",
     "Terminal=false",
     "X-GNOME-Autostart-enabled=true",
@@ -37,5 +37,9 @@ export const setLaunchAtLogin = (enabled: boolean): void => {
     setLinuxAutostart(enabled)
     return
   }
-  app.setLoginItemSettings({ openAtLogin: enabled })
+  app.setLoginItemSettings({
+    openAtLogin: enabled,
+    openAsHidden: enabled,
+    args: ["--hidden"],
+  })
 }
