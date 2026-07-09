@@ -11,12 +11,29 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 let inFlight = false
 let lastRun = 0
+let lastRefine: {
+  source: string
+  refined: string
+  modelId: string
+  toneSlug: string
+} | null = null
 
-const pollClipboard = async (previous: string): Promise<string> => {
-  for (let i = 0; i < 20; i++) {
+const pollClipboard = async (previous: string, tries: number): Promise<string> => {
+  for (let i = 0; i < tries; i++) {
     await sleep(50)
     const text = clipboard.readText()
     if (text && text !== previous) return text
+  }
+  return ""
+}
+
+const captureSelection = async (): Promise<string> => {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    clipboard.clear()
+    await sleep(attempt === 0 ? 150 : 100)
+    await simulateCopy()
+    const text = await pollClipboard("", attempt === 0 ? 12 : 8)
+    if (text) return text
   }
   return ""
 }
@@ -38,10 +55,7 @@ export const runShortcutRefine = async (): Promise<void> => {
 
     let text: string
     if (capability === "full") {
-      clipboard.clear()
-      await sleep(150)
-      await simulateCopy()
-      text = await pollClipboard("")
+      text = await captureSelection()
       if (!text) {
         if (previousClipboard) clipboard.writeText(previousClipboard)
         showOverlay({ state: "error", message: "No text selected" }, 2500)
@@ -53,6 +67,21 @@ export const runShortcutRefine = async (): Promise<void> => {
         showOverlay({ state: "error", message: "Clipboard is empty" }, 2500)
         return
       }
+    }
+
+    if (
+      lastRefine &&
+      lastRefine.source === text &&
+      lastRefine.modelId === modelId &&
+      lastRefine.toneSlug === toneSlug
+    ) {
+      clipboard.writeText(lastRefine.refined)
+      if (state.autoApply && capability === "full") {
+        await sleep(120)
+        await simulatePaste()
+      }
+      showOverlay({ state: "success", message: "Refined" }, 1200)
+      return
     }
 
     showOverlay({ state: "refining", message: "Refining…" })
@@ -72,6 +101,7 @@ export const runShortcutRefine = async (): Promise<void> => {
     }
 
     clipboard.writeText(refined)
+    lastRefine = { source: text, refined, modelId, toneSlug }
 
     if (state.autoApply && capability === "full") {
       await sleep(120)
