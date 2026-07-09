@@ -187,10 +187,16 @@ export function ProviderAccordion({
                       }
                     >
                       <span className="text-sm">{m.label}</span>
-                      {m.free && (
+                      {m.free ? (
                         <span className="text-xs font-medium text-emerald-600 ml-2 mr-auto">
                           Free
                         </span>
+                      ) : (
+                        m.cost && (
+                          <span className="text-xs text-muted-foreground ml-2 mr-auto">
+                            ${m.cost.input} in / ${m.cost.output} out per 1M
+                          </span>
+                        )
                       )}
                       <ToggleSwitch active={!!active} />
                     </div>
