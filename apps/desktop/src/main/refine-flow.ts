@@ -90,7 +90,13 @@ export const runShortcutRefine = async (): Promise<void> => {
     try {
       const client = getClient()
       if (!client) throw new Error("Not connected")
-      const res = await client.refine({ text, modelId, toneSlug })
+      const res = await client.refine({
+        text,
+        modelId,
+        toneSlug,
+        save: state.saveHistory,
+        private: state.privateHistory,
+      })
       refined = res.refined
     } catch (e) {
       if (capability === "full" && previousClipboard) {
@@ -110,15 +116,17 @@ export const runShortcutRefine = async (): Promise<void> => {
 
     showOverlay({ state: "success", message: "Refined" }, 1200)
 
-    const entry: HistoryItem = {
-      id: `shortcut-${now}`,
-      source: text,
-      refined,
-      modelId,
-      toneSlug,
-      createdAt: now,
+    if (state.saveHistory) {
+      const entry: HistoryItem = {
+        id: `shortcut-${now}`,
+        source: text,
+        refined,
+        modelId,
+        toneSlug,
+        createdAt: now,
+      }
+      getMainWindow()?.webContents.send(EVENTS.historyPrepend, entry)
     }
-    getMainWindow()?.webContents.send(EVENTS.historyPrepend, entry)
   } finally {
     inFlight = false
     lastRun = Date.now()

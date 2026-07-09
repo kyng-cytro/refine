@@ -10,6 +10,8 @@ interface SettingsState {
   models: Model[]
   toneSlug: string
   modelId: string
+  saveHistory: boolean
+  privateHistory: boolean
 
   setServerConfig: (serverUrl: string, sessionToken: string) => void
   setSessionToken: (token: string) => void
@@ -17,6 +19,8 @@ interface SettingsState {
   setModels: (models: Model[]) => void
   setTone: (slug: string) => void
   setModel: (modelId: string) => void
+  setSaveHistory: (value: boolean) => void
+  setPrivateHistory: (value: boolean) => void
   clearServerConfig: () => void
 }
 
@@ -29,6 +33,8 @@ export const useSettingsStore = create<SettingsState>()(
       models: [],
       toneSlug: "",
       modelId: "",
+      saveHistory: true,
+      privateHistory: false,
 
       setServerConfig: (serverUrl, sessionToken) =>
         set({ serverUrl, sessionToken }),
@@ -42,6 +48,10 @@ export const useSettingsStore = create<SettingsState>()(
       setTone: (slug) => set({ toneSlug: slug }),
 
       setModel: (modelId) => set({ modelId }),
+
+      setSaveHistory: (value) => set({ saveHistory: value }),
+
+      setPrivateHistory: (value) => set({ privateHistory: value }),
 
       clearServerConfig: () =>
         set({
@@ -60,6 +70,8 @@ export const useSettingsStore = create<SettingsState>()(
         serverUrl: s.serverUrl,
         toneSlug: s.toneSlug,
         modelId: s.modelId,
+        saveHistory: s.saveHistory,
+        privateHistory: s.privateHistory,
       }),
     },
   ),

@@ -23,6 +23,8 @@ export type SettingsSnapshot = {
   autoApply: boolean
   overlayCorner: OverlayCorner
   launchAtLogin: boolean
+  saveHistory: boolean
+  privateHistory: boolean
   tones: Tone[]
   models: Model[]
 }
@@ -36,6 +38,8 @@ export type UpdatableSettings = Partial<
     | "autoApply"
     | "overlayCorner"
     | "launchAtLogin"
+    | "saveHistory"
+    | "privateHistory"
   >
 >
 

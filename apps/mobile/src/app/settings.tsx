@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { ScrollView, StyleSheet } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { Text, List, Button, useTheme } from "react-native-paper"
+import { Text, List, Button, Switch, useTheme } from "react-native-paper"
 import { router } from "expo-router"
 
 import { ProvidersSection } from "@/components/settings/ProvidersSection"
@@ -10,7 +10,15 @@ import { useSettingsStore } from "@/store/settings-store"
 
 export default function SettingsScreen() {
   const theme = useTheme()
-  const { serverUrl, sessionToken, clearServerConfig } = useSettingsStore()
+  const {
+    serverUrl,
+    sessionToken,
+    clearServerConfig,
+    saveHistory,
+    privateHistory,
+    setSaveHistory,
+    setPrivateHistory,
+  } = useSettingsStore()
 
   useEffect(() => {
     if (!serverUrl || !sessionToken) router.replace("/setup")
@@ -49,6 +57,30 @@ export default function SettingsScreen() {
           >
             Disconnect
           </Button>
+        </List.Section>
+
+        <List.Section>
+          <List.Subheader>History</List.Subheader>
+          <List.Item
+            title="Save history"
+            description="Store refinements on the server and sync across devices."
+            left={(props) => <List.Icon {...props} icon="history" />}
+            right={() => (
+              <Switch value={saveHistory} onValueChange={setSaveHistory} />
+            )}
+          />
+          <List.Item
+            title="Private"
+            description="Hide saved refinements from the admin dashboard."
+            left={(props) => <List.Icon {...props} icon="eye-off" />}
+            right={() => (
+              <Switch
+                value={privateHistory && saveHistory}
+                disabled={!saveHistory}
+                onValueChange={setPrivateHistory}
+              />
+            )}
+          />
         </List.Section>
 
         <ProvidersSection />

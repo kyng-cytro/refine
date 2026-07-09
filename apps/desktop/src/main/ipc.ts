@@ -88,7 +88,11 @@ export const registerIpc = (): void => {
 
   ipcMain.handle(IPC.refineRun, async (_e, body: RefineRequest) => {
     try {
-      return await requireClient().refine(body)
+      return await requireClient().refine({
+        ...body,
+        save: state.saveHistory,
+        private: state.privateHistory,
+      })
     } catch (e) {
       throw new Error(apiError(e))
     }

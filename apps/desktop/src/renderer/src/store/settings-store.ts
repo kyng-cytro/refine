@@ -26,6 +26,8 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
   autoApply: false,
   overlayCorner: "bottom-left",
   launchAtLogin: false,
+  saveHistory: true,
+  privateHistory: false,
   tones: [],
   models: [],
 

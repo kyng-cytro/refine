@@ -16,6 +16,8 @@ type PersistedSettings = {
   autoApply: boolean
   overlayCorner: OverlayCorner
   launchAtLogin: boolean
+  saveHistory: boolean
+  privateHistory: boolean
   encryptedSessionToken: string
   plainSessionToken: string
 }
@@ -29,6 +31,8 @@ const DEFAULTS: PersistedSettings = {
   autoApply: false,
   overlayCorner: "bottom-left",
   launchAtLogin: false,
+  saveHistory: true,
+  privateHistory: false,
   encryptedSessionToken: "",
   plainSessionToken: "",
 }
@@ -76,6 +80,14 @@ class AppState {
     return this.store.get("autoApply")
   }
 
+  get saveHistory(): boolean {
+    return this.store.get("saveHistory")
+  }
+
+  get privateHistory(): boolean {
+    return this.store.get("privateHistory")
+  }
+
   get overlayCorner(): OverlayCorner {
     return this.store.get("overlayCorner")
   }
@@ -91,6 +103,8 @@ class AppState {
       autoApply: this.store.get("autoApply"),
       overlayCorner: this.store.get("overlayCorner"),
       launchAtLogin: this.store.get("launchAtLogin"),
+      saveHistory: this.store.get("saveHistory"),
+      privateHistory: this.store.get("privateHistory"),
       tones: this.tones,
       models: this.models,
     }
