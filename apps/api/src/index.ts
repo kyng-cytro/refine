@@ -1,10 +1,13 @@
 import { configureOpenAPI } from "@/lib/configure-openapi"
 import { createApp, createRoot } from "@/lib/create-app"
+import { startRetention } from "@/lib/retention"
 import routes from "@/routes"
 import consola from "consola"
 import { notFound, onError } from "stoker/middlewares"
 
 const app = createApp()
+
+startRetention()
 
 app.openAPIRegistry.registerComponent("securitySchemes", "Bearer Auth", {
   type: "http",

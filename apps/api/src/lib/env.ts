@@ -13,6 +13,7 @@ const schema = z.object({
   TURSO_AUTH_TOKEN: z.string().optional(),
   ADMIN_TOKEN: z.string().min(1, "ADMIN_TOKEN is required"),
   ENCRYPTION_KEY: z.string().min(1, "ENCRYPTION_KEY is required"),
+  HISTORY_RETENTION_DAYS: z.coerce.number().int().nonnegative().default(0),
 })
 
 export const check = () => {
