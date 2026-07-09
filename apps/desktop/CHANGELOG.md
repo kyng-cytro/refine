@@ -1,5 +1,18 @@
 # @refine/desktop
 
+## 0.2.0
+
+### Minor Changes
+
+- c1e394e: Add History privacy controls in settings: "Save history" toggles server persistence off entirely, and "Private" keeps saved refinements out of the admin dashboard. Both desktop and mobile send the corresponding flags on every refine and skip the local Recents entry when saving is off.
+- 115de6c: Add a manual refresh that reloads configs (models, tones) and history. Desktop gets a refresh button in the History header; mobile gets a header refresh button and its pull-to-refresh now reloads configs too (works even when the history list is empty). Mobile's fetch logic is consolidated into a single reusable `refreshAll`.
+- 9c576b1: Add a global shortcut to cycle through tones (default Ctrl/⌘+Shift+T), showing the newly selected tone in the overlay. The shortcut layer now supports multiple named shortcuts, and settings groups them under a dedicated "Shortcuts" section (Refine selection, Cycle tone) separate from "Behavior".
+- d4d129c: Support launch at login on Linux via an XDG autostart entry (`~/.config/autostart/refine.desktop`), since Electron's login-item API is macOS/Windows only. The "Launch at login" toggle now shows on Linux, and the entry's exec path is refreshed on startup so it survives AppImage moves and updates.
+
+### Patch Changes
+
+- 975c9c7: Retry the shortcut copy so text is still captured when the trigger keys are held, and skip re-refining an unchanged selection (reuses the cached result instead of duplicating the API call and history entry).
+
 ## 0.1.0
 
 ### Minor Changes
