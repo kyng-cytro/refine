@@ -4,6 +4,7 @@ import type { HistoryQuery } from "@refine/schemas"
 export const list = async (query: HistoryQuery) => {
   const rows = await db.query.history.findMany({
     ...paginate.options(query, {
+      where: orm.eq(schema.history.isPrivate, false),
       column: schema.history.id,
       order: [orm.desc(schema.history.createdAt), orm.desc(schema.history.id)],
       direction: "desc",

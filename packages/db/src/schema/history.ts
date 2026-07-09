@@ -14,6 +14,12 @@ export const history = sqliteTable("history", {
   refined: text("refined").notNull(),
   modelId: text("model_id").notNull(),
   toneSlug: text("tone_slug").notNull(),
+  isPrivate: integer("is_private", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  inputTokens: integer("input_tokens"),
+  outputTokens: integer("output_tokens"),
+  totalTokens: integer("total_tokens"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),

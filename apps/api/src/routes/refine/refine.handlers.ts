@@ -26,7 +26,8 @@ export const refine: AppRouteHandler<Refine, AuthenticatedContext> = async (
   c,
 ) => {
   try {
-    const { text, modelId, toneSlug } = c.req.valid("json")
+    const { text, modelId, toneSlug, save, private: isPrivate } =
+      c.req.valid("json")
     const { session } = c.var
     const config = getModel(modelId)
     if (!config) {
@@ -52,18 +53,24 @@ export const refine: AppRouteHandler<Refine, AuthenticatedContext> = async (
     }
     const client = createProviderInstance(config.provider, provider.apiKey)
     const model = client(modelId) as Parameters<typeof generateText>[0]["model"]
-    const { text: refined } = await generateText({
+    const { text: refined, usage } = await generateText({
       model,
       system: buildSystemPrompt(tone.instructions),
       prompt: text,
     })
-    await dal.saveHistory({
-      sessionId: session.id,
-      source: text,
-      refined: refined.trim(),
-      modelId,
-      toneSlug,
-    })
+    if (save !== false) {
+      await dal.saveHistory({
+        sessionId: session.id,
+        source: text,
+        refined: refined.trim(),
+        modelId,
+        toneSlug,
+        isPrivate: isPrivate ?? false,
+        inputTokens: usage?.inputTokens ?? null,
+        outputTokens: usage?.outputTokens ?? null,
+        totalTokens: usage?.totalTokens ?? null,
+      })
+    }
     return c.json({ refined: refined.trim() }, HttpStatusCodes.OK)
   } catch (error) {
     c.var.logger.error(`[REFINE] ${error}`)
