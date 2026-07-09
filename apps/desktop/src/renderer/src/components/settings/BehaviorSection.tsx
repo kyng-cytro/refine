@@ -3,7 +3,6 @@ import { Surface } from "@/components/m3/Surface"
 import { Switch } from "@/components/m3/Switch"
 import { useSettingsStore } from "@/store/settings-store"
 import { Section } from "./Section"
-import { ShortcutRecorder } from "./ShortcutRecorder"
 
 const CORNERS: { value: OverlayCorner; label: string }[] = [
   { value: "top-left", label: "Top left" },
@@ -48,20 +47,8 @@ export function BehaviorSection() {
   const manual = capabilities?.keySim === "manual"
 
   return (
-    <Section title="Shortcut">
+    <Section title="Behavior">
       <Surface level={1} className="divide-y divide-outline-variant rounded-m3-md">
-        <div className="p-4">
-          <p className="mb-1.5 text-body-large text-on-surface">
-            Global shortcut
-          </p>
-          <ShortcutRecorder />
-          {manual && capabilities?.keySimReason && (
-            <p className="mt-2 rounded-m3-sm bg-surface-container-high px-3 py-2 text-body-small text-on-surface-variant">
-              {capabilities.keySimReason}
-            </p>
-          )}
-        </div>
-
         <Row
           title="Auto-apply refined text"
           description={

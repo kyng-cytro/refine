@@ -20,6 +20,7 @@ export type SettingsSnapshot = {
   toneSlug: string
   modelId: string
   shortcut: string
+  cycleToneShortcut: string
   autoApply: boolean
   overlayCorner: OverlayCorner
   launchAtLogin: boolean
@@ -35,6 +36,7 @@ export type UpdatableSettings = Partial<
     | "toneSlug"
     | "modelId"
     | "shortcut"
+    | "cycleToneShortcut"
     | "autoApply"
     | "overlayCorner"
     | "launchAtLogin"

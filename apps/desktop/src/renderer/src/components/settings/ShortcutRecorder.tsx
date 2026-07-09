@@ -26,8 +26,10 @@ function prettify(accelerator: string): string {
   return accelerator.replace("CommandOrControl", "Ctrl/⌘")
 }
 
-export function ShortcutRecorder() {
-  const shortcut = useSettingsStore((s) => s.shortcut)
+type ShortcutKey = "shortcut" | "cycleToneShortcut"
+
+export function ShortcutRecorder({ settingKey }: { settingKey: ShortcutKey }) {
+  const shortcut = useSettingsStore((s) => s[settingKey])
   const update = useSettingsStore((s) => s.update)
   const [recording, setRecording] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -49,7 +51,7 @@ export function ShortcutRecorder() {
     if (!accelerator) return
     setRecording(false)
     ipc.system.setShortcutRecording(false)
-    const ok = await update({ shortcut: accelerator })
+    const ok = await update({ [settingKey]: accelerator })
     setFailed(ok === false)
   }
 
