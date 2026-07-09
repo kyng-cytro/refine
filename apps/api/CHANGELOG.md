@@ -1,5 +1,14 @@
 # @refine/api
 
+## 0.2.0
+
+### Minor Changes
+
+- 69347d2: Add a usage overview to the admin dashboard: total refines and tokens, refines-per-day, and breakdowns by model, tone, and device over a selectable time range. Backed by a new `GET /admin/usage` endpoint that aggregates history (excluding private entries). Cost estimates are shown when an operator-provided per-model price map is configured.
+- 897739c: Record token usage on each refine and honor per-request `save`/`private` flags: `save: false` skips history persistence entirely, and `private: true` stores the entry but hides it from the admin history view. Adds `is_private` and token columns to the history table.
+- cb9754b: Add `POST /admin/history/prune` so retention can be driven by an external scheduler (e.g. cron-job.org) instead of only the built-in interval. Uses `HISTORY_RETENTION_DAYS` by default, or an optional `?days=N` override, and returns the number of rows deleted.
+- 4e41f50: Add an optional history retention policy. Set `HISTORY_RETENTION_DAYS` to auto-delete history older than N days; a cleanup job runs at startup and every 12 hours. Unset or `0` keeps history forever.
+
 ## 0.1.0
 
 ### Minor Changes
