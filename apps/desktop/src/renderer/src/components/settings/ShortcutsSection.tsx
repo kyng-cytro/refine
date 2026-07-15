@@ -27,7 +27,12 @@ export function ShortcutsSection() {
 
         <div className="p-4">
           <p className="mb-1.5 text-body-large text-on-surface">Cycle tone</p>
-          <ShortcutRecorder settingKey="cycleToneShortcut" />
+          <ShortcutRecorder settingKey="cycleToneShortcut" optional />
+        </div>
+
+        <div className="p-4">
+          <p className="mb-1.5 text-body-large text-on-surface">Cycle model</p>
+          <ShortcutRecorder settingKey="cycleModelShortcut" optional />
         </div>
       </Surface>
     </Section>
