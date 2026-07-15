@@ -1,13 +1,18 @@
 import { globalShortcut } from "electron"
 
-export type ShortcutId = "refine" | "cycleTone"
+export type ShortcutId = "refine" | "cycleTone" | "cycleModel"
 
 export const SHORTCUT_KEYS = {
   shortcut: "refine",
   cycleToneShortcut: "cycleTone",
+  cycleModelShortcut: "cycleModel",
 } as const satisfies Record<string, ShortcutId>
 
-const accelerators: Record<ShortcutId, string> = { refine: "", cycleTone: "" }
+const accelerators: Record<ShortcutId, string> = {
+  refine: "",
+  cycleTone: "",
+  cycleModel: "",
+}
 const handlers: Partial<Record<ShortcutId, () => void>> = {}
 let paused = false
 
@@ -17,7 +22,11 @@ export const setTrigger = (id: ShortcutId, handler: () => void): void => {
 
 const registerAll = (): Record<ShortcutId, boolean> => {
   globalShortcut.unregisterAll()
-  const ok: Record<ShortcutId, boolean> = { refine: true, cycleTone: true }
+  const ok: Record<ShortcutId, boolean> = {
+    refine: true,
+    cycleTone: true,
+    cycleModel: true,
+  }
   if (paused) return ok
   for (const id of Object.keys(accelerators) as ShortcutId[]) {
     const accelerator = accelerators[id]

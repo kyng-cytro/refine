@@ -14,6 +14,7 @@ type PersistedSettings = {
   modelId: string
   shortcut: string
   cycleToneShortcut: string
+  cycleModelShortcut: string
   autoApply: boolean
   overlayCorner: OverlayCorner
   launchAtLogin: boolean
@@ -29,7 +30,8 @@ const DEFAULTS: PersistedSettings = {
   toneSlug: "",
   modelId: "",
   shortcut: "CommandOrControl+Alt+R",
-  cycleToneShortcut: "CommandOrControl+Alt+T",
+  cycleToneShortcut: "",
+  cycleModelShortcut: "",
   autoApply: false,
   overlayCorner: "bottom-left",
   launchAtLogin: false,
@@ -82,6 +84,10 @@ class AppState {
     return this.store.get("cycleToneShortcut")
   }
 
+  get cycleModelShortcut(): string {
+    return this.store.get("cycleModelShortcut")
+  }
+
   get autoApply(): boolean {
     return this.store.get("autoApply")
   }
@@ -111,6 +117,7 @@ class AppState {
       modelId: this.store.get("modelId"),
       shortcut: this.store.get("shortcut"),
       cycleToneShortcut: this.store.get("cycleToneShortcut"),
+      cycleModelShortcut: this.store.get("cycleModelShortcut"),
       autoApply: this.store.get("autoApply"),
       overlayCorner: this.store.get("overlayCorner"),
       launchAtLogin: this.store.get("launchAtLogin"),

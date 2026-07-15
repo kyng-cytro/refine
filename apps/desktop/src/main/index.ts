@@ -5,6 +5,7 @@ import {
   registerProtocolClient,
 } from "./deep-link"
 import { setLaunchAtLogin } from "./autostart"
+import { cycleModel } from "./cycle-model"
 import { cycleTone } from "./cycle-tone"
 import { registerIpc } from "./ipc"
 import { runShortcutRefine } from "./refine-flow"
@@ -52,9 +53,11 @@ if (!gotLock) {
 
     setTrigger("refine", runShortcutRefine)
     setTrigger("cycleTone", cycleTone)
+    setTrigger("cycleModel", cycleModel)
     registerShortcuts({
       refine: state.shortcut,
       cycleTone: state.cycleToneShortcut,
+      cycleModel: state.cycleModelShortcut,
     })
 
     if (app.isPackaged && state.launchAtLogin) setLaunchAtLogin(true)
