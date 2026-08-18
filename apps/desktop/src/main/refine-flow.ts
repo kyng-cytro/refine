@@ -4,7 +4,7 @@ import type { HistoryItem } from "@refine/schemas"
 import { apiError, getClient } from "./api-client"
 import { detectCapability, simulateCopy, simulatePaste } from "./keysim"
 import { state } from "./state"
-import { showOverlay } from "./windows/overlay-window"
+import { prewarmOverlay, showOverlay } from "./windows/overlay-window"
 import { getMainWindow } from "./windows/main-window"
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -42,6 +42,7 @@ export const runShortcutRefine = async (): Promise<void> => {
   const now = Date.now()
   if (inFlight || now - lastRun < 400) return
   inFlight = true
+  prewarmOverlay()
 
   const capability = detectCapability().capability
   const previousClipboard = clipboard.readText()

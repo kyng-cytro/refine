@@ -17,7 +17,7 @@ import {
   getMainWindow,
   setQuitting,
 } from "./windows/main-window"
-import { createOverlayWindow } from "./windows/overlay-window"
+import { initOverlay } from "./windows/overlay-window"
 
 const gotLock = app.requestSingleInstanceLock()
 
@@ -48,7 +48,7 @@ if (!gotLock) {
 
     registerIpc()
     createMainWindow({ hidden: startHidden })
-    createOverlayWindow()
+    initOverlay()
     createTray()
 
     setTrigger("refine", runShortcutRefine)

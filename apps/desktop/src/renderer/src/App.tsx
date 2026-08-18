@@ -91,6 +91,6 @@ function MainApp() {
 }
 
 export default function App() {
-  if (window.location.hash === "#/overlay") return <OverlayScreen />
+  if (window.location.hash.startsWith("#/overlay")) return <OverlayScreen />
   return <MainApp />
 }
