@@ -4,8 +4,17 @@ import { Spinner } from "@/components/m3/Spinner"
 import { ipc } from "@/lib/ipc"
 import type { OverlayState } from "../../../shared/types"
 
+const stateFromHash = (): OverlayState => {
+  const params = new URLSearchParams(window.location.hash.split("?")[1] ?? "")
+  const value = params.get("state")
+  return {
+    state: value === "success" || value === "error" ? value : "refining",
+    message: params.get("message") ?? undefined,
+  }
+}
+
 export default function OverlayScreen() {
-  const [overlay, setOverlay] = useState<OverlayState>({ state: "refining" })
+  const [overlay, setOverlay] = useState<OverlayState>(stateFromHash)
 
   useEffect(() => ipc.onOverlayState(setOverlay), [])
 
