@@ -1,5 +1,11 @@
 # @refine/api
 
+## 0.3.1
+
+### Patch Changes
+
+- 9d0a5e2: Stop leaked model reasoning such as "user safety: safe" being returned as refined text, and move the system prompt into its own lib.
+
 ## 0.3.0
 
 ### Minor Changes
