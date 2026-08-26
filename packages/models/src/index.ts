@@ -3,9 +3,9 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { createOpenAI } from "@ai-sdk/openai"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 import { icons } from "./icons"
-import type { Model, ModelProvider, Provider } from "./types"
+import type { Model, ModelProvider, Provider, ProviderOptions } from "./types"
 
-export type { Model, ModelProvider, Provider } from "./types"
+export type { Model, ModelProvider, Provider, ProviderOptions } from "./types"
 
 export const PROVIDERS: Provider[] = [
   {
@@ -15,6 +15,9 @@ export const PROVIDERS: Provider[] = [
     placeholder: "sk-or-…",
     docs: "https://openrouter.ai/keys",
     icon: icons.openrouter,
+    options: {
+      openrouter: { reasoning: { exclude: true } },
+    },
     create: (apiKey) => createOpenRouter({ apiKey }),
     models: [
       {
@@ -30,6 +33,9 @@ export const PROVIDERS: Provider[] = [
         free: true,
         icon: icons.openai,
         cost: { input: 0, output: 0 },
+        options: {
+          openrouter: { reasoning: { effort: "low", exclude: true } },
+        },
       },
     ],
   },
@@ -40,6 +46,9 @@ export const PROVIDERS: Provider[] = [
     placeholder: "sk-…",
     docs: "https://platform.openai.com/api-keys",
     icon: icons.openai,
+    options: {
+      openai: { reasoningEffort: "none" },
+    },
     create: (apiKey) => createOpenAI({ apiKey }),
     models: [
       {
@@ -61,6 +70,9 @@ export const PROVIDERS: Provider[] = [
     placeholder: "sk-ant-…",
     docs: "https://console.anthropic.com/settings/keys",
     icon: icons.anthropic,
+    options: {
+      anthropic: { thinking: { type: "disabled" } },
+    },
     create: (apiKey) => createAnthropic({ apiKey }),
     models: [
       {
@@ -83,11 +95,21 @@ export const PROVIDERS: Provider[] = [
         id: "gemini-3.1-flash-lite",
         label: "Gemini 3.1 Flash Lite",
         cost: { input: 0.25, output: 1.5 },
+        options: {
+          google: {
+            thinkingConfig: { thinkingLevel: "minimal", includeThoughts: false },
+          },
+        },
       },
       {
         id: "gemini-2.5-flash-lite",
         label: "Gemini 2.5 Flash Lite",
         cost: { input: 0.1, output: 0.4 },
+        options: {
+          google: {
+            thinkingConfig: { thinkingBudget: 0, includeThoughts: false },
+          },
+        },
       },
     ],
   },
@@ -107,6 +129,24 @@ export function getModel(
   id: string,
 ): (Model & { provider: ModelProvider }) | undefined {
   return getModels().find((m) => m.id === id)
+}
+
+/**
+ * Generation options for a model, with its own overrides layered over the
+ * provider defaults. Merged one level deep so a model can replace a single
+ * option (Gemini 3 wants thinkingLevel where Gemini 2.5 wants thinkingBudget)
+ * without restating the rest.
+ */
+export function getGenerationOptions(modelId: string): ProviderOptions {
+  const model = getModel(modelId)
+  if (!model) return {}
+  const base = getProvider(model.provider)?.options ?? {}
+  const overrides = model.options ?? {}
+  const merged: ProviderOptions = { ...base }
+  for (const [provider, options] of Object.entries(overrides)) {
+    merged[provider] = { ...merged[provider], ...options }
+  }
+  return merged
 }
 
 export function createProviderInstance(providerId: string, apiKey: string) {
