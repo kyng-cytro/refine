@@ -1,1 +1,6 @@
-export { PROVIDERS, getModel, createProviderInstance } from "@refine/models"
+export {
+  PROVIDERS,
+  createProviderInstance,
+  getGenerationOptions,
+  getModel,
+} from "@refine/models"
