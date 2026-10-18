@@ -1,8 +1,8 @@
 import { db, orm, schema } from "@/lib/db"
-import { PROVIDERS } from "@/lib/models"
+import { PROVIDERS } from "@refine/models"
 import type { ModelProvider } from "@refine/schemas"
 
-export interface ResolvedModel {
+interface ResolvedModel {
   id: string
   label: string
   free: boolean
@@ -13,7 +13,7 @@ export interface ResolvedModel {
   effectiveEnabled: boolean
 }
 
-export interface ResolvedProvider {
+interface ResolvedProvider {
   provider: ModelProvider
   label: string
   icon?: string
@@ -56,11 +56,7 @@ export const resolveProviders = async (
 
     const models: ResolvedModel[] = p.models.map((m) => {
       const globalEnabled = !globalDisabled.has(m.id)
-      const sessionOverride = sessionOverrides.has(m.id)
-        ? sessionOverrides.get(m.id)!
-        : null
-      const baseline =
-        sessionOverride !== null ? sessionOverride : globalEnabled
+      const sessionOverride = sessionOverrides.get(m.id) ?? null
       return {
         id: m.id,
         label: m.label,
@@ -69,7 +65,7 @@ export const resolveProviders = async (
         icon: m.icon ?? p.icon,
         globalEnabled,
         sessionOverride,
-        effectiveEnabled: usable && baseline,
+        effectiveEnabled: usable && (sessionOverride ?? globalEnabled),
       }
     })
 
@@ -91,9 +87,8 @@ export const isModelEnabledForSession = async (
   sessionId: string,
 ): Promise<boolean> => {
   const providers = await resolveProviders(sessionId)
-  for (const p of providers) {
-    const model = p.models.find((m) => m.id === modelId)
-    if (model) return model.effectiveEnabled
-  }
-  return false
+  const model = providers
+    .flatMap((p) => p.models)
+    .find((m) => m.id === modelId)
+  return model?.effectiveEnabled ?? false
 }

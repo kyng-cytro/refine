@@ -1,9 +1,11 @@
 import { clipboard } from "electron"
-import { EVENTS } from "../shared/ipc"
 import type { HistoryItem } from "@refine/schemas"
+import { isBlocked } from "@refine/versions"
+import { EVENTS } from "../shared/ipc"
 import { apiError, getClient } from "./api-client"
 import { detectCapability, simulateCopy, simulatePaste } from "./keysim"
 import { state } from "./state"
+import { getVersionInfo } from "./versions"
 import { prewarmOverlay, showOverlay } from "./windows/overlay-window"
 import { getMainWindow } from "./windows/main-window"
 
@@ -18,11 +20,11 @@ let lastRefine: {
   toneSlug: string
 } | null = null
 
-const pollClipboard = async (previous: string, tries: number): Promise<string> => {
+const pollClipboard = async (tries: number): Promise<string> => {
   for (let i = 0; i < tries; i++) {
     await sleep(50)
     const text = clipboard.readText()
-    if (text && text !== previous) return text
+    if (text) return text
   }
   return ""
 }
@@ -32,10 +34,22 @@ const captureSelection = async (): Promise<string> => {
     clipboard.clear()
     await sleep(attempt === 0 ? 150 : 100)
     await simulateCopy()
-    const text = await pollClipboard("", attempt === 0 ? 12 : 8)
+    const text = await pollClipboard(attempt === 0 ? 12 : 8)
     if (text) return text
   }
   return ""
+}
+
+const showError = (message: string) =>
+  showOverlay({ state: "error", message }, 2500)
+
+const deliver = async (refined: string, canPaste: boolean) => {
+  clipboard.writeText(refined)
+  if (state.autoApply && canPaste) {
+    await sleep(120)
+    await simulatePaste()
+  }
+  showOverlay({ state: "success", message: "Refined" }, 1200)
 }
 
 export const runShortcutRefine = async (): Promise<void> => {
@@ -44,30 +58,21 @@ export const runShortcutRefine = async (): Promise<void> => {
   inFlight = true
   prewarmOverlay()
 
-  const capability = detectCapability().capability
+  const canSimulate = detectCapability().capability === "full"
   const previousClipboard = clipboard.readText()
+  const restoreClipboard = () => {
+    if (canSimulate && previousClipboard) clipboard.writeText(previousClipboard)
+  }
 
   try {
     const { connected, modelId, toneSlug } = state.snapshot()
-    if (!connected || !modelId || !toneSlug) {
-      showOverlay({ state: "error", message: "Not connected" }, 2500)
-      return
-    }
+    if (!connected || !modelId || !toneSlug) return showError("Not connected")
+    if (isBlocked(getVersionInfo())) return showError("Update required")
 
-    let text: string
-    if (capability === "full") {
-      text = await captureSelection()
-      if (!text) {
-        if (previousClipboard) clipboard.writeText(previousClipboard)
-        showOverlay({ state: "error", message: "No text selected" }, 2500)
-        return
-      }
-    } else {
-      text = previousClipboard
-      if (!text) {
-        showOverlay({ state: "error", message: "Clipboard is empty" }, 2500)
-        return
-      }
+    const text = canSimulate ? await captureSelection() : previousClipboard
+    if (!text) {
+      restoreClipboard()
+      return showError(canSimulate ? "No text selected" : "Clipboard is empty")
     }
 
     if (
@@ -76,13 +81,7 @@ export const runShortcutRefine = async (): Promise<void> => {
       lastRefine.modelId === modelId &&
       lastRefine.toneSlug === toneSlug
     ) {
-      clipboard.writeText(lastRefine.refined)
-      if (state.autoApply && capability === "full") {
-        await sleep(120)
-        await simulatePaste()
-      }
-      showOverlay({ state: "success", message: "Refined" }, 1200)
-      return
+      return deliver(lastRefine.refined, canSimulate)
     }
 
     showOverlay({ state: "refining", message: "Refining…" })
@@ -100,22 +99,12 @@ export const runShortcutRefine = async (): Promise<void> => {
       })
       refined = res.refined
     } catch (e) {
-      if (capability === "full" && previousClipboard) {
-        clipboard.writeText(previousClipboard)
-      }
-      showOverlay({ state: "error", message: apiError(e) }, 2500)
-      return
+      restoreClipboard()
+      return showError(apiError(e))
     }
 
-    clipboard.writeText(refined)
     lastRefine = { source: text, refined, modelId, toneSlug }
-
-    if (state.autoApply && capability === "full") {
-      await sleep(120)
-      await simulatePaste()
-    }
-
-    showOverlay({ state: "success", message: "Refined" }, 1200)
+    await deliver(refined, canSimulate)
 
     if (state.saveHistory) {
       const entry: HistoryItem = {

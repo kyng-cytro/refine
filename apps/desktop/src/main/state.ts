@@ -22,6 +22,7 @@ type PersistedSettings = {
   privateHistory: boolean
   encryptedSessionToken: string
   plainSessionToken: string
+  dismissedUpdates: string[]
 }
 
 const DEFAULTS: PersistedSettings = {
@@ -32,13 +33,14 @@ const DEFAULTS: PersistedSettings = {
   shortcut: "CommandOrControl+Alt+R",
   cycleToneShortcut: "",
   cycleModelShortcut: "",
-  autoApply: false,
+  autoApply: true,
   overlayCorner: "bottom-left",
   launchAtLogin: false,
   saveHistory: true,
   privateHistory: false,
   encryptedSessionToken: "",
   plainSessionToken: "",
+  dismissedUpdates: [],
 }
 
 class AppState {
@@ -106,6 +108,14 @@ class AppState {
 
   get launchAtLogin(): boolean {
     return this.store.get("launchAtLogin")
+  }
+
+  get dismissedUpdates(): string[] {
+    return this.store.get("dismissedUpdates")
+  }
+
+  dismissUpdate(key: string): void {
+    this.store.set({ dismissedUpdates: [...this.dismissedUpdates, key] })
   }
 
   snapshot(): SettingsSnapshot {

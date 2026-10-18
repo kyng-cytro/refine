@@ -71,6 +71,7 @@ export const update = createRoute({
     ),
     ...responses.unauthorized,
     ...responses.notFound,
+    ...responses.conflict,
     ...responses.serverError,
   },
   summary: "Update a user tone",

@@ -4,7 +4,7 @@ import { useRef } from "react"
 import { Pressable, StyleSheet, Text as RNText, View } from "react-native"
 import { Swipeable } from "react-native-gesture-handler"
 import { Card, IconButton, Text, useTheme } from "react-native-paper"
-import { HistoryItem } from "@/types/history"
+import type { HistoryItem } from "@refine/schemas"
 
 function relativeTime(ts: number): string {
   const m = Math.floor((Date.now() - ts) / 60000)

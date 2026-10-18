@@ -1,31 +1,8 @@
 import { Surface } from "@/components/m3/Surface"
 import { Switch } from "@/components/m3/Switch"
 import { useSettingsStore } from "@/store/settings-store"
+import { Row } from "./Row"
 import { Section } from "./Section"
-
-function Row({
-  title,
-  description,
-  children,
-}: {
-  title: string
-  description?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex items-center gap-4 p-4">
-      <div className="min-w-0 flex-1">
-        <p className="text-body-large text-on-surface">{title}</p>
-        {description && (
-          <p className="mt-0.5 text-body-small text-on-surface-variant">
-            {description}
-          </p>
-        )}
-      </div>
-      {children}
-    </div>
-  )
-}
 
 export function HistorySection() {
   const { saveHistory, privateHistory, update } = useSettingsStore()

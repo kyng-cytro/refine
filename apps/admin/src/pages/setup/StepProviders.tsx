@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { api } from "@/lib/api"
-import { PROVIDERS, getModels, type ModelProvider } from "@/lib/models"
+import { PROVIDERS, getModels, type ModelProvider } from "@refine/models"
 import {
   ProviderAccordion,
   type ProviderEntry,
@@ -55,7 +55,7 @@ export default function StepProviders({ onNext }: Props) {
           api.providers.toggleModel(
             m.provider,
             m.id,
-            hasKey(m.provider as ModelProvider) && models[m.id],
+            hasKey(m.provider) && models[m.id],
           ),
         ),
       )

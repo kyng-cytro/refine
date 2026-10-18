@@ -6,7 +6,9 @@ import { router } from "expo-router"
 
 import { ProvidersSection } from "@/components/settings/ProvidersSection"
 import { TonesSection } from "@/components/settings/TonesSection"
+import { APP_VERSION } from "@/services/versions"
 import { useSettingsStore } from "@/store/settings-store"
+import { useVersionStore } from "@/store/version-store"
 
 export default function SettingsScreen() {
   const theme = useTheme()
@@ -19,6 +21,7 @@ export default function SettingsScreen() {
     setSaveHistory,
     setPrivateHistory,
   } = useSettingsStore()
+  const serverVersion = useVersionStore((s) => s.server?.version)
 
   useEffect(() => {
     if (!serverUrl || !sessionToken) router.replace("/setup")
@@ -26,6 +29,7 @@ export default function SettingsScreen() {
 
   const handleDisconnect = () => {
     clearServerConfig()
+    useVersionStore.getState().setServer(null)
     router.replace("/setup")
   }
 
@@ -85,6 +89,14 @@ export default function SettingsScreen() {
 
         <ProvidersSection />
         <TonesSection />
+
+        <Text
+          variant="bodySmall"
+          style={[styles.version, { color: theme.colors.onSurfaceVariant }]}
+        >
+          Refine v{APP_VERSION}
+          {serverVersion && ` · Server v${serverVersion}`}
+        </Text>
       </ScrollView>
     </SafeAreaView>
   )
@@ -101,6 +113,11 @@ const styles = StyleSheet.create({
   },
   scroll: {
     paddingBottom: 40,
+  },
+  version: {
+    textAlign: "center",
+    paddingTop: 16,
+    opacity: 0.6,
   },
   disconnectButton: {
     marginHorizontal: 16,

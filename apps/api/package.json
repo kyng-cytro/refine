@@ -14,6 +14,7 @@
     "@refine/db": "workspace:*",
     "@refine/models": "workspace:*",
     "@refine/schemas": "workspace:*",
+    "@refine/versions": "workspace:*",
     "@scalar/hono-api-reference": "^0.10.4",
     "ai": "^6.0.202",
     "consola": "^3.4.2",

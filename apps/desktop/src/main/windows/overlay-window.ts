@@ -137,14 +137,14 @@ export const prewarmOverlay = (): void => {
   }
 }
 
-export const hideOverlay = (): void => {
+const hideOverlay = (): void => {
   clearTimers()
   if (!overlay || overlay.isDestroyed()) return
   overlay.hide()
   destroyTimer = setTimeout(() => destroyOverlay(), DESTROY_AFTER_IDLE_MS)
 }
 
-export const destroyOverlay = (): void => {
+const destroyOverlay = (): void => {
   clearTimers()
   showId++
   building = null

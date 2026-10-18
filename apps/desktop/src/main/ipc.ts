@@ -1,6 +1,7 @@
-import { BrowserWindow, ipcMain, safeStorage } from "electron"
+import { BrowserWindow, ipcMain, shell } from "electron"
 import { hostname } from "os"
 import type { CreateTone, RefineRequest, UpdateTone } from "@refine/schemas"
+import type { UpdateTarget } from "@refine/versions"
 import { EVENTS, IPC } from "../shared/ipc"
 import type {
   PairInput,
@@ -19,8 +20,10 @@ import { consumePendingPair } from "./deep-link"
 import { detectCapability } from "./keysim"
 import { setRecording, setShortcut, SHORTCUT_KEYS } from "./shortcut"
 import { state } from "./state"
+import { installAppUpdate, SERVER_UPDATE_URL } from "./updater"
+import { dismissUpdate, getVersionInfo, setServerVersions } from "./versions"
 
-export const broadcastState = (): void => {
+const broadcastState = (): void => {
   const snapshot = state.snapshot()
   for (const win of BrowserWindow.getAllWindows()) {
     win.webContents.send(EVENTS.stateChanged, snapshot)
@@ -72,7 +75,6 @@ export const registerIpc = (): void => {
       platform: process.platform,
       keySim: capability,
       keySimReason: reason,
-      safeStorage: safeStorage.isEncryptionAvailable(),
       hostname: hostname(),
     }
   })
@@ -85,7 +87,20 @@ export const registerIpc = (): void => {
 
   ipcMain.handle(IPC.sessionDisconnect, () => {
     state.clearServerConfig()
+    setServerVersions(null)
   })
+
+  ipcMain.handle(IPC.versionsGet, () => getVersionInfo())
+
+  ipcMain.handle(IPC.versionsDismiss, (_e, target: UpdateTarget) =>
+    dismissUpdate(target),
+  )
+
+  ipcMain.handle(IPC.versionsUpdate, (_e, target: UpdateTarget) =>
+    target === "app"
+      ? installAppUpdate(getVersionInfo().latestApp)
+      : shell.openExternal(SERVER_UPDATE_URL),
+  )
 
   ipcMain.handle(IPC.sessionBootstrap, async () => {
     try {
@@ -136,4 +151,6 @@ export const registerIpc = (): void => {
   ipcMain.handle(IPC.historyDelete, (_e, id: string) =>
     requireClient().history.delete(id),
   )
+
+  ipcMain.handle(IPC.historyClear, () => requireClient().history.clear())
 }

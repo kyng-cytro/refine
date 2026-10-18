@@ -12,9 +12,13 @@ export const IPC = {
   providersList: "providers:list",
   historyList: "history:list",
   historyDelete: "history:delete",
+  historyClear: "history:clear",
   systemCapabilities: "system:capabilities",
   shortcutSetRecording: "shortcut:set-recording",
   pairConsume: "pair:consume",
+  versionsGet: "versions:get",
+  versionsDismiss: "versions:dismiss",
+  versionsUpdate: "versions:update",
 } as const
 
 export const EVENTS = {
@@ -22,4 +26,5 @@ export const EVENTS = {
   overlayState: "overlay:state",
   historyPrepend: "history:prepend",
   pairIncoming: "pair:incoming",
+  versionsChanged: "versions:changed",
 } as const

@@ -2,6 +2,7 @@ import * as HttpStatusCodes from "stoker/http-status-codes"
 import * as HttpStatusPhrases from "stoker/http-status-phrases"
 import { helpers } from "stoker/openapi"
 import { createMessageObjectSchema } from "stoker/openapi/schemas"
+import { UpgradeRequiredSchema } from "@refine/schemas"
 
 export const unauthorized = {
   [HttpStatusCodes.UNAUTHORIZED]: helpers.jsonContent(
@@ -28,6 +29,13 @@ export const badRequest = {
   [HttpStatusCodes.BAD_REQUEST]: helpers.jsonContent(
     createMessageObjectSchema(HttpStatusPhrases.BAD_REQUEST),
     HttpStatusPhrases.BAD_REQUEST,
+  ),
+}
+
+export const upgradeRequired = {
+  [HttpStatusCodes.UPGRADE_REQUIRED]: helpers.jsonContent(
+    UpgradeRequiredSchema,
+    "Client version is no longer supported",
   ),
 }
 

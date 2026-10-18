@@ -1,6 +1,12 @@
 import { uuid } from "./uuid"
-import { relations } from "drizzle-orm"
-import { integer, sqliteTable, text, unique } from "drizzle-orm/sqlite-core"
+import { relations, sql } from "drizzle-orm"
+import {
+  integer,
+  sqliteTable,
+  text,
+  unique,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core"
 import { sessions } from "./pairing"
 
 export const tones = sqliteTable(
@@ -25,7 +31,13 @@ export const tones = sqliteTable(
       .notNull()
       .$defaultFn(() => new Date()),
   },
-  (t) => [unique("tones_session_slug_unique").on(t.sessionId, t.slug)],
+  (t) => [
+    unique("tones_session_slug_unique").on(t.sessionId, t.slug),
+    // SQLite treats NULL session ids as distinct, so global slugs need their own index.
+    uniqueIndex("tones_global_slug_unique")
+      .on(t.slug)
+      .where(sql`${t.isGlobal} = 1`),
+  ],
 )
 
 export const tonesRelations = relations(tones, ({ one }) => ({

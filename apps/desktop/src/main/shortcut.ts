@@ -1,6 +1,6 @@
 import { globalShortcut } from "electron"
 
-export type ShortcutId = "refine" | "cycleTone" | "cycleModel"
+type ShortcutId = "refine" | "cycleTone" | "cycleModel"
 
 export const SHORTCUT_KEYS = {
   shortcut: "refine",

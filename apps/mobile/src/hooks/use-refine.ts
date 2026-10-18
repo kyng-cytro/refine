@@ -2,7 +2,7 @@ import { useState } from "react"
 
 import { useHistoryStore } from "@/store/history-store"
 import { useSettingsStore } from "@/store/settings-store"
-import { getApiClient } from "@/services/api"
+import { apiError, getApiClient } from "@/services/api"
 
 interface UseRefineResult {
   refine: (text: string) => Promise<boolean>
@@ -26,8 +26,8 @@ export const useRefine = (): UseRefineResult => {
       const client = getApiClient()
       const { refined } = await client.refine({
         text,
-        modelId: modelId,
-        toneSlug: toneSlug,
+        modelId,
+        toneSlug,
         save: saveHistory,
         private: privateHistory,
       })
@@ -37,16 +37,15 @@ export const useRefine = (): UseRefineResult => {
           id: String(Date.now()),
           source: text,
           refined,
-          modelId: modelId,
-          toneSlug: toneSlug,
+          modelId,
+          toneSlug,
           createdAt: Date.now(),
         })
       }
 
       return true
-    } catch (e: any) {
-      const msg = e?.data?.message ?? e?.message ?? "Something went wrong"
-      setError(msg)
+    } catch (e) {
+      setError(apiError(e, "Something went wrong"))
       return false
     } finally {
       setIsLoading(false)

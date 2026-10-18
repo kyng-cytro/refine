@@ -8,6 +8,7 @@ import type {
   Tone,
   UpdateTone,
 } from "@refine/schemas"
+import type { UpdateTarget, VersionInfo } from "@refine/versions"
 import { EVENTS, IPC } from "../shared/ipc"
 import type {
   OverlayState,
@@ -62,6 +63,14 @@ const api = {
       ipcRenderer.invoke(IPC.historyList, limit),
     delete: (id: string): Promise<void> =>
       ipcRenderer.invoke(IPC.historyDelete, id),
+    clear: (): Promise<void> => ipcRenderer.invoke(IPC.historyClear),
+  },
+  versions: {
+    get: (): Promise<VersionInfo> => ipcRenderer.invoke(IPC.versionsGet),
+    dismiss: (target: UpdateTarget): Promise<void> =>
+      ipcRenderer.invoke(IPC.versionsDismiss, target),
+    update: (target: UpdateTarget): Promise<void> =>
+      ipcRenderer.invoke(IPC.versionsUpdate, target),
   },
   system: {
     capabilities: (): Promise<SystemCapabilities> =>
@@ -77,6 +86,8 @@ const api = {
     subscribe(EVENTS.historyPrepend, cb),
   onPairIncoming: (cb: (pair: PairIncoming) => void) =>
     subscribe(EVENTS.pairIncoming, cb),
+  onVersionsChanged: (cb: (info: VersionInfo) => void) =>
+    subscribe(EVENTS.versionsChanged, cb),
 }
 
 export type RefineDesktopApi = typeof api

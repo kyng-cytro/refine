@@ -29,6 +29,20 @@
       "when": 1783630334629,
       "tag": "0003_ancient_puma",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1792355503999,
+      "tag": "0004_session_client_version",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1792357291939,
+      "tag": "0005_global_tone_slug_unique",
+      "breakpoints": true
     }
   ]
 }

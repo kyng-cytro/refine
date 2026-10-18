@@ -1,4 +1,5 @@
-import { DEVICE_TYPES, type DeviceType } from "@/lib/device-type"
+import type { DeviceType } from "@refine/schemas"
+import { DEVICE_TYPES } from "@/lib/device-type"
 
 interface Props {
   value: DeviceType

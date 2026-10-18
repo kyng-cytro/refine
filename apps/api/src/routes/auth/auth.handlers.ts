@@ -1,4 +1,5 @@
 import type { AppRouteHandler, AuthenticatedContext } from "@/lib/context"
+import { clientVersion, unsupportedClient } from "@/lib/versions"
 import * as dal from "@/routes/auth/auth.dal"
 import type { Me, Pair } from "@/routes/auth/auth.routes"
 import { HTTPException } from "hono/http-exception"
@@ -14,10 +15,14 @@ export const pair: AppRouteHandler<Pair> = async (c) => {
         HttpStatusCodes.UNAUTHORIZED,
       )
     }
+    const version = clientVersion(c)
+    const rejected = unsupportedClient(c, token.deviceType, version)
+    if (rejected) return rejected
     const session = await dal.createSession(
       token.id,
       deviceName,
       token.deviceType,
+      version,
     )
     return c.json({ sessionToken: session.sessionToken }, HttpStatusCodes.OK)
   } catch (error) {

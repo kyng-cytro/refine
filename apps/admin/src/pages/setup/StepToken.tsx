@@ -1,6 +1,7 @@
 import { useState } from "react"
-import { api, type Token } from "@/lib/api"
-import { DEVICE_TYPES, type DeviceType } from "@/lib/device-type"
+import { api } from "@/lib/api"
+import type { AdminToken, DeviceType } from "@refine/schemas"
+import { DEVICE_TYPES } from "@/lib/device-type"
 import { DeviceTypeSelector } from "@/components/device-type-selector"
 import { PairingTokenDisplay } from "@/components/pairing-token-display"
 import { Button } from "@/components/ui/button"
@@ -14,7 +15,7 @@ interface Props {
 export default function StepToken({ onNext }: Props) {
   const [label, setLabel] = useState("My Phone")
   const [deviceType, setDeviceType] = useState<DeviceType>("mobile")
-  const [token, setToken] = useState<Token | null>(null)
+  const [token, setToken] = useState<AdminToken | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 

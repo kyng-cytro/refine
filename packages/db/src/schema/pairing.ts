@@ -31,6 +31,7 @@ export const sessions = sqliteTable("sessions", {
     .notNull()
     .default("mobile"),
   sessionToken: text("session_token").notNull().unique(),
+  clientVersion: text("client_version"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),

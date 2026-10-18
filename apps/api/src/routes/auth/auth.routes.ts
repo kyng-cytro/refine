@@ -30,6 +30,7 @@ export const pair = createRoute({
       "Validation error",
     ),
     ...responses.unauthorized,
+    ...responses.upgradeRequired,
     ...responses.serverError,
   },
   summary: "Pair a device with a pre-issued token",

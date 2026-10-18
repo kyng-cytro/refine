@@ -9,8 +9,8 @@ export default function PairScreen() {
     if (token && url) {
       usePairStore.getState().set({
         token,
-        url: decodeURIComponent(url),
-        name: name ? decodeURIComponent(name) : "My Phone",
+        url,
+        name: name || "My Phone",
       })
     }
     router.replace("/")

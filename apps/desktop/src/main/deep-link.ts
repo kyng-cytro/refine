@@ -12,7 +12,7 @@ export const consumePendingPair = (): PairIncoming | null => {
   return value
 }
 
-export const parsePairDeepLink = (raw: string): PairIncoming | null => {
+const parsePairDeepLink = (raw: string): PairIncoming | null => {
   try {
     const url = new URL(raw)
     if (url.protocol !== "refine:" || url.hostname !== "pair") return null

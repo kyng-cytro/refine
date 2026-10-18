@@ -48,7 +48,7 @@ const buildMenu = (): Menu => {
   ])
 }
 
-export const refreshTray = (): void => {
+const refreshTray = (): void => {
   if (!tray) return
   tray.setContextMenu(buildMenu())
 }

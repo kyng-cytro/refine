@@ -25,7 +25,7 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
   shortcut: "",
   cycleToneShortcut: "",
   cycleModelShortcut: "",
-  autoApply: false,
+  autoApply: true,
   overlayCorner: "bottom-left",
   launchAtLogin: false,
   saveHistory: true,

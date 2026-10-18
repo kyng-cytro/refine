@@ -10,7 +10,7 @@ import * as Haptics from "expo-haptics"
 import { withHaptics } from "@/utils/haptics"
 
 export const RecentsSection = () => {
-  const { items, removeItem } = useHistoryStore()
+  const { items, setItems, removeItem } = useHistoryStore()
   const [refreshing, setRefreshing] = useState(false)
   const theme = useTheme()
 
@@ -21,10 +21,13 @@ export const RecentsSection = () => {
   }, Haptics.ImpactFeedbackStyle.Medium)
 
   const handleDelete = async (id: string) => {
+    const previous = items
     removeItem(id)
     try {
       await getApiClient().history.delete(id)
-    } catch {}
+    } catch {
+      setItems(previous)
+    }
   }
 
   const refreshControl = (

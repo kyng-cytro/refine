@@ -1,28 +1,16 @@
 import { getPendingToken, getToken } from "@/lib/storage"
 import type {
+  AdminHistoryItem,
   AdminProviderState,
   AdminSession,
   AdminSessionProvider,
   AdminToken,
   DeviceType,
-  HistoryItem,
   Paginated,
   SetupStatus,
   Tone,
   UsageOverview,
 } from "@refine/schemas"
-
-export type {
-  HistoryItem,
-  Paginated,
-  AdminProviderState as ProviderState,
-  AdminSession as Session,
-  AdminSessionProvider as SessionProviderState,
-  SetupStatus,
-  AdminToken as Token,
-  Tone,
-  UsageOverview,
-}
 
 const BASE = "/v1"
 
@@ -47,12 +35,6 @@ async function request<T>(
   return res.json()
 }
 
-type AdminHistoryItem = HistoryItem & {
-  deviceName: string | null
-  sessionId: string
-}
-
-
 export const api = {
   setup: {
     status: () => request<SetupStatus>("GET", "/admin/setup"),
@@ -70,9 +52,7 @@ export const api = {
       request<void>(
         "PATCH",
         `/admin/providers/${provider}/models/${encodeURIComponent(modelId)}`,
-        {
-          enabled,
-        },
+        { enabled },
       ),
   },
   sessions: {
@@ -93,9 +73,7 @@ export const api = {
       request<void>(
         "PATCH",
         `/admin/sessions/${sessionId}/models/${encodeURIComponent(modelId)}`,
-        {
-          enabled,
-        },
+        { enabled },
       ),
   },
   tones: {
@@ -112,7 +90,7 @@ export const api = {
     list: (cursor?: string) =>
       request<Paginated<AdminHistoryItem>>(
         "GET",
-        `/admin/history${cursor ? `?cursor=${cursor}&limit=20` : "?limit=20"}`,
+        `/admin/history?${new URLSearchParams({ limit: "20", ...(cursor && { cursor }) })}`,
       ),
     remove: (id: string) => request<void>("DELETE", `/admin/history/${id}`),
     removeAll: () => request<void>("DELETE", "/admin/history"),

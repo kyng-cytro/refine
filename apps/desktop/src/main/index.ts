@@ -1,12 +1,11 @@
-import { app, BrowserWindow } from "electron"
+import { app } from "electron"
 import {
   findDeepLink,
   handleDeepLink,
   registerProtocolClient,
 } from "./deep-link"
 import { setLaunchAtLogin } from "./autostart"
-import { cycleModel } from "./cycle-model"
-import { cycleTone } from "./cycle-tone"
+import { cycleModel, cycleTone } from "./cycle"
 import { registerIpc } from "./ipc"
 import { runShortcutRefine } from "./refine-flow"
 import { registerShortcuts, setTrigger, unregisterAll } from "./shortcut"
@@ -41,10 +40,7 @@ if (!gotLock) {
   })
 
   app.whenReady().then(() => {
-    const startHidden =
-      process.argv.includes("--hidden") ||
-      (process.platform === "darwin" &&
-        app.getLoginItemSettings().wasOpenedAsHidden)
+    const startHidden = process.argv.includes("--hidden")
 
     registerIpc()
     createMainWindow({ hidden: startHidden })
@@ -65,9 +61,7 @@ if (!gotLock) {
     const link = findDeepLink(process.argv)
     if (link) handleDeepLink(link)
 
-    app.on("activate", () => {
-      if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
-    })
+    app.on("activate", () => createMainWindow())
   })
 
   app.on("before-quit", () => setQuitting(true))

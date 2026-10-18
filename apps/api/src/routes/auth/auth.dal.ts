@@ -19,6 +19,7 @@ export const createSession = async (
   pairingTokenId: string,
   deviceName: string,
   deviceType: DeviceType,
+  clientVersion: string | null,
 ) => {
   const sessionToken = randomUUIDv7() + "-" + randomUUIDv7()
 
@@ -29,7 +30,13 @@ export const createSession = async (
 
   const [session] = await db
     .insert(schema.sessions)
-    .values({ pairingTokenId, deviceName, deviceType, sessionToken })
+    .values({
+      pairingTokenId,
+      deviceName,
+      deviceType,
+      sessionToken,
+      clientVersion,
+    })
     .returning()
 
   return session!

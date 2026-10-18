@@ -1,10 +1,12 @@
 import { BASE_PATH, HOST } from "@/lib/constants"
 import { check } from "@/lib/env"
+import { SERVER_VERSION } from "@/lib/versions"
 import { logger } from "@/middlewares/pino"
 import { OpenAPIHono } from "@hono/zod-openapi"
 import { env } from "bun"
 import consola from "consola"
 import { serveStatic } from "hono/bun"
+import { SERVER_HEADER } from "@refine/versions"
 import { cors } from "hono/cors"
 import { requestId } from "hono/request-id"
 import { secureHeaders } from "hono/secure-headers"
@@ -26,6 +28,10 @@ export const createApp = () => {
   app.use(requestId())
   app.use(logger())
   app.use(secureHeaders())
+  app.use(async (c, next) => {
+    await next()
+    c.res.headers.set(SERVER_HEADER, SERVER_VERSION)
+  })
   app.use(
     cors({
       origin: env.APP_ENV === "production" ? [] : "*",

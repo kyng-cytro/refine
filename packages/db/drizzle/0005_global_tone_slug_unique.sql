@@ -1,0 +1,2 @@
+UPDATE `tones` SET `slug` = `slug` || '-' || substr(`id`, -6) WHERE `is_global` = 1 AND `id` NOT IN (SELECT min(`id`) FROM `tones` WHERE `is_global` = 1 GROUP BY `slug`);--> statement-breakpoint
+CREATE UNIQUE INDEX `tones_global_slug_unique` ON `tones` (`slug`) WHERE "tones"."is_global" = 1;

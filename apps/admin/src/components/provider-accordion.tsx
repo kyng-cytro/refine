@@ -1,4 +1,4 @@
-import { PROVIDERS, type ModelProvider, type Provider } from "@/lib/models"
+import { PROVIDERS, type ModelProvider, type Provider } from "@refine/models"
 import {
   Accordion,
   AccordionContent,
@@ -51,7 +51,7 @@ export function ProviderAccordion({
       {PROVIDERS.map((p: Provider) => {
         const entry = entries.find((e) => e.provider === p.id)!
         const hasKey =
-          entry.hasKey ?? (entry.apiKey ? !!entry.apiKey.trim() : false)
+          entry.hasKey ?? !!entry.apiKey?.trim()
         const hasFreeModels = p.models.some((m) => m.free)
 
         return (

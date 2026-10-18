@@ -29,6 +29,7 @@ export const TonesSection = () => {
   }
 
   const handleDelete = async (id: string) => {
+    const previousSlug = toneSlug
     const tone = tones.find((t) => t.id === id)
     if (tone && toneSlug === tone.slug) {
       const fallback = tones.find((t) => t.id !== id)
@@ -37,8 +38,10 @@ export const TonesSection = () => {
     try {
       await getApiClient().tones.delete(id)
       await refreshTones()
-      syncActiveConfig()
-    } catch {}
+    } catch {
+      setTone(previousSlug)
+    }
+    syncActiveConfig()
   }
 
   const handleSetDefault = (slug: string) => {

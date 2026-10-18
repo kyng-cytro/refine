@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react"
-import { api, type HistoryItem } from "@/lib/api"
+import { api } from "@/lib/api"
+import type { AdminHistoryItem } from "@refine/schemas"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Trash2 } from "lucide-react"
 
-type AdminItem = HistoryItem & { deviceName: string | null; sessionId: string }
-
 export default function HistoryTab() {
-  const [items, setItems] = useState<AdminItem[]>([])
+  const [items, setItems] = useState<AdminHistoryItem[]>([])
   const [cursor, setCursor] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -18,7 +17,7 @@ export default function HistoryTab() {
     api.history
       .list()
       .then((res) => {
-        setItems(res.data as AdminItem[])
+        setItems(res.data)
         setCursor(res.nextCursor)
         setHasMore(res.hasMore)
       })
@@ -31,7 +30,7 @@ export default function HistoryTab() {
     setLoadingMore(true)
     try {
       const res = await api.history.list(cursor)
-      setItems((prev) => [...prev, ...res.data as AdminItem[]])
+      setItems((prev) => [...prev, ...res.data])
       setCursor(res.nextCursor)
       setHasMore(res.hasMore)
     } catch {

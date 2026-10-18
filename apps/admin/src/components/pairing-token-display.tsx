@@ -1,11 +1,11 @@
 import { useState } from "react"
 import QRCode from "react-qr-code"
-import type { Token } from "@/lib/api"
+import type { AdminToken } from "@refine/schemas"
 import { CopyButton } from "@/components/copy-button"
 import { ChevronDown, ChevronRight, ExternalLink } from "lucide-react"
 
 interface Props {
-  token: Token
+  token: AdminToken
 }
 
 function serverUrlFromLink(link: string): string {
@@ -28,7 +28,7 @@ function CopyRow({ label, value }: { label: string; value: string }) {
   )
 }
 
-function ManualDisclosure({ token }: { token: Token }) {
+function ManualDisclosure({ token }: { token: AdminToken }) {
   const [showManual, setShowManual] = useState(false)
 
   return (

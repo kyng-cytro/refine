@@ -10,6 +10,7 @@ import * as path from "path"
 import pkg from "./package.json"
 
 const IS_DEV = process.env.APP_VARIANT !== "production"
+const PROJECT_ID = "a995655c-ad09-4eb6-88eb-1e668ad9cbd6"
 
 const withProcessTextActivity: ConfigPlugin = (config) => {
   config = withAndroidManifest(config, (cfg) => {
@@ -140,9 +141,13 @@ const config: ExpoConfig = {
     typedRoutes: true,
     reactCompiler: true,
   },
+  runtimeVersion: { policy: "fingerprint" },
+  updates: {
+    url: `https://u.expo.dev/${PROJECT_ID}`,
+  },
   extra: {
     eas: {
-      projectId: "a995655c-ad09-4eb6-88eb-1e668ad9cbd6",
+      projectId: PROJECT_ID,
     },
   },
 }

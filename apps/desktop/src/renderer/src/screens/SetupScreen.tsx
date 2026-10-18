@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/m3/Button"
 import { Spinner } from "@/components/m3/Spinner"
@@ -13,7 +13,7 @@ function parsePairLink(raw: string) {
     if (!token) return null
     const serverUrl =
       url.protocol === "refine:"
-        ? decodeURIComponent(url.searchParams.get("url") ?? "")
+        ? (url.searchParams.get("url") ?? "")
         : url.origin
     if (!serverUrl) return null
     return {
@@ -28,20 +28,12 @@ function parsePairLink(raw: string) {
 
 export default function SetupScreen() {
   const navigate = useNavigate()
-  const capabilities = useSettingsStore((s) => s.capabilities)
+  const hostname = useSettingsStore((s) => s.capabilities?.hostname ?? "")
   const [serverUrl, setServerUrl] = useState("")
   const [pairingToken, setPairingToken] = useState("")
-  const [deviceName, setDeviceName] = useState("")
+  const [deviceName, setDeviceName] = useState(hostname)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const seededName = useRef(false)
-
-  useEffect(() => {
-    if (!seededName.current && capabilities?.hostname) {
-      seededName.current = true
-      setDeviceName((current) => current || capabilities.hostname)
-    }
-  }, [capabilities])
 
   const handlePaste = (value: string, fallback: (v: string) => void) => {
     const parsed = parsePairLink(value)
