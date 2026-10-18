@@ -1,5 +1,16 @@
 # @refine/api
 
+## 0.4.0
+
+### Minor Changes
+
+- 6124562: Apps and the server now report their versions to each other. When either side is out of date the app prompts to update, and when it's below the minimum supported version it blocks with an option to update or disconnect. The desktop app updates itself on Windows and Linux AppImage, the mobile app receives over-the-air updates, Settings shows the app and server versions, and the admin Devices tab shows each device's app version.
+
+### Patch Changes
+
+- 6124562: Start tray-only at login on macOS, turn auto apply on by default, and add a button to clear history.
+- 6124562: Reject duplicate global tone slugs, renaming any existing duplicates during migration, and return a 409 instead of a 500 when a tone slug is taken. Undo deletes in the UI when the request fails, show errors when saving a tone fails on mobile, and fix pairing links whose device name contains a `%`.
+
 ## 0.3.1
 
 ### Patch Changes
