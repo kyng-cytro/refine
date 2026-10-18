@@ -25,13 +25,16 @@ export function TonesSection() {
   }
 
   const handleDelete = async (tone: Tone) => {
+    const previousSlug = toneSlug
     if (toneSlug === tone.slug) {
       const fallback = tones.find((t) => t.id !== tone.id)
       if (fallback) update({ toneSlug: fallback.slug })
     }
     try {
       await ipc.tones.delete(tone.id)
-    } catch {}
+    } catch {
+      update({ toneSlug: previousSlug })
+    }
   }
 
   return (

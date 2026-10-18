@@ -1,5 +1,6 @@
 import { db, schema, orm } from "@/lib/db"
 import type { CustomContext } from "@/lib/context"
+import { clientVersion, unsupportedClient } from "@/lib/versions"
 import { env } from "bun"
 import { createMiddleware } from "hono/factory"
 import * as HttpStatusCodes from "stoker/http-status-codes"
@@ -22,6 +23,15 @@ export const authenticate = createMiddleware<CustomContext>(async (c, next) => {
       { message: HttpStatusPhrases.UNAUTHORIZED },
       HttpStatusCodes.UNAUTHORIZED,
     )
+  }
+  const version = clientVersion(c)
+  const rejected = unsupportedClient(c, session.deviceType, version)
+  if (rejected) return rejected
+  if (version && version !== session.clientVersion) {
+    await db
+      .update(schema.sessions)
+      .set({ clientVersion: version })
+      .where(orm.eq(schema.sessions.id, session.id))
   }
   c.set("session", session)
   return next()

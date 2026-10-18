@@ -1,4 +1,5 @@
 import PairConfirmDialog from "@/components/PairConfirmDialog"
+import UpdateDialog from "@/components/UpdateDialog"
 import { usePairStore } from "@/store/pair-store"
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
 import { useMaterial3Theme } from "@pchmn/expo-material3-theme"
@@ -105,6 +106,7 @@ export default function RootLayout() {
               params={pairParams}
               onDismiss={() => usePairStore.getState().set(null)}
             />
+            <UpdateDialog />
           </ThemeProvider>
         </BottomSheetModalProvider>
       </PaperProvider>

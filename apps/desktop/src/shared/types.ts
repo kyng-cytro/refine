@@ -56,7 +56,6 @@ export type SystemCapabilities = {
   platform: string
   keySim: KeySimCapability
   keySimReason?: string
-  safeStorage: boolean
   hostname: string
 }
 

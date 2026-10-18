@@ -37,3 +37,9 @@ export const remove = async (sessionId: string, id: string) => {
     .returning()
   return deleted ?? null
 }
+
+export const clear = async (sessionId: string) => {
+  await db
+    .delete(schema.history)
+    .where(orm.eq(schema.history.sessionId, sessionId))
+}

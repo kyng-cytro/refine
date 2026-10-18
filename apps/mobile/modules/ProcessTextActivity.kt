@@ -112,6 +112,7 @@ class ProcessTextActivity : Activity() {
       conn.doOutput = true
       conn.setRequestProperty("Content-Type", "application/json")
       conn.setRequestProperty("Authorization", "Bearer $sessionToken")
+      conn.setRequestProperty("X-Refine-Client-Version", appVersion())
 
       OutputStreamWriter(conn.outputStream).use { it.write(body.toString()) }
 
@@ -121,11 +122,8 @@ class ProcessTextActivity : Activity() {
           return JSONObject(response).getString("refined")
         }
         401 -> throw ApiException("Session expired — open Refine to reconnect")
-        400 -> {
-          val errBody = try { BufferedReader(InputStreamReader(conn.errorStream)).use { it.readText() } } catch (e: Exception) { "" }
-          val msg = try { JSONObject(errBody).optString("message") } catch (e: Exception) { "" }
-          throw ApiException(msg.ifBlank { "Bad request" })
-        }
+        400 -> throw ApiException(errorMessage(conn).ifBlank { "Bad request" })
+        426 -> throw ApiException(errorMessage(conn).ifBlank { "Update Refine to keep using this server" })
         in 500..599 -> throw ApiException("Server error, try again")
         else -> throw ApiException("Something went wrong (code $code)")
       }
@@ -137,6 +135,14 @@ class ProcessTextActivity : Activity() {
       conn.disconnect()
     }
   }
+
+  private fun errorMessage(conn: HttpURLConnection): String {
+    val errBody = try { BufferedReader(InputStreamReader(conn.errorStream)).use { it.readText() } } catch (e: Exception) { "" }
+    return try { JSONObject(errBody).optString("message") } catch (e: Exception) { "" }
+  }
+
+  private fun appVersion(): String =
+    try { packageManager.getPackageInfo(packageName, 0).versionName ?: "0.0.0" } catch (e: Exception) { "0.0.0" }
 
   private fun sheetDialog(): Dialog =
     Dialog(this, android.R.style.Theme_Translucent_NoTitleBar).apply {

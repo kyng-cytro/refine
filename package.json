@@ -20,7 +20,7 @@
     "mobile:eas:production-apk": "turbo eas:production-apk --filter=@refine/mobile",
     "dev": "turbo dev --filter=@refine/api --filter=@refine/admin",
     "changeset": "changeset",
-    "version-packages": "changeset version && bun install --lockfile-only",
+    "version-packages": "bun scripts/version-packages.ts && bun install --lockfile-only",
     "tag-release": "changeset tag"
   },
   "workspaces": [

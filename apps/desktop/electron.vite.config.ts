@@ -3,7 +3,14 @@ import react from "@vitejs/plugin-react"
 import { defineConfig, externalizeDepsPlugin } from "electron-vite"
 import { resolve } from "path"
 
-const bundled = ["@refine/sdk", "@refine/schemas", "@refine/models", "ofetch"]
+const bundled = [
+  "@refine/sdk",
+  "@refine/schemas",
+  "@refine/models",
+  "@refine/versions",
+  "ofetch",
+  "electron-updater",
+]
 
 export default defineConfig({
   main: {

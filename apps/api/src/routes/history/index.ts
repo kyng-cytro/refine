@@ -5,5 +5,6 @@ import * as routes from "@/routes/history/history.routes"
 const router = createRouter()
   .openapi(routes.list, handlers.list)
   .openapi(routes.remove, handlers.remove)
+  .openapi(routes.clear, handlers.clear)
 
 export default router

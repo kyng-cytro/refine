@@ -4,7 +4,7 @@ import {
   createProviderInstance,
   getGenerationOptions,
   getModel,
-} from "@/lib/models"
+} from "@refine/models"
 import { buildSystemPrompt, cleanCompletion } from "@/lib/prompt"
 import * as dal from "@/routes/refine/refine.dal"
 import type { Refine } from "@/routes/refine/refine.routes"

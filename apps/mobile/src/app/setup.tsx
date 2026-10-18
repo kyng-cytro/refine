@@ -31,11 +31,11 @@ function parsePairQR(data: string): PairValues | null {
   try {
     const url = new URL(data)
     const token = url.searchParams.get("token")
-    const name = decodeURIComponent(url.searchParams.get("name") ?? "My Phone")
+    const name = url.searchParams.get("name") || "My Phone"
     if (!token) return null
     const serverUrl =
       url.protocol === "refine:"
-        ? decodeURIComponent(url.searchParams.get("url") ?? "")
+        ? (url.searchParams.get("url") ?? "")
         : url.origin
     if (!serverUrl) return null
     return { serverUrl, pairingToken: token, deviceName: name }
@@ -55,10 +55,9 @@ function usePair() {
       const res = await pairAndBootstrap(values)
       if (!res.ok) {
         setError(res.error ?? "Connection failed")
-        return false
+        return
       }
       router.replace("/")
-      return true
     } finally {
       setLoading(false)
     }
@@ -130,11 +129,9 @@ export default function SetupScreen() {
             value={serverUrl}
             onChangeText={setServerUrl}
             placeholder="https://refine.example.com"
-            {...({
-              autoCapitalize: "none",
-              autoCorrect: false,
-              keyboardType: "url",
-            } as any)}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
             style={styles.input}
             mode="outlined"
           />
@@ -143,11 +140,9 @@ export default function SetupScreen() {
             label="Pairing token"
             value={pairingToken}
             onChangeText={setPairingToken}
-            {...({
-              autoCapitalize: "none",
-              autoCorrect: false,
-              secureTextEntry: true,
-            } as any)}
+            autoCapitalize="none"
+            autoCorrect={false}
+            secureTextEntry
             style={styles.input}
             mode="outlined"
           />

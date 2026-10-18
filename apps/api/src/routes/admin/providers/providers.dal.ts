@@ -36,24 +36,24 @@ export const isConfigured = async (): Promise<boolean> => {
   return !!row
 }
 
-export const toggleModel = async (
-  modelId: string,
-  enabled: boolean,
-  sessionId: string | null = null,
-) => {
-  if (sessionId === null) {
-    const [row] = await db
-      .insert(schema.userModelPrefs)
-      .values({ sessionId: null, modelId, enabled })
-      .onConflictDoUpdate({
-        target: schema.userModelPrefs.modelId,
-        targetWhere: orm.isNull(schema.userModelPrefs.sessionId),
-        set: { enabled },
-      })
-      .returning()
-    return row!
-  }
+export const setGlobalModel = async (modelId: string, enabled: boolean) => {
+  const [row] = await db
+    .insert(schema.userModelPrefs)
+    .values({ sessionId: null, modelId, enabled })
+    .onConflictDoUpdate({
+      target: schema.userModelPrefs.modelId,
+      targetWhere: orm.isNull(schema.userModelPrefs.sessionId),
+      set: { enabled },
+    })
+    .returning()
+  return row!
+}
 
+export const setSessionModel = async (
+  modelId: string,
+  sessionId: string,
+  enabled: boolean,
+) => {
   const [row] = await db
     .insert(schema.userModelPrefs)
     .values({ sessionId, modelId, enabled })

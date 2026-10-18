@@ -91,7 +91,7 @@ export default function PairConfirmDialog({ params, onDismiss }: Props) {
             onChangeText={setDeviceName}
             mode="outlined"
             style={styles.input}
-            {...({ autoCorrect: false } as any)}
+            autoCorrect={false}
           />
 
           {!!error && (

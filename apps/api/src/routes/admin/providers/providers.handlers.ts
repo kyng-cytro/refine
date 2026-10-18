@@ -1,6 +1,7 @@
 import { resolveProviders } from "@/lib/availability"
+import { HOST } from "@/lib/constants"
 import type { AppRouteHandler } from "@/lib/context"
-import { getModel } from "@/lib/models"
+import { getModel } from "@refine/models"
 import * as dal from "@/routes/admin/providers/providers.dal"
 import type {
   ListProviders,
@@ -17,7 +18,7 @@ import * as HttpStatusCodes from "stoker/http-status-codes"
 export const setupStatus: AppRouteHandler<SetupStatus> = async (c) => {
   try {
     return c.json(
-      { configured: await dal.isConfigured(), url: Bun.env.HOST },
+      { configured: await dal.isConfigured(), url: HOST },
       HttpStatusCodes.OK,
     )
   } catch (error) {
@@ -80,7 +81,7 @@ export const toggleModel: AppRouteHandler<ToggleModel> = async (c) => {
         HttpStatusCodes.BAD_REQUEST,
       )
     }
-    const pref = await dal.toggleModel(modelId, enabled)
+    const pref = await dal.setGlobalModel(modelId, enabled)
     return c.json({ enabled: pref.enabled }, HttpStatusCodes.OK)
   } catch (error) {
     c.var.logger.error(`[ADMIN:PROVIDERS:TOGGLE] ${error}`)
@@ -103,7 +104,7 @@ export const toggleSessionModel: AppRouteHandler<ToggleSessionModel> = async (
       await dal.clearSessionModel(modelId, sessionId)
       return c.json({ enabled: null }, HttpStatusCodes.OK)
     }
-    const pref = await dal.toggleModel(modelId, enabled, sessionId)
+    const pref = await dal.setSessionModel(modelId, sessionId, enabled)
     return c.json({ enabled: pref.enabled }, HttpStatusCodes.OK)
   } catch (error) {
     c.var.logger.error(`[ADMIN:SESSIONS:MODEL:TOGGLE] ${error}`)

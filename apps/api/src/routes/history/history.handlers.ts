@@ -1,6 +1,6 @@
 import type { AppRouteHandler, AuthenticatedContext } from "@/lib/context"
 import * as dal from "@/routes/history/history.dal"
-import type { List, Remove } from "@/routes/history/history.routes"
+import type { Clear, List, Remove } from "@/routes/history/history.routes"
 import { HTTPException } from "hono/http-exception"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 
@@ -31,6 +31,20 @@ export const remove: AppRouteHandler<Remove, AuthenticatedContext> = async (
     c.var.logger.error(`[HISTORY:DELETE] ${error}`)
     throw new HTTPException(HttpStatusCodes.INTERNAL_SERVER_ERROR, {
       message: "Failed to delete history item",
+    })
+  }
+}
+
+export const clear: AppRouteHandler<Clear, AuthenticatedContext> = async (
+  c,
+) => {
+  try {
+    await dal.clear(c.var.session.id)
+    return c.body(null, HttpStatusCodes.NO_CONTENT)
+  } catch (error) {
+    c.var.logger.error(`[HISTORY:CLEAR] ${error}`)
+    throw new HTTPException(HttpStatusCodes.INTERNAL_SERVER_ERROR, {
+      message: "Failed to clear history",
     })
   }
 }

@@ -35,25 +35,20 @@ export const options = (
   }
 }
 
-export const format = <TRow, TCursor, TOut = TRow>(
+export const format = <TRow, TCursor, TOut>(
   rows: TRow[],
   config: {
     limit: number
-    map?: (row: TRow) => TOut
+    map: (row: TRow) => TOut
     getCursor: (row: TRow) => TCursor
   },
 ) => {
-  const { limit } = config
-  const hasMore = rows.length > limit
-  const sliced = hasMore ? rows.slice(0, limit) : rows
-  const data = config.map
-    ? sliced.map(config.map)
-    : (sliced as unknown as TOut[])
-  const lastRow = sliced[sliced.length - 1]
-  const nextCursor = hasMore && lastRow ? config.getCursor(lastRow) : null
+  const hasMore = rows.length > config.limit
+  const page = rows.slice(0, config.limit)
+  const lastRow = page.at(-1)
   return {
-    data,
+    data: page.map(config.map),
     hasMore,
-    nextCursor,
+    nextCursor: hasMore && lastRow ? config.getCursor(lastRow) : null,
   }
 }

@@ -50,5 +50,20 @@ export const remove = createRoute({
   summary: "Delete a history item",
 })
 
+export const clear = createRoute({
+  method: "delete",
+  path: "/history",
+  tags,
+  security,
+  middleware: [authenticate] as const,
+  responses: {
+    [HttpStatusCodes.NO_CONTENT]: { description: "Cleared" },
+    ...responses.unauthorized,
+    ...responses.serverError,
+  },
+  summary: "Clear all history",
+})
+
 export type List = typeof list
 export type Remove = typeof remove
+export type Clear = typeof clear

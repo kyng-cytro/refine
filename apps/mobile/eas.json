@@ -18,7 +18,8 @@
       },
       "env": {
         "APP_VARIANT": "production"
-      }
+      },
+      "channel": "production"
     },
     "production": {
       "autoIncrement": true,
@@ -27,7 +28,8 @@
       },
       "env": {
         "APP_VARIANT": "production"
-      }
+      },
+      "channel": "production"
     },
     "production-apk": {
       "autoIncrement": true,
@@ -36,7 +38,8 @@
       },
       "env": {
         "APP_VARIANT": "production"
-      }
+      },
+      "channel": "production"
     }
   },
   "submit": {

@@ -51,7 +51,7 @@ export const RefineInputArea = () => {
           style={styles.input}
           contentStyle={styles.inputContent}
           underlineStyle={{ display: "none" }}
-          {...({ maxLength: 4000 } as any)}
+          maxLength={4000}
         />
         <View style={styles.toolbar}>
           <View style={styles.chipRow}>

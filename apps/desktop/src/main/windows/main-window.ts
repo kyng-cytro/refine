@@ -48,6 +48,12 @@ export const createMainWindow = (opts?: { hidden?: boolean }): BrowserWindow => 
     mainWindow.once("ready-to-show", () => mainWindow?.show())
   }
 
+  if (process.platform === "darwin") {
+    if (opts?.hidden) app.dock?.hide()
+    mainWindow.on("show", () => app.dock?.show())
+    mainWindow.on("hide", () => app.dock?.hide())
+  }
+
   mainWindow.on("close", (e) => {
     if (!quitting) {
       e.preventDefault()

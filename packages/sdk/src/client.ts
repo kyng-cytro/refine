@@ -7,26 +7,37 @@ import type {
   ProvidersResponse,
   RefineRequest,
   RefineResponse,
+  ServerMeta,
   SessionInfo,
   Tone,
   UpdateTone,
 } from "@refine/schemas"
+import { CLIENT_HEADER } from "@refine/versions"
 import { $fetch } from "ofetch"
 
 export type ClientOptions = {
   baseURL: string
   sessionToken?: string
+  clientVersion?: string
+  onResponse?: (response: Response) => void
 }
 
 export const createClient = (options: ClientOptions) => {
+  const headers: Record<string, string> = {}
+  if (options.sessionToken) {
+    headers.Authorization = `Bearer ${options.sessionToken}`
+  }
+  if (options.clientVersion) headers[CLIENT_HEADER] = options.clientVersion
+
   const apiFetch = $fetch.create({
     baseURL: options.baseURL,
-    headers: options.sessionToken
-      ? { Authorization: `Bearer ${options.sessionToken}` }
-      : {},
+    headers,
+    onResponse: ({ response }) => options.onResponse?.(response),
   })
 
   return {
+    meta: () => apiFetch<ServerMeta>("/v1/meta"),
+
     auth: {
       pair: (body: PairRequest) =>
         apiFetch<PairResponse>("/v1/auth/pair", { method: "POST", body }),
@@ -41,6 +52,7 @@ export const createClient = (options: ClientOptions) => {
         apiFetch<HistoryResponse>("/v1/history", { query }),
       delete: (id: string) =>
         apiFetch(`/v1/history/${id}`, { method: "DELETE" }),
+      clear: () => apiFetch("/v1/history", { method: "DELETE" }),
     },
 
     tones: {

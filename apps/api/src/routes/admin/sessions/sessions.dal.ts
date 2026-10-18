@@ -11,6 +11,7 @@ const map = (row: SessionRow) => ({
   createdAt: row.createdAt.getTime(),
   expiresAt: row.expiresAt?.getTime() ?? null,
   pairingTokenLabel: row.pairingToken.label,
+  clientVersion: row.clientVersion,
 })
 
 export const getAll = async () => {
@@ -22,12 +23,15 @@ export const getAll = async () => {
 }
 
 export const setExpiry = async (id: string, expiresAt: Date | null) => {
-  const [updated] = await db
+  await db
     .update(schema.sessions)
     .set({ expiresAt })
     .where(orm.eq(schema.sessions.id, id))
-    .returning()
-  return updated ?? null
+  const row = await db.query.sessions.findFirst({
+    where: orm.eq(schema.sessions.id, id),
+    with: { pairingToken: true },
+  })
+  return row ? map(row) : null
 }
 
 export const remove = async (id: string) => {

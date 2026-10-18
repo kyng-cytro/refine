@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react"
-import {
-  api,
-  type Session,
-  type SessionProviderState,
-  type Token,
-} from "@/lib/api"
-import { deviceTypeIcon, DEVICE_TYPES, type DeviceType } from "@/lib/device-type"
-import { type ModelProvider } from "@/lib/models"
+import { api } from "@/lib/api"
+import { deviceTypeIcon, DEVICE_TYPES } from "@/lib/device-type"
+import type { ModelProvider } from "@refine/models"
+import type {
+  AdminSession,
+  AdminSessionProvider,
+  AdminToken,
+  DeviceType,
+} from "@refine/schemas"
 import { DeviceTypeSelector } from "@/components/device-type-selector"
 import { ProviderAccordion } from "@/components/provider-accordion"
 import { CopyButton } from "@/components/copy-button"
@@ -23,6 +24,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { ChevronDown, Clock, Settings2, Smartphone, Trash2 } from "lucide-react"
+import {
+  LATEST_VERSIONS,
+  MIN_CLIENT_VERSIONS,
+  versionStatus,
+} from "@refine/versions"
 
 function formatExpiry(expiresAt: number | null): string {
   if (!expiresAt) return "Never"
@@ -35,8 +41,25 @@ function formatExpiry(expiresAt: number | null): string {
   })
 }
 
+function ClientVersion({ session }: { session: AdminSession }) {
+  if (session.deviceType === "browser") return null
+  if (!session.clientVersion) return <span> · version unknown</span>
+  const status = versionStatus(session.clientVersion, {
+    min: MIN_CLIENT_VERSIONS[session.deviceType],
+    latest: LATEST_VERSIONS[session.deviceType],
+  })
+  return (
+    <span className={status === "unsupported" ? "text-destructive" : ""}>
+      {" "}
+      · v{session.clientVersion}
+      {status === "outdated" && " (update available)"}
+      {status === "unsupported" && " (unsupported)"}
+    </span>
+  )
+}
+
 interface DeviceRowProps {
-  session: Session
+  session: AdminSession
   onRevoke: (id: string) => void
   onExpiryChange: (id: string, expiresAt: number | null) => void
 }
@@ -44,7 +67,7 @@ interface DeviceRowProps {
 function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
   const DeviceIcon = deviceTypeIcon(session.deviceType)
   const [expanded, setExpanded] = useState(false)
-  const [tree, setTree] = useState<SessionProviderState[]>([])
+  const [tree, setTree] = useState<AdminSessionProvider[]>([])
   const [loaded, setLoaded] = useState(false)
   const [expiryInput, setExpiryInput] = useState(
     session.expiresAt
@@ -113,6 +136,17 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
     }
   }
 
+  const clearExpiry = async () => {
+    const previous = expiryInput
+    setExpiryInput("")
+    try {
+      await api.sessions.expiry(session.id, null)
+      onExpiryChange(session.id, null)
+    } catch {
+      setExpiryInput(previous)
+    }
+  }
+
   return (
     <div
       className={`rounded-lg border overflow-hidden ${isExpired ? "opacity-60" : ""}`}
@@ -127,6 +161,7 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
             <p className="text-xs text-muted-foreground">
               via {session.pairingTokenLabel} ·{" "}
               {new Date(session.createdAt).toLocaleDateString()}
+              <ClientVersion session={session} />
               {session.expiresAt !== null && (
                 <span className={isExpired ? " text-destructive" : ""}>
                   {" "}
@@ -189,11 +224,7 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
                   size="sm"
                   variant="ghost"
                   className="text-muted-foreground"
-                  onClick={() => {
-                    setExpiryInput("")
-                    onExpiryChange(session.id, null)
-                    api.sessions.expiry(session.id, null)
-                  }}
+                  onClick={clearExpiry}
                 >
                   Clear
                 </Button>
@@ -241,12 +272,12 @@ function DeviceRow({ session, onRevoke, onExpiryChange }: DeviceRowProps) {
 }
 
 export default function DevicesTab() {
-  const [sessions, setSessions] = useState<Session[]>([])
+  const [sessions, setSessions] = useState<AdminSession[]>([])
   const [serverUrl, setServerUrl] = useState("")
   const [loading, setLoading] = useState(true)
   const [label, setLabel] = useState("")
   const [deviceType, setDeviceType] = useState<DeviceType>("mobile")
-  const [newToken, setNewToken] = useState<Token | null>(null)
+  const [newToken, setNewToken] = useState<AdminToken | null>(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState("")
 

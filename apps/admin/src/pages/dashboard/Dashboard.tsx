@@ -134,7 +134,7 @@ export default function Dashboard({ onSignOut }: Props) {
         </div>
       </aside>
 
-      <div className="flex flex-1 flex-col min-w-0 overflow-hidden item">
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         <header className="border-b px-6 py-5 shrink-0 flex items-center gap-4">
           <button
             className="md:hidden mt-0.5 text-muted-foreground hover:text-foreground"

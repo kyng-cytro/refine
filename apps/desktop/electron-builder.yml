@@ -12,6 +12,9 @@ extraResources:
     to: tray
   - from: resources/icon.png
     to: icon.png
+publish:
+  provider: generic
+  url: https://github.com/kyng-cytro/refine/releases/latest/download
 protocols:
   - name: Refine
     schemes:

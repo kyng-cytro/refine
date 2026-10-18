@@ -1,6 +1,5 @@
 import { env } from "bun"
 
-const ALG = "aes-256-gcm"
 const IV_LEN = 12
 
 const key = () =>

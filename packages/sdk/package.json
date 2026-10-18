@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@refine/schemas": "workspace:*",
+    "@refine/versions": "workspace:*",
     "ofetch": "^1.5.1"
   }
 }

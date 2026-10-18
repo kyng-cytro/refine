@@ -19,16 +19,12 @@ export const expiry: AppRouteHandler<SetExpiry> = async (c) => {
   try {
     const { id } = c.req.valid("param")
     const { expiresAt } = c.req.valid("json")
-    const updated = await dal.setExpiry(id, expiresAt !== null ? new Date(expiresAt) : null)
-    if (!updated) return c.json({ message: "Not found" }, HttpStatusCodes.NOT_FOUND)
-    return c.json({
-      id: updated.id,
-      deviceName: updated.deviceName,
-      deviceType: updated.deviceType,
-      createdAt: updated.createdAt.getTime(),
-      expiresAt: updated.expiresAt?.getTime() ?? null,
-      pairingTokenLabel: "",
-    }, HttpStatusCodes.OK)
+    const session = await dal.setExpiry(
+      id,
+      expiresAt === null ? null : new Date(expiresAt),
+    )
+    if (!session) return c.json({ message: "Not found" }, HttpStatusCodes.NOT_FOUND)
+    return c.json(session, HttpStatusCodes.OK)
   } catch (error) {
     c.var.logger.error(`[ADMIN:SESSIONS:EXPIRY] ${error}`)
     throw new HTTPException(HttpStatusCodes.INTERNAL_SERVER_ERROR, {

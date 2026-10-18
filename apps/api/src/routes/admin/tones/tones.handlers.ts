@@ -1,3 +1,4 @@
+import { isUniqueViolation } from "@/lib/db"
 import type { AppRouteHandler } from "@/lib/context"
 import * as dal from "@/routes/admin/tones/tones.dal"
 import type {
@@ -25,10 +26,9 @@ export const create: AppRouteHandler<Create> = async (c) => {
   try {
     const data = c.req.valid("json")
     const tone = await dal.create(data)
-    if (!tone) throw new Error("Insert returned no row")
     return c.json(tone, HttpStatusCodes.CREATED)
-  } catch (error: any) {
-    if (error?.message?.includes("UNIQUE")) {
+  } catch (error) {
+    if (isUniqueViolation(error)) {
       return c.json(
         { message: "A global tone with that slug already exists" },
         HttpStatusCodes.CONFLICT,
@@ -50,6 +50,9 @@ export const update: AppRouteHandler<Update> = async (c) => {
       return c.json({ message: "Not found" }, HttpStatusCodes.NOT_FOUND)
     return c.json(tone, HttpStatusCodes.OK)
   } catch (error) {
+    if (isUniqueViolation(error)) {
+      return c.json({ message: "A global tone with that slug already exists" }, HttpStatusCodes.CONFLICT)
+    }
     c.var.logger.error(`[ADMIN:TONES:UPDATE] ${error}`)
     throw new HTTPException(HttpStatusCodes.INTERNAL_SERVER_ERROR, {
       message: "Failed to update global tone",

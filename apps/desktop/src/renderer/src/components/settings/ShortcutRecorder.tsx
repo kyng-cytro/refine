@@ -17,7 +17,6 @@ function toAccelerator(e: React.KeyboardEvent, isMac: boolean): string | null {
 
   let key = e.key
   if (key === " ") key = "Space"
-  else if (/^[a-z]$/.test(key)) key = key.toUpperCase()
   else if (key.length === 1) key = key.toUpperCase()
   parts.push(key)
   return parts.join("+")

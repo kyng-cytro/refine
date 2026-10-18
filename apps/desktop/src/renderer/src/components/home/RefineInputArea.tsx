@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useState } from "react"
 import { Send } from "lucide-react"
 import { IconButton } from "@/components/m3/IconButton"
 import { Snackbar } from "@/components/m3/Snackbar"
@@ -12,7 +12,6 @@ import { ToneChip } from "./ToneChip"
 export function RefineInputArea() {
   const [text, setText] = useState("")
   const { refine, isLoading, error, clearError } = useRefine()
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const send = async () => {
     const trimmed = text.trim()
@@ -31,9 +30,8 @@ export function RefineInputArea() {
     <div className="px-4">
       <Surface level={2} shadow className="overflow-hidden rounded-m3-lg">
         <TextArea
-          ref={textareaRef}
           value={text}
-          onChange={(e) => setText(e.target.value.slice(0, 4000))}
+          onChange={(e) => setText(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder="Enter text to refine…"
           rows={5}

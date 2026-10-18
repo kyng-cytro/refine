@@ -2,8 +2,10 @@ import * as responses from "@/lib/helpers/responses"
 import { adminAuth } from "@/middlewares/auth"
 import { createRoute, z } from "@hono/zod-openapi"
 import {
+  AdminProviderStateSchema,
   AdminSessionProviderSchema,
   ModelProviderSchema,
+  SetupStatusSchema,
   ToggleModelSchema,
 } from "@refine/schemas"
 import * as HttpStatusCodes from "stoker/http-status-codes"
@@ -11,19 +13,6 @@ import { helpers } from "stoker/openapi"
 import { createErrorSchema } from "stoker/openapi/schemas"
 
 const tags = ["Admin / Providers"]
-
-const ModelStateSchema = z.object({
-  id: z.string(),
-  label: z.string(),
-  enabled: z.boolean(),
-})
-
-const ProviderStateSchema = z.object({
-  provider: ModelProviderSchema,
-  enabled: z.boolean(),
-  hasKey: z.boolean(),
-  models: z.array(ModelStateSchema),
-})
 
 const UpsertSchema = z.object({
   apiKey: z.string().min(1).optional(),
@@ -40,7 +29,7 @@ export const setupStatus = createRoute({
   tags,
   responses: {
     [HttpStatusCodes.OK]: helpers.jsonContent(
-      z.object({ configured: z.boolean(), url: z.string() }),
+      SetupStatusSchema,
       "Setup status",
     ),
     ...responses.serverError,
@@ -55,7 +44,7 @@ export const listProviders = createRoute({
   middleware: [adminAuth] as const,
   responses: {
     [HttpStatusCodes.OK]: helpers.jsonContent(
-      z.array(ProviderStateSchema),
+      z.array(AdminProviderStateSchema),
       "Provider state",
     ),
     ...responses.unauthorized,

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
-import { api, type UsageOverview } from "@/lib/api"
+import { api } from "@/lib/api"
+import type { UsageOverview } from "@refine/schemas"
 
 const RANGES = [
   { label: "7d", days: 7 },

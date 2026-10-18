@@ -1,5 +1,6 @@
 import {
   BottomSheetBackdrop,
+  type BottomSheetBackdropProps,
   BottomSheetModal,
   BottomSheetTextInput,
   BottomSheetView,
@@ -15,7 +16,7 @@ import {
 import { StyleSheet, View } from "react-native"
 import { Button, HelperText, Text, useTheme } from "react-native-paper"
 
-import { getApiClient } from "@/services/api"
+import { apiError, getApiClient } from "@/services/api"
 import { syncActiveConfig } from "@/services/shared-prefs-bridge"
 import type { Tone } from "@refine/schemas"
 
@@ -42,6 +43,7 @@ export const ToneBottomSheet = forwardRef<ToneBottomSheetHandle, Props>(
     const [name, setName] = useState("")
     const [instructions, setInstructions] = useState("")
     const [saving, setSaving] = useState(false)
+    const [error, setError] = useState("")
     const theme = useTheme()
 
     useImperativeHandle(forwardedRef, () => ({
@@ -50,7 +52,7 @@ export const ToneBottomSheet = forwardRef<ToneBottomSheetHandle, Props>(
 
     const close = () => sheetRef.current?.dismiss()
     const renderBackdrop = useCallback(
-      (props: any) => (
+      (props: BottomSheetBackdropProps) => (
         <BottomSheetBackdrop
           {...props}
           disappearsOnIndex={-1}
@@ -64,6 +66,7 @@ export const ToneBottomSheet = forwardRef<ToneBottomSheetHandle, Props>(
     useEffect(() => {
       setName(editingTone?.name ?? "")
       setInstructions(editingTone?.instructions ?? "")
+      setError("")
     }, [editingTone])
 
     const handleSave = async () => {
@@ -72,6 +75,7 @@ export const ToneBottomSheet = forwardRef<ToneBottomSheetHandle, Props>(
       if (!trimmedName || !trimmedInstructions) return
 
       setSaving(true)
+      setError("")
       try {
         const client = getApiClient()
         const slug = toSlug(trimmedName)
@@ -91,7 +95,8 @@ export const ToneBottomSheet = forwardRef<ToneBottomSheetHandle, Props>(
         await onSaved()
         syncActiveConfig()
         close()
-      } catch (e: any) {
+      } catch (e) {
+        setError(apiError(e, "Failed to save tone"))
       } finally {
         setSaving(false)
       }
@@ -142,6 +147,7 @@ export const ToneBottomSheet = forwardRef<ToneBottomSheetHandle, Props>(
           <HelperText type="info" style={styles.helper}>
             Describes the style of refinement. Injected into the AI prompt.
           </HelperText>
+          {!!error && <HelperText type="error">{error}</HelperText>}
 
           <View style={styles.actions}>
             <View style={styles.rightActions}>

@@ -2,22 +2,14 @@ import * as responses from "@/lib/helpers/responses"
 import { adminAuth } from "@/middlewares/auth"
 import { createRoute, z } from "@hono/zod-openapi"
 import {
-  HistoryItemSchema,
+  AdminHistoryResponseSchema,
   HistoryQuerySchema,
   IdParamSchema,
-  paginationResponse,
 } from "@refine/schemas"
 import * as HttpStatusCodes from "stoker/http-status-codes"
 import { helpers } from "stoker/openapi"
 
 const tags = ["Admin / History"]
-
-const AdminHistoryItemSchema = HistoryItemSchema.extend({
-  deviceName: z.string().nullable(),
-  sessionId: z.string(),
-})
-
-const AdminHistoryResponseSchema = paginationResponse(AdminHistoryItemSchema)
 
 export const list = createRoute({
   method: "get",

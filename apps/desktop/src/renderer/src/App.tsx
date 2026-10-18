@@ -9,12 +9,14 @@ import {
 } from "react-router-dom"
 import { AppShell } from "@/components/AppShell"
 import { PairConfirmDialog } from "@/components/PairConfirmDialog"
+import { UpdateDialog } from "@/components/UpdateDialog"
 import { ipc } from "@/lib/ipc"
 import HomeScreen from "@/screens/HomeScreen"
 import OverlayScreen from "@/screens/OverlayScreen"
 import SettingsScreen from "@/screens/SettingsScreen"
 import SetupScreen from "@/screens/SetupScreen"
 import { useSettingsStore } from "@/store/settings-store"
+import { useVersionStore } from "@/store/version-store"
 import type { PairIncoming } from "../../shared/types"
 
 function ConnectedGuard({ children }: { children: React.ReactNode }) {
@@ -70,16 +72,19 @@ function AppRoutes() {
         onDismiss={() => setPairParams(null)}
         onPaired={() => navigate("/", { replace: true })}
       />
+      <UpdateDialog />
     </>
   )
 }
 
 function MainApp() {
   const { hydrated, hydrate } = useSettingsStore()
+  const hydrateVersions = useVersionStore((s) => s.hydrate)
 
   useEffect(() => {
     hydrate()
-  }, [hydrate])
+    hydrateVersions()
+  }, [hydrate, hydrateVersions])
 
   if (!hydrated) return null
 

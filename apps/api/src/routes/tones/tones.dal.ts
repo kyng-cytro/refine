@@ -1,14 +1,6 @@
 import { db, orm, schema } from "@/lib/db"
+import { mapTone } from "@/lib/tones"
 import type { CreateTone, UpdateTone } from "@refine/schemas"
-
-const mapTone = (row: typeof schema.tones.$inferSelect) => ({
-  id: row.id,
-  name: row.name,
-  slug: row.slug,
-  instructions: row.instructions,
-  isGlobal: row.isGlobal,
-  sessionId: row.sessionId,
-})
 
 export const list = async (sessionId: string) => {
   const [userTones, globalTones] = await Promise.all([
@@ -27,7 +19,7 @@ export const create = async (sessionId: string, data: CreateTone) => {
     .insert(schema.tones)
     .values({ ...data, sessionId, isGlobal: false })
     .returning()
-  return row ? mapTone(row) : null
+  return mapTone(row!)
 }
 
 export const update = async (

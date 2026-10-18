@@ -20,7 +20,7 @@ export function useRefine() {
       const { refined } = await ipc.refine({ text, modelId, toneSlug })
       if (saveHistory) {
         prependItem({
-          id: `local-${text.length}-${text.slice(0, 8)}`,
+          id: `local-${Date.now()}`,
           source: text,
           refined,
           modelId,

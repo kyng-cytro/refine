@@ -1,14 +1,17 @@
 import { createClient } from "@refine/sdk"
 import { useSettingsStore } from "@/store/settings-store"
 import { syncActiveConfig } from "@/services/shared-prefs-bridge"
+import { apiError } from "@/services/api"
+import { refreshAll } from "@/services/refresh"
+import { APP_VERSION } from "@/services/versions"
 
-export interface PairInput {
+interface PairInput {
   serverUrl: string
   pairingToken: string
   deviceName: string
 }
 
-export interface PairResult {
+interface PairResult {
   ok: boolean
   error?: string
 }
@@ -26,37 +29,18 @@ export const pairAndBootstrap = async ({
   if (!token) return { ok: false, error: "Pairing token is required" }
 
   try {
-    const { sessionToken } = await createClient({ baseURL: url }).auth.pair({
+    const { sessionToken } = await createClient({
+      baseURL: url,
+      clientVersion: APP_VERSION,
+    }).auth.pair({
       pairingToken: token,
       deviceName: name,
     })
-
-    const store = useSettingsStore.getState()
-    store.setServerConfig(url, sessionToken)
+    useSettingsStore.getState().setServerConfig(url, sessionToken)
     syncActiveConfig()
-
-    const authed = createClient({ baseURL: url, sessionToken })
-    const [tones, { providers }] = await Promise.all([
-      authed.tones.list(),
-      authed.providers.list(),
-    ])
-
-    if (tones.length) {
-      store.setTones(tones)
-      store.setTone(tones[0].slug)
-    }
-
-    const models = providers
-      .flatMap((p) => p.models)
-      .filter((m) => m.enabledByUser !== false)
-    store.setModels(models)
-    if (models.length) store.setModel(models[0].id)
-
+    await refreshAll()
     return { ok: true }
-  } catch (e: any) {
-    return {
-      ok: false,
-      error: e?.data?.message ?? e?.message ?? "Connection failed",
-    }
+  } catch (e) {
+    return { ok: false, error: apiError(e, "Connection failed") }
   }
 }

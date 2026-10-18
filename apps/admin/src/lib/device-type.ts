@@ -1,8 +1,6 @@
 import type { DeviceType } from "@refine/schemas"
 import { Globe, Monitor, Smartphone, type LucideIcon } from "lucide-react"
 
-export type { DeviceType }
-
 export const DEVICE_TYPES: {
   value: DeviceType
   label: string

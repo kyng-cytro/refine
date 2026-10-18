@@ -1,7 +1,21 @@
 import { Platform } from "react-native"
 import * as SecureStore from "expo-secure-store"
 import { useSettingsStore } from "@/store/settings-store"
-import type { NativeConfig } from "@/types/settings"
+
+interface ServerConfig {
+  configured: true
+  serverUrl: string
+  sessionToken: string
+  modelId: string
+  toneSlug: string
+}
+
+interface UnconfiguredConfig {
+  configured: false
+  reason: "no_server" | "no_tone" | "no_model"
+}
+
+type NativeConfig = ServerConfig | UnconfiguredConfig
 
 const isAndroid = Platform.OS === "android"
 

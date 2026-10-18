@@ -81,13 +81,13 @@ jobs:
         include:
           - os: ubuntu-latest
             dist: dist:linux
-            artifacts: apps/desktop/dist/*.AppImage apps/desktop/dist/*.deb
+            artifacts: apps/desktop/dist/*.AppImage apps/desktop/dist/*.deb apps/desktop/dist/latest-linux.yml
           - os: macos-latest
             dist: dist:mac
-            artifacts: apps/desktop/dist/*.dmg apps/desktop/dist/*.zip
+            artifacts: apps/desktop/dist/*.dmg apps/desktop/dist/*.zip apps/desktop/dist/latest-mac.yml
           - os: windows-latest
             dist: dist:win
-            artifacts: apps/desktop/dist/*.exe
+            artifacts: apps/desktop/dist/*.exe apps/desktop/dist/*.exe.blockmap apps/desktop/dist/latest.yml
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
@@ -142,6 +142,12 @@ jobs:
         run: |
           BUILD_ID=$(eas build --platform android --profile production-apk --non-interactive --no-wait --json | node -p "JSON.parse(require('fs').readFileSync(0)).find(Boolean).id")
           echo "url=https://expo.dev/accounts/cytro/projects/refine/builds/$BUILD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Publish OTA update
+        working-directory: apps/mobile
+        env:
+          APP_VARIANT: production
+        run: eas update --channel production --platform android --environment production --non-interactive --message "@refine/mobile@${{ steps.version.outputs.version }}"
 
       - name: Link build on release
         env:
